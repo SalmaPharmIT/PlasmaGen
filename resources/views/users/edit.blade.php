@@ -224,7 +224,7 @@
                     <input type="file" class="form-control" id="profile_pic" name="profile_pic">
                     @if(!is_null($user['profile_pic']))
                         <div class="mt-2">
-                            <img src="{{ $user['profile_pic'] }}" alt="Profile Picture" width="100">
+                            <img src="{{ config('auth_api.base_image_url') . $user['profile_pic'] }}" alt="Profile Picture" width="100">
                         </div>
                     @endif
                 </div>

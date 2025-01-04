@@ -109,7 +109,7 @@
     <li class="nav-heading">Settings</li>
 
     <li class="nav-item">
-      <a class="nav-link collapsed" href="/user/{{ Auth::user()->id }}" >
+      <a class="nav-link collapsed" href="{{ route('user.edit', Auth::user()->id) }}" >
         <i class="bi bi-person"></i>
         <span>Profile</span>
       </a>

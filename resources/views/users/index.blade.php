@@ -169,7 +169,7 @@
                                         <i class="bi bi-gear"></i>
                                     </button>
                                     <ul class="dropdown-menu" aria-labelledby="actionMenu${row.id}">
-                                        <li><a class="dropdown-item" href="/user/${row.id}">Edit</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('user.edit', '') }}/${row.id}">Edit</a></li>
                                        
                                     </ul>
                                 </div>

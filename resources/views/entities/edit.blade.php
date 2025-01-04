@@ -176,7 +176,7 @@
                     <label for="logo" class="form-label">Logo</label>
                     <input type="file" class="form-control" id="logo" name="logo">
                     @if(isset($entity['logo']) && $entity['logo'])
-                        <img src="{{ $entity['logo'] }}" alt="Logo" width="50" height="50" class="mt-2">
+                        <img src="{{  config('auth_api.base_image_url') . $entity['logo'] }}" alt="Logo" width="50" height="50" class="mt-2">
                     @endif
                 </div>
 

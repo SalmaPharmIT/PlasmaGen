@@ -214,7 +214,7 @@
                     <label for="logo" class="form-label">Logo</label>
                     <input type="file" class="form-control" id="logo" name="logo">
                     @if(isset($entity['logo']) && $entity['logo'])
-                        <img src="{{ $entity['logo'] }}" alt="Logo" width="50" height="50" class="mt-2">
+                        <img src="{{ config('auth_api.base_image_url') . $entity['logo'] }}" alt="Logo" width="50" height="50" class="mt-2">
                     @endif
                 </div>
 
@@ -291,7 +291,7 @@
                       <div id="existing-document-preview" class="d-flex flex-wrap">
                           @foreach($entity['documents'] as $doc)
                               <div class="existing-preview-item position-relative me-2 mb-2">
-                                  <a href="{{ $doc }}" target="_blank" class="d-block">
+                                  <a href="{{ config('auth_api.base_image_url') . $doc }}" target="_blank" class="d-block">
                                       @php
                                           $fileExtension = pathinfo($doc, PATHINFO_EXTENSION);
                                           $iconClass = '';
