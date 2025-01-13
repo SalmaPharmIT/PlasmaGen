@@ -54,4 +54,6 @@ return [
     'cities_by_stateId_url' =>  $base_url . 'cities_by_stateId.php?id={id}',
 
     'dashbaord_web_url' =>  $base_url . 'dashbaord_web.php',
+    'roles_fetch_all_url' =>  $base_url . 'roles_fetch_all.php',
+    'pending_documents_fetch_all_url' =>  $base_url . 'pending_documents_fetch_all.php',
 ];

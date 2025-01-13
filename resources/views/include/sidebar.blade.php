@@ -78,14 +78,36 @@
             <i class="bi bi-circle"></i><span>Create Tour Planner</span>
           </a>
         </li>
-        {{-- <li>
-          <a href="#">
+        <li>
+          <a href="{{ route('tourplanner.manage') }}">
             <i class="bi bi-circle"></i><span>Manage Tour Planner</span>
           </a>
-        </li> --}}
+        </li>
       </ul>
     </li><!-- End Forms Nav -->
     @endif
+
+       <!-- Tour Planner - Visible to Logistics Admin (role_id == 7) and Role ID 6 -->
+       @if (Auth::check() && in_array(Auth::user()->role_id, [7]))
+       <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-journal-text"></i><span>TP Collections</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+         
+          <li>
+            <a href="{{ route('tourplanner.manage') }}">
+              <i class="bi bi-circle"></i><span>Collection Requests</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('tourplanner.manage') }}">
+              <i class="bi bi-circle"></i><span>Manage Collections</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Forms Nav -->
+      @endif
 
     
      <!-- Adding masters for admin -->

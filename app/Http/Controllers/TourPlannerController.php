@@ -211,15 +211,33 @@ class TourPlannerController extends Controller
     public function saveTourPlan(Request $request)
     {
         
-        // Validate the form data
-        $data = $request->validate([
-            'blood_bank_id' => 'required|integer|exists:entities,id', // Assuming 'entities' table holds blood banks
+        // Validate the form data with conditional rules
+        $validatedData = $request->validate([
+            'tour_plan_type' => 'required|in:collections,sourcing',
+
+            // Fields required for Collections
+            'blood_bank_id' => 'nullable|required_if:tour_plan_type,collections|integer|exists:entities,id',
             'date' => 'required|date',
-            'collecting_agent_id' => 'required|integer|exists:users,id', // Assuming 'users' table holds collecting agents
-            'quantity' => 'required|integer|min:1',
-            'remarks' => 'nullable|string',
+            'time' => 'nullable|required_if:tour_plan_type,collections|date_format:H:i',
+          //  'collecting_agent_id' => 'nullable|required_if:tour_plan_type,collections|integer|exists:users,id',
+            'pending_documents_id' => 'nullable|array',
+            'quantity' => 'nullable|required_if:tour_plan_type,collections|integer|min:1',
+
+            // Fields required for Sourcing
+            'sourcing_blood_bank_name' => 'nullable|required_if:tour_plan_type,sourcing|string|max:255',
+            'sourcing_city_id' => 'nullable|required_if:tour_plan_type,sourcing|integer|exists:cities,id',
+
+            // Common Fields
+            'collecting_agent_id' => 'required|integer|exists:users,id',
+            'collections_remarks' => 'nullable|string',
+            'sourcing_remarks' => 'nullable|string',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
+        ]);
+
+         // Log the data being sent
+         Log::info('Tour Plan Create API validatedData', [
+            'validatedData' => $validatedData,
         ]);
 
         // Retrieve the token from the session
@@ -247,23 +265,41 @@ class TourPlannerController extends Controller
         try {
         // Include additional fields if necessary
         // For example, 'status' => 'submitted' by default
+        // Initialize the payload with common fields
         $payload = [
-            'blood_bank_id' => $data['blood_bank_id'],
-            'date' => $data['date'],
-            'collecting_agent_id' => $data['collecting_agent_id'],
-            'quantity' => $data['quantity'],
-            'remarks' => $data['remarks'] ?? null,
-            'status' => 'submitted', // default status
+            'tour_plan_type' => $validatedData['tour_plan_type'],
+            'date' => $validatedData['date'],
+            'remarks' => $validatedData['collections_remarks'] ?? $validatedData['sourcing_remarks'] ?? null,
+            'status' => 'initiated', // default status
             'created_by' => Auth::id(), // assuming user is authenticated
+            'collecting_agent_id' => $validatedData['collecting_agent_id'], // **Mapped to employee_id**
         ];
 
+        // Conditionally add fields based on tour_plan_type
+        if ($validatedData['tour_plan_type'] === 'collections') {
+            $payload['blood_bank_id'] = $validatedData['blood_bank_id'];
+            $payload['time'] = $validatedData['time'];
+            $payload['quantity'] = $validatedData['quantity'];
+           
+            // Convert array to comma-separated string for pending documents
+            if (!empty($validatedData['pending_documents_id'])) {
+                $payload['pending_documents_id'] = implode(',', $validatedData['pending_documents_id']);
+            }
+        }
+
+        if ($validatedData['tour_plan_type'] === 'sourcing') {
+            $payload['sourcing_blood_bank_name'] = $validatedData['sourcing_blood_bank_name'];
+            $payload['sourcing_city_id'] = $validatedData['sourcing_city_id'];
+        }
+
         // Include optional fields if provided
-        if (isset($data['latitude'])) {
-            $payload['latitude'] = $data['latitude'];
+        if (!empty($validatedData['latitude'])) {
+            $payload['latitude'] = $validatedData['latitude'];
         }
-        if (isset($data['longitude'])) {
-            $payload['longitude'] = $data['longitude'];
+        if (!empty($validatedData['longitude'])) {
+            $payload['longitude'] = $validatedData['longitude'];
         }
+
 
         // Log the data being sent
         Log::info('Sending data to Tour Plan Create API', [
@@ -469,6 +505,94 @@ class TourPlannerController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while deleting the tour plan.'
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Show the manage tour plan list page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function manage()
+    {
+        return view('tourplanner.manage');
+    }
+
+    
+    /**
+     * API Endpoint to Fetch All Pending Documents Lists.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getPendingDocuments()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        Log::info('getPendingDocuments function invoked');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching Pending Documents
+        $apiUrl = config('auth_api.pending_documents_fetch_all_url');
+
+        if (!$apiUrl) {
+            Log::error('Pending Documents fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Pending Documents fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response Pending Documents', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch pending documents from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch pending documents  from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching pending documents  from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching pending documents .',
             ], 500);
         }
     }

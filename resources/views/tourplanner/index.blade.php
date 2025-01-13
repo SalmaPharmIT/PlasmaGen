@@ -64,59 +64,146 @@
 
 <!-- Add Tour Plan Modal -->
 <div class="modal fade" id="addTourPlanModal" tabindex="-1" aria-labelledby="addTourPlanModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <form id="addTourPlanForm">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Add Tour Plan</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Blood Bank Dropdown -->
-          <div class="mb-3">
-                <label for="tourPlanBloodBank" class="form-label">Blood Bank</label>
-                <select id="tourPlanBloodBank" class="form-select select2" name="blood_bank_id" required>
-                    <option value="">Choose Blood Bank</option>
-                    <!-- Options will be populated via AJAX -->
-                </select>
+    <div class="modal-dialog modal-lg">
+      <form id="addTourPlanForm" novalidate>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addTourPlanModalLabel">Add Tour Plan <small class="text-muted" id="selectedDate"></small></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-         <!-- Collecting Agents Dropdown -->
-         <div class="mb-3">
-            <label for="tourPlanCollectingAgent" class="form-label">Collecting Agent</label>
-            <select id="tourPlanCollectingAgent" class="form-select select2" name="collecting_agent_id" required>
-                <option value="">Choose Collecting Agent</option>
-                <!-- Options will be populated via AJAX -->
-            </select>
-          </div>
-          <!-- Tour Plan Date (readonly) -->
-          <div class="mb-3">
-            <label for="tourPlanDate" class="form-label">Date</label>
-            <input type="date" class="form-control" id="tourPlanDate" name="date" readonly>
-          </div>
-        
-          <!-- Quantity -->
-          <div class="mb-3">
-            <label for="tourPlanQuantity" class="form-label">Quantity</label>
-            <input type="number" class="form-control" id="tourPlanQuantity" name="quantity" min="1" required>
-          </div>
-
-            <!-- Remarks -->
-            <div class="col-md-12">
-                <label for="tourPlanRemarks" class="form-label">Remarks</label>
-                <textarea class="form-control" id="tourPlanRemarks" name="remarks" rows="2"></textarea>
+          <div class="modal-body">
+  
+            <!-- Tour Plan Type Radio Buttons -->
+            <div class="mb-3">
+              <label class="form-label">Tour Plan Type</label>
+              <div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeCollections" value="collections" checked>
+                  <label class="form-check-label" for="typeCollections">Collections</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeSourcing" value="sourcing">
+                  <label class="form-check-label" for="typeSourcing">Sourcing</label>
+                </div>
+              </div>
             </div>
 
-        </div>
+             <!-- **Common** Collecting Agents Dropdown -->
+              <div class="mb-3">
+                <label for="tourPlanCollectingAgent" class="form-label">Collecting Agent</label>
+                <select id="tourPlanCollectingAgent" class="form-select select2" name="collecting_agent_id" required>
+                  <option value="">Choose Collecting Agent</option>
+                  <!-- Options will be populated via AJAX -->
+                </select>
+                <div class="invalid-feedback">
+                  Please select a Collecting Agent.
+                </div>
+              </div>
+  
+            <!-- Collections Form Section -->
+            <div id="collectionsFields">
+              <!-- Blood Bank Dropdown -->
+              <div class="mb-3">
+                <label for="tourPlanBloodBank" class="form-label">Blood Bank</label>
+                <select id="tourPlanBloodBank" class="form-select select2" name="blood_bank_id" required>
+                  <option value="">Choose Blood Bank</option>
+                  <!-- Options will be populated via AJAX -->
+                </select>
+                <div class="invalid-feedback">
+                  Please select a Blood Bank.
+                </div>
+              </div>
+  
+  
+              <!-- Time Input -->
+              <div class="mb-3">
+                <label for="tourPlanTime" class="form-label">Time</label>
+                <input type="time" class="form-control" id="tourPlanTime" name="time" required>
+                <div class="invalid-feedback">
+                  Please provide a valid time.
+                </div>
+              </div>
+  
+              <!-- Hidden Tour Plan Date -->
+              <input type="hidden" id="tourPlanDate" name="date">
+  
+              <!-- Quantity -->
+              <div class="mb-3">
+                <label for="tourPlanQuantity" class="form-label">Quantity</label>
+                <input type="number" class="form-control" id="tourPlanQuantity" name="quantity" min="1" required>
+                <div class="invalid-feedback">
+                  Please enter a valid quantity (minimum 1).
+                </div>
+              </div>
 
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Add Tour Plan</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <!--Pending Documents Dropdown -->
+              <div class="mb-3">
+                <label for="tourPlanPendingDocuments" class="form-label">Any Pending Documents</label>
+                <select id="tourPlanPendingDocuments" class="form-select select2" name="pending_documents_id[]" multiple>
+                  <option value="">Choose Pending Documents</option>
+                  <!-- Options will be populated via AJAX -->
+                </select>
+                <div class="invalid-feedback">
+                  Please select a Pending Document.
+                </div>
+              </div>
+  
+             <!-- Collections Remarks -->
+              <div class="mb-3">
+                  <label for="tourPlanRemarks" class="form-label">Remarks</label>
+                  <textarea class="form-control" id="tourPlanRemarks" name="collections_remarks" rows="2"></textarea>
+                  <div class="invalid-feedback">
+                  Please enter remarks.
+                  </div>
+              </div>
+            </div>
+            <!-- End Collections Form Section -->
+  
+            <!-- Sourcing Form Section -->
+            <div id="sourcingFields" style="display: none;">
+              <!-- Blood Bank Name -->
+              <div class="mb-3">
+                <label for="sourcingBloodBankName" class="form-label">Blood Bank Name</label>
+                <input type="text" class="form-control" id="sourcingBloodBankName" name="sourcing_blood_bank_name" placeholder="Enter Blood Bank Name" required>
+                <div class="invalid-feedback">
+                  Please enter the Blood Bank Name.
+                </div>
+              </div>
+  
+              <!-- City Dropdown -->
+              <div class="mb-3">
+                <label for="sourcingCityDropdown" class="form-label">City</label>
+                <select id="sourcingCityDropdown" class="form-select select2" name="sourcing_city_id" required>
+                  <option value="">Choose City</option>
+                  <!-- Options will be populated via AJAX -->
+                </select>
+                <div class="invalid-feedback">
+                  Please select a City.
+                </div>
+              </div>
+  
+              <!-- Sourcing Remarks -->
+              <div class="mb-3">
+                  <label for="sourcingRemarks" class="form-label">Remarks</label>
+                  <textarea class="form-control" id="sourcingRemarks" name="sourcing_remarks" rows="2"></textarea>
+                  <div class="invalid-feedback">
+                  Please enter remarks.
+                  </div>
+              </div>
+            </div>
+            <!-- End Sourcing Form Section -->
+  
+          </div>
+  
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Add Tour Plan</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
-</div>
-<!-- End Add Tour Plan Modal -->
+  <!-- End Add Tour Plan Modal -->
 
 <!-- View Tour Plan Details Modal -->
 <div class="modal fade" id="viewTourPlanModal" tabindex="-1" aria-labelledby="viewTourPlanModalLabel" aria-hidden="true">
@@ -176,6 +263,12 @@
             <div class="col-md-12 mb-3">
               <strong>Created At:</strong>
               <p id="detailCreatedAt"></p>
+            </div>
+            <div class="col-md-12 mb-3">
+                <strong>Pending Documents:</strong>
+                <ul id="detailPendingDocuments" class="list-unstyled">
+                  <!-- Pending document names will be dynamically populated here -->
+                </ul>
             </div>
           </div>
         </div>
@@ -272,18 +365,6 @@
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
         }
 
-        /* Disable "Prev" Button Initially (Will be Removed) */
-        /* .fc-prev-button {
-            pointer-events: none;
-            opacity: 0.5;
-        }
-
-        /* Optional: Change cursor to not-allowed for disabled buttons */
-        .fc-prev-button[disabled],
-        .fc-prev-button.disabled {
-            cursor: not-allowed;
-        } */
-
         /* Target all disabled day grid cells */
         .fc-day-disabled.fc-daygrid-day {
             background-color: white !important; /* Set background to white */
@@ -331,7 +412,11 @@
 @push('scripts')
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-   
+    <!-- Select2 JS (Ensure you have included Select2 CSS and JS in your layout) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <!-- SweetAlert2 JS (Ensure you have included SweetAlert2 in your layout) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         $(document).ready(function() {
             // Variable to store the currently selected Collecting Agent ID from filters
@@ -407,6 +492,75 @@
             // Load Blood Banks on page load
             loadBloodBanks();
 
+
+             // Function to populate Pending Documents Dropdown
+             function loadPendingDocuments() {
+                console.log("loadPendingDocuments");
+                $.ajax({
+                    url: "{{ route('tourplanner.getPendingDocuments') }}",
+                    type: 'GET',
+                    success: function(response) {
+                        if(response.success) {
+                            console.log("loadPendingDocuments success");
+                            console.log(response);
+                            var pendingDocuments = response.data;
+                            var dropdown = $('#tourPlanPendingDocuments');
+                            dropdown.empty().append('<option value="">Choose Pending Documents</option>');
+                            
+                            $.each(response.data, function (index, pendingDocument) {
+                                dropdown.append('<option value="' + pendingDocument.id + '">' + pendingDocument.name + '</option>');
+                            });
+
+                            // Reinitialize Select2
+                            dropdown.select2({
+                                theme: 'bootstrap-5',
+                                width: '100%',
+                                placeholder: 'Choose Pending Documents',
+                                allowClear: true,
+                                multiple: true, // Enable multiple selection
+                                dropdownParent: $('#addTourPlanModal')
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching pending document:", error);
+                        Swal.fire('Error', 'An error occurred while fetching pending document.', 'error');
+                    }
+                });
+            }
+
+            // Load Pending Documents on page load
+            loadPendingDocuments();
+
+            // Function to populate City Dropdown (Assuming you have an API endpoint for cities)
+            function loadCities() {
+                $.ajax({
+                    url: "{{ route('api.cities') }}", // Ensure this route exists
+                    type: 'GET',
+                    success: function(response) {
+                        if(response.success) {
+                            var cities = response.data;
+                            var dropdown = $('#sourcingCityDropdown');
+                            dropdown.empty().append('<option value="">Choose City</option>');
+                            $.each(cities, function(index, city) {
+                                var option = '<option value="' + city.id + '">' + city.name + '</option>';
+                                dropdown.append(option);
+                            });
+                            // Trigger Select2 to reinitialize with new options
+                            dropdown.trigger('change');
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching cities:", error);
+                        Swal.fire('Error', 'An error occurred while fetching cities.', 'error');
+                    }
+                });
+            }
+
             // Initialize FullCalendar
             var calendarEl = document.getElementById('tourCalendar');
             var today = new Date();
@@ -424,15 +578,7 @@
                 aspectRatio: 1.35, // Adjust aspect ratio for better mobile view
                 contentHeight: 'auto', // Allow FullCalendar to resize properly
                 dayMaxEventRows: true, // Allow event stacking
-                // Removed validRange to allow navigation to any month
-                // validRange: {
-                //     start: firstDayOfCurrentMonth.toISOString().split('T')[0]
-                // },
                 selectable: true, // Allow date selection
-                // Removed selectConstraint since validRange is removed
-                // selectConstraint: {
-                //     start: firstDayOfCurrentMonth.toISOString().split('T')[0]
-                // },
                 editable: false, // Disable event dragging and resizing
                 eventStartEditable: false,
                 eventDurationEditable: false,
@@ -451,8 +597,13 @@
                         return;
                     }
 
+                    // Format the date as dd/mm/yyyy
+                    var parts = clickedDateString.split('-'); // ['yyyy', 'mm', 'dd']
+                    var formattedDate = parts[2] + '/' + parts[1] + '/' + parts[0];
+
                     // Open the modal and set the selected date
                     $('#tourPlanDate').val(clickedDateString);
+                    $('#selectedDate').text('[Date: ' + formattedDate + ']'); // Set the formatted date
                     $('#tourPlanCollectingAgent').val(currentFilteredAgentId);
                     $('#addTourPlanModal').modal('show');
                 },
@@ -475,6 +626,16 @@
                     var longitude = eventObj.extendedProps.longitude || 'N/A';
                     var createdBy = eventObj.extendedProps.created_by_name || 'N/A';
                     var createdAt = eventObj.extendedProps.created_at || 'N/A';
+
+                     // Extract pending_document_names
+                    var pendingDocuments = eventObj.extendedProps.pending_document_names || [];
+                    console.log("Pending Documents:", pendingDocuments); // Debugging
+
+                    // Populate the modal
+                    var pendingDocumentsHtml = pendingDocuments.length 
+                        ? pendingDocuments.map(doc => `<li>${doc}</li>`).join('')
+                        : '<li>No pending documents.</li>';
+                    $('#detailPendingDocuments').html(pendingDocumentsHtml);
 
                     // Populate the modal with event details
                     $('#detailBloodBank').text(bloodBank);
@@ -561,8 +722,43 @@
                     },
                     success: function(response) {
                         if(response.success) {
+                            console.log("API Response:", response); // Add this line
                             calendar.removeAllEvents();
-                            calendar.addEventSource(response.events);
+                          //  calendar.addEventSource(response.events);
+
+                          // Ensure response.events is an array before mapping
+                            if (Array.isArray(response.events)) {
+                                // Map each event to include color based on tour_plan_type
+                                var events = response.events.map(function(event) {
+                                    // Define default colors
+                                    var eventColor = '#6c757d'; // Gray for undefined types
+
+                                    if(event.extendedProps.tour_plan_type === 1) { // Collections
+                                        eventColor = '#28a745'; // Green
+                                    } else if(event.extendedProps.tour_plan_type === 2) { // Sourcing
+                                        eventColor = '#007bff'; // Blue
+                                    }
+
+                                    // Assign color properties
+                                    return {
+                                        id: event.id,
+                                        title: event.title,
+                                        start: event.start,
+                                        allDay: event.allDay,
+                                        backgroundColor: eventColor,
+                                        borderColor: eventColor,
+                                        extendedProps: {
+                                            ...event.extendedProps,
+                                            pending_document_names: event.pending_document_names || [] // Map pending_document_names
+                                        }
+                                    };
+                                });
+
+                                calendar.addEventSource(events);
+                            } else {
+                                console.error("Expected 'events' to be an array.");
+                                Swal.fire('Error', 'Unexpected response format: events should be an array.', 'error');
+                            }
                         } else {
                             Swal.fire('Error', response.message, 'error');
                         }
@@ -580,46 +776,60 @@
             // Handle form submission for adding a tour plan
             $('#addTourPlanForm').on('submit', function(e) {
                 e.preventDefault();
+                console.log("addTourPlanForm submit");
 
                 var form = $(this);
                 if (form[0].checkValidity() === false) {
                     e.stopPropagation();
                     form.addClass('was-validated');
+                    console.log("addTourPlanForm validate - validation failed");
                     return;
                 }
+                console.log("addTourPlanForm validate - validation passed");
+
+                var tourPlanType = $('input[name="tour_plan_type"]:checked').val();
 
                 var formData = {
+                    tour_plan_type: tourPlanType,
                     blood_bank_id: $('#tourPlanBloodBank').val(),
                     date: $('#tourPlanDate').val(),
+                    time: $('#tourPlanTime').val(),
                     collecting_agent_id: $('#tourPlanCollectingAgent').val(),
                     quantity: $('#tourPlanQuantity').val(),
-                    remarks: $('#tourPlanRemarks').val(), // Include remarks
-                    latitude: $('#tourPlanLatitude').val(), // Ensure these fields exist or remove if not needed
-                    longitude: $('#tourPlanLongitude').val(),
+                 //   remarks: $('#tourPlanRemarks').val(),
                     _token: '{{ csrf_token() }}' // CSRF token
                 };
 
-                // Validate that Blood Bank is selected
-                if (!formData.blood_bank_id) {
-                    Swal.fire('Warning', 'Please select a blood bank.', 'warning');
-                    return;
+               // Capture remarks based on tour plan type
+                if (tourPlanType === 'collections') {
+                    formData.collections_remarks = $('#tourPlanRemarks').val();
+                    var pendingDocuments = $('#tourPlanPendingDocuments').val(); // Array of selected IDs
+                    formData.pending_documents_id = pendingDocuments; // Add to formData
+                } else if (tourPlanType === 'sourcing') {
+                    formData.sourcing_remarks = $('#sourcingRemarks').val();
+                    formData.sourcing_blood_bank_name = $('#sourcingBloodBankName').val();
+                    formData.sourcing_city_id = $('#sourcingCityDropdown').val();
                 }
 
-                // Validate that Collecting Agent is selected
-                if (!formData.collecting_agent_id) {
-                    Swal.fire('Warning', 'Please select a collecting agent.', 'warning');
-                    return;
+                // If Sourcing, validate additional fields
+                if (tourPlanType === 'sourcing') {
+                    if (!formData.sourcing_blood_bank_name) {
+                        Swal.fire('Warning', 'Please enter the Blood Bank Name for Sourcing.', 'warning');
+                        return;
+                    }
+                    if (!formData.sourcing_city_id) {
+                        Swal.fire('Warning', 'Please select a city for Sourcing.', 'warning');
+                        return;
+                    }
                 }
 
-                // Validate that quantity is a positive number
-                if (formData.quantity < 1) {
-                    Swal.fire('Warning', 'Quantity must be at least 1.', 'warning');
-                    return;
-                }
+               console.log("formData: "+formData);
+               console.log(formData);
+
 
                 // Send AJAX request to save the tour plan
                 $.ajax({
-                    url: "{{ route('tourplanner.saveTourPlan') }}", // Ensure this route is defined
+                    url: "{{ route('tourplanner.saveTourPlan') }}",
                     type: 'POST',
                     data: formData,
                     beforeSend: function() {
@@ -639,6 +849,8 @@
                             $('#addTourPlanForm')[0].reset();
                             $('.select2').val(null).trigger('change');
                             form.removeClass('was-validated');
+                            // Hide sourcing fields in case they were visible
+                            $('#sourcingFields').hide();
                         } else {
                             if (response.errors) {
                                 // Iterate through errors and add invalid class to respective fields
@@ -687,6 +899,37 @@
                 })
             })()
 
+
+              // 1. Handle the filter's Collecting Agent dropdown change
+              $('#collectingAgentDropdown').on('change', function(){
+                var selectedAgentId = $(this).val();
+                currentFilteredAgentId = selectedAgentId ? selectedAgentId : null;
+                
+                // Update the modal's Collecting Agent dropdown
+                $('#tourPlanCollectingAgent').val(selectedAgentId).trigger('change.select2');
+
+                // Optional: If the modal is currently open, ensure it reflects the change
+                if ($('#addTourPlanModal').hasClass('show')) {
+                    $('#tourPlanCollectingAgent').trigger('change.select2');
+                }
+
+                var agentId = $('#collectingAgentDropdown').val();
+                var selectedMonth = $('#monthPicker').val();
+
+                // Store the selected agent ID
+                currentFilteredAgentId = agentId ? agentId : null;
+
+                if (!selectedMonth) {
+                    Swal.fire('Warning', 'Please select a month.', 'warning');
+                    return;
+                }
+
+                // Navigate the calendar to the selected month
+                calendar.gotoDate(selectedMonth);
+                // This will trigger datesSet, which in turn loads the events
+            });
+
+
             // Initialize Select2 for elements within the modal with dropdownParent set to the modal
             $('#addTourPlanModal').on('shown.bs.modal', function () {
                 $('#tourPlanBloodBank').select2({
@@ -704,6 +947,26 @@
                     allowClear: true,
                     dropdownParent: $('#addTourPlanModal')
                 });
+
+                $('#sourcingCityDropdown').select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: 'Choose City',
+                    allowClear: true,
+                    dropdownParent: $('#addTourPlanModal')
+                });
+
+                $('#tourPlanPendingDocuments').select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: 'Choose Pending Documents',
+                    allowClear: true,
+                    multiple: true, // Enable multiple selection
+                    dropdownParent: $('#addTourPlanModal')
+                });
+
+                // **IMPORTANT**: Trigger change to set the correct enabled/disabled fields based on default selection
+                $('.tour-plan-type:checked').trigger('change');
             });
 
             // Optional: Destroy Select2 when modal is hidden to prevent duplicate initialization
@@ -712,6 +975,8 @@
                 // Destroy Select2 to prevent duplication
                 $('#tourPlanBloodBank').select2('destroy');
                 $('#tourPlanCollectingAgent').select2('destroy');
+                $('#sourcingCityDropdown').select2('destroy');
+                $('#tourPlanPendingDocuments').select2('destroy');
 
                 // Reset the form fields
                 $(this).find('form')[0].reset();
@@ -721,10 +986,18 @@
 
                 // Optionally, remove any additional validation feedback
                 $(this).find('.invalid-feedback').html('');
+
+                // Hide sourcing fields if visible
+                $('#sourcingFields').hide();
+                // Show collections fields as default
+                $('#collectionsFields').show();
+
+                // **IMPORTANT**: Disable sourcing fields as default
+                $('#sourcingFields').find('input, select, textarea').prop('disabled', true);
             });
 
 
-             // **New: Handle DELETE Tour Plan Button Click**
+             // **Handle DELETE Tour Plan Button Click**
              $('#deleteTourPlanButton').on('click', function() {
                 var tourPlanId = $('#viewTourPlanModal').data('tourPlanId');
 
@@ -784,6 +1057,50 @@
                     }
                 });
             });
+
+
+             // Handle Tour Plan Type Radio Buttons Change
+             $('.tour-plan-type').on('change', function() {
+                var selectedType = $('input[name="tour_plan_type"]:checked').val();
+                console.log("Tour Plan Type Changed to:", selectedType); // Debugging
+
+                if (selectedType === 'sourcing') {
+                     // Hide Collections Fields
+                     $('#collectionsFields').slideUp();
+
+                    // Disable Collections Fields
+                    $('#collectionsFields').find('input, select, textarea').prop('disabled', true);
+
+                    // Show Sourcing Fields with temporary background color
+                    $('#sourcingFields').slideDown();
+
+                    // Enable Sourcing Fields
+                    $('#sourcingFields').find('input, select, textarea').prop('disabled', false);
+
+                    // Load cities if not already loaded
+                    if ($('#sourcingCityDropdown').children().length <= 1) { // Only default option exists
+                        loadCities();
+                    }
+                } else {
+                    // Show Collections Fields
+                    $('#collectionsFields').slideDown();
+
+                    // Enable Collections Fields
+                    $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
+
+                    // Hide Sourcing Fields
+                    $('#sourcingFields').slideUp();
+
+                    // Disable Sourcing Fields
+                    $('#sourcingFields').find('input, select, textarea').prop('disabled', true);
+
+                    // Clear Sourcing Fields
+                    $('#sourcingBloodBankName').val('');
+                    $('#sourcingCityDropdown').val(null).trigger('change');
+                }
+            });
+
+
 
         });
     </script>

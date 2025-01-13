@@ -111,10 +111,28 @@ class UserController extends Controller
         $countries = \App\Models\Country::all();
         $states = \App\Models\State::all();
         $cities = \App\Models\City::all();
-        $roles = \App\Models\Role::all();
+      //  $roles = \App\Models\Role::all();
+     //   $roles = \App\Models\Role::where('status', 'active')->get();
         $user = \App\Models\User::all();
         $userStatuses = \App\Models\User::$userStatuses;
         $userGender = \App\Models\User::$userGender;
+
+        // Fetch roles via API
+        $rolesResponse = $this->getRoles();
+
+        // Handle API response
+        if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
+            // Successfully retrieved roles
+            $roles = $rolesResponse;
+        } elseif ($rolesResponse instanceof \Illuminate\Http\JsonResponse) {
+            // An error occurred while fetching roles
+            // You can choose to handle the error as needed
+            // For example, redirect back with an error message
+            return back()->withErrors(['roles_error' => 'Unable to fetch roles at this time. Please try again later.']);
+        } else {
+            // Unexpected response structure
+            return back()->withErrors(['roles_error' => 'Unexpected error while fetching roles.']);
+        }
 
         // Log::info('Fetching userStatuses.', ['userStatuses' => $userStatuses]);
 
@@ -324,10 +342,28 @@ class UserController extends Controller
                     $countries = \App\Models\Country::all();
                     $states = \App\Models\State::all();
                     $cities = \App\Models\City::all();
-                    $roles = \App\Models\Role::all();
+                  //  $roles = \App\Models\Role::all();
+                 //   $roles = \App\Models\Role::where('status', 'active')->get();
                  //   $user = \App\Models\User::all();
                     $userStatuses = \App\Models\User::$userStatuses;
                     $userGender = \App\Models\User::$userGender;   
+
+                     // Fetch roles via API
+                    $rolesResponse = $this->getRoles();
+
+                    // Handle API response
+                    if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
+                        // Successfully retrieved roles
+                        $roles = $rolesResponse;
+                    } elseif ($rolesResponse instanceof \Illuminate\Http\JsonResponse) {
+                        // An error occurred while fetching roles
+                        // You can choose to handle the error as needed
+                        // For example, redirect back with an error message
+                        return back()->withErrors(['roles_error' => 'Unable to fetch roles at this time. Please try again later.']);
+                    } else {
+                        // Unexpected response structure
+                        return back()->withErrors(['roles_error' => 'Unexpected error while fetching roles.']);
+                    }
 
                     Log::info('Fetching single user data from external API.', ['user' => $user]);
 
@@ -601,4 +637,94 @@ class UserController extends Controller
             return response()->json(['success' => false, 'message' => 'An error occurred.'], 500);
         }
     }
+
+
+    /**
+     * Fetch roles from the external API.
+     *
+     * @return \Illuminate\Http\JsonResponse|array
+     */
+    public function getRoles()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session while fetching roles.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching roles
+        $apiUrl = config('auth_api.roles_fetch_all_url');
+
+        if (!$apiUrl) {
+            Log::error('Roles fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Roles fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response for Roles', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    // Assuming the API returns roles under 'data' key
+                    $roles = Arr::get($apiResponse, 'data', []);
+
+                    // **Filter only active roles**
+                    $activeRoles = array_filter($roles, function ($role) {
+                        return isset($role['status']) && strtolower($role['status']) === 'active';
+                    });
+
+                    // Reindex the array to ensure proper indexing
+                    $activeRoles = array_values($activeRoles);
+
+                    // **Convert each role array to an object**
+                    $activeRoles = array_map(function ($role) {
+                        return (object) $role;
+                    }, $activeRoles);
+
+                    return $activeRoles;
+                } else {
+                    Log::warning('External API returned failure for roles.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ], 400);
+                }
+            } else {
+                Log::error('Failed to fetch roles from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch roles from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching roles from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching roles.',
+            ], 500);
+        }
+    }
+
+
 }
