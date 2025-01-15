@@ -96,12 +96,12 @@
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
          
           <li>
-            <a href="{{ route('tourplanner.manage') }}">
+            <a href="{{ route('collectionrequest.index') }}">
               <i class="bi bi-circle"></i><span>Collection Requests</span>
             </a>
           </li>
           <li>
-            <a href="{{ route('tourplanner.manage') }}">
+            <a href="{{ route('collections.manage') }}">
               <i class="bi bi-circle"></i><span>Manage Collections</span>
             </a>
           </li>

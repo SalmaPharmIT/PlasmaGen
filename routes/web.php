@@ -111,6 +111,14 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/manage', [TourPlannerController::class, 'manage'])->name('tourplanner.manage');
     /* *********************  Manage Tour Planner Ends ********************************* */
 
+    /* *********************  Collections Starts ********************************* */
+    Route::get('/collectionrequests', [TourPlannerController::class, 'collectionrequests'])->name('collectionrequest.index');
+    Route::get('/collections/requests', [TourPlannerController::class, 'getCollectionRequests'])->name('collections.requests');
+    Route::post('/collections/vehicle-details', [TourPlannerController::class, 'submitVehicleDetails'])->name('collections.submitVehicleDetails');
+    Route::get('/collections/manage', [TourPlannerController::class, 'collectionsManage'])->name('collections.manage');
+    Route::get('/collections/submitted', [TourPlannerController::class, 'getCollectionSubmitted'])->name('collections.submitted');
+    /* *********************  Collections Ends ********************************* */
+
 
     Route::get('/dashboard/getDashboardData', [DashboardController::class, 'getDashboardData'])->name('dashboard.getDashboardData');
 

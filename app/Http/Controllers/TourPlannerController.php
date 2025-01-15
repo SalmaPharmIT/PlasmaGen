@@ -597,4 +597,306 @@ class TourPlannerController extends Controller
         }
     }
 
+
+    /**
+         * Show the TP Collection Requests to Logistics Admin.
+         *
+         * @return \Illuminate\View\View
+    */
+    public function collectionrequests()
+    {
+        return view('tourplanner.collectionrequests');
+    }
+
+
+    /**
+     * API Endpoint to Fetch Collection Requests.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getCollectionRequests()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.collection_requests_all_url');
+
+        if (!$apiUrl) {
+            Log::error('Collection Requests fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Collection Requests fetch URL is not configured.'
+            ], 500);
+        }
+
+        Log::info('Fetching Collection Requests from external API.', ['api_url' => $apiUrl]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                Log::warning('External API Collection Requests apiResponse', ['apiResponse' => $apiResponse]);
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch collection requests from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch collection requests  from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching collection requests  from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching collection requests.',
+            ], 500);
+        }
+    }
+
+    /**
+     * API Endpoint to Submit Vehicle Details
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function submitVehicleDetails(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'collection_request_id' => 'required|integer|exists:tour_plan,id',
+            'vehicle_number' => 'required|string|max:50',
+            'driver_name' => 'required|string|max:100',
+            'contact_number' => 'required|string|max:15',
+            'email_id' => 'nullable|string',
+            'alternate_mobile_no' => 'nullable|string|max:15',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        // Retrieve the API token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for submitting vehicle details
+        $apiUrl = config('auth_api.vehicle_details_submit_url'); // Ensure this is set in your config
+
+        if (!$apiUrl) {
+            Log::error('Vehicle Details Submit URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Vehicle Details Submit URL is not configured.'
+            ], 500);
+        }
+
+         // Step 3: Map form fields to transport_details table fields
+         $transportData = [
+            'collection_request_id' => $validatedData['collection_request_id'],
+            'vehicle_number' => $validatedData['vehicle_number'],
+            'driver_name' => $validatedData['driver_name'],
+            'contact_number' => $validatedData['contact_number'],
+            'alternative_contact_number' => $validatedData['alternate_mobile_no'] ?? null,
+            'email_id' => $validatedData['email_id'],
+            'remarks' => $validatedData['remarks'] ?? null,
+            'created_by' => Auth::id(), // assuming user is authenticated
+           // 'modified_by' => Auth::id(),
+        ];
+
+        Log::info('Vehicle Details Request external API.', ['transportData' => $transportData]);
+
+
+        try {
+            // Send the data to the external API
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->post($apiUrl, $transportData);
+
+            Log::info('External API Response for Vehicle Details Submission', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => Arr::get($apiResponse, 'message', 'Vehicle details submitted successfully.')
+                    ]);
+                } else {
+                    Log::warning('External API returned failure for Vehicle Details Submission.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.')
+                    ]);
+                }
+            } else {
+                Log::error('Failed to submit vehicle details via external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to submit vehicle details via the external API.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while submitting vehicle details via external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while submitting vehicle details.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Show the TP Collection Requests Manageto Logistics Admin.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function collectionsManage()
+    {
+        return view('tourplanner.collectionsmanage');
+    }
+
+    /**
+     * API Endpoint to Fetch Collection Submitted.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getCollectionSubmitted(Request $request)
+    {
+
+        // Retrieve filter parameters from the request
+        $agentId = $request->input('agent_id');
+        $month = $request->input('month'); // Expected format: YYYY-MM
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.collection_submitted_all_url');
+
+        if (!$apiUrl) {
+            Log::error('Collection Submitted fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Collection Submitted fetch URL is not configured.'
+            ], 500);
+        }
+
+        Log::info('Fetching Collection Submitted from external API.', ['api_url' => $apiUrl]);
+
+        try {
+
+            // Build query parameters
+            $queryParams = [];
+
+            if ($agentId) {
+                $queryParams['agent_id'] = $agentId;
+            }
+
+            if ($month) {
+                $queryParams['month'] = $month;
+            }
+
+            // Log the data being sent
+            Log::info('Fetch Collection Submitted request API', [
+                'data' => $queryParams,
+            ]);
+
+            // Send the GET request with query parameters
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                Log::warning('External API Collection Submitted apiResponse', ['apiResponse' => $apiResponse]);
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch collection Submitted from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch collection Submitted  from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching collection Submitted  from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching collection Submitted.',
+            ], 500);
+        }
+    }
+
 }

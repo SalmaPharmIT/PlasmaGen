@@ -146,54 +146,6 @@
 
 @push('styles')
     <style>
-        /* Base Calendar Styles */
-        #tourCalendar {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        .fc {
-            max-width: 100%;
-        }
-
-        /* Override FullCalendar Text Colors to Black */
-        #tourCalendar .fc {
-            color: black;
-        }
-
-        #tourCalendar .fc-daygrid-day-number {
-            color: black;
-        }
-
-        #tourCalendar .fc-event-title {
-            color: black;
-        }
-
-        #tourCalendar .fc a {
-            color: black;
-        }
-
-        #tourCalendar .fc-toolbar-title {
-            color: black;
-        }
-
-        #tourCalendar .fc-col-header-cell-cushion {
-            color: #012970 !important;
-        }
-
-        /* Optional: Event Background and Hover Colors */
-        #tourCalendar .fc-event {
-            background-color: #28a745; /* Bootstrap Success Color */
-            border: none;
-        }
-
-        #tourCalendar .fc-event:hover {
-            background-color: #218838; /* Darker Green on Hover */
-        }
-
-        #tourCalendar .fc-daygrid-day-frame {
-            color: black;
-        }
-
         /* Enhance Select2 Dropdowns to Match Bootstrap */
         .select2-container--default .select2-selection--single {
             height: 38px; /* Match Bootstrap's .form-control height */
@@ -223,25 +175,6 @@
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
         }
 
-        /* Target all disabled day grid cells */
-        .fc-day-disabled.fc-daygrid-day {
-            background-color: white !important; /* Set background to white */
-        }
-
-        /* Optional: Ensure the day number remains visible */
-        .fc-day-disabled.fc-daygrid-day .fc-daygrid-day-number {
-            color: black !important; /* Set text color to black */
-        }
-
-        /* Optional: Disable pointer events to prevent interaction */
-        .fc-day-disabled.fc-daygrid-day {
-            pointer-events: none;
-        }
-
-        /* Optional: Add a subtle hover effect */
-         .fc-day-disabled.fc-daygrid-day:hover {
-            background-color: #f8f9fa; /* Light gray on hover */
-        } 
 
          /* === New CSS for Accordion to Match Calendar Width === */
         /* Ensure the accordion fits within the parent container */
@@ -278,17 +211,6 @@
 @endpush
 
 @push('scripts')
-    <!-- jQuery (Required for Select2 and your custom scripts) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+xOHOol+R4m4kT+PgCDjK6F/zuHgI3V4UGRj5ho=" crossorigin="anonymous"></script>
-    
-    <!-- Bootstrap Bundle JS (Includes Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Select2 JS (Ensure you have included Select2 CSS in your layout) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    
-    <!-- SweetAlert2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Your Custom Scripts -->
     <script>

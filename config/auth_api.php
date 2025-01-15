@@ -56,4 +56,8 @@ return [
     'dashbaord_web_url' =>  $base_url . 'dashbaord_web.php',
     'roles_fetch_all_url' =>  $base_url . 'roles_fetch_all.php',
     'pending_documents_fetch_all_url' =>  $base_url . 'pending_documents_fetch_all.php',
+
+    'collection_requests_all_url' =>  $base_url . 'collection_requests_all.php',
+    'vehicle_details_submit_url' =>  $base_url . 'vehicle_details_submit.php',
+    'collection_submitted_all_url' =>  $base_url . 'collection_submitted_all.php',
 ];
