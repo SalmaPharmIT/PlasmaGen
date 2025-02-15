@@ -193,4 +193,83 @@ class CityMasterController extends Controller
         }
     }
 
+
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'name'      => 'required|string|max:255',
+            'state_id'  => 'required|exists:states,id',
+            'pin_code'  => 'required|string|max:10',
+            'latitude'  => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        $token = $request->session()->get('api_token');
+        if (!$token) {
+            return redirect()->back()->withErrors(['Authentication token missing. Please log in again.']);
+        }
+
+        $postData = [
+            'id'        => $id,
+            'name'      => strtolower(trim($validatedData['name'])),
+            'state_id'  => intval($validatedData['state_id']),
+            'pin_code'  => trim($validatedData['pin_code']),
+            'latitude'  => isset($validatedData['latitude']) ? floatval($validatedData['latitude']) : null,
+            'longitude' => isset($validatedData['longitude']) ? floatval($validatedData['longitude']) : null,
+        ];
+
+        $apiUrl = config('auth_api.update_city_url') . '/' . $id;
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ])->put($apiUrl, $postData);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success')) {
+                    return redirect()->route('citymaster.index')->with('success', 'City updated successfully.');
+                } else {
+                    return redirect()->back()->withErrors([Arr::get($apiResponse, 'message', 'Failed to update city.')]);
+                }
+            } else {
+                return redirect()->back()->withErrors(['Failed to update city. Please try again.']);
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['Failed to update city. Please try again.']);
+        }
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $token = $request->session()->get('api_token');
+        if (!$token) {
+            return response()->json(['success' => false, 'message' => 'Authentication token missing.'], 401);
+        }
+
+        $apiUrl = config('auth_api.delete_city_url') . '/' . $id;
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json'
+            ])->delete($apiUrl, ['id' => $id]);
+            
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json(['success' => true, 'message' => 'City deleted successfully.']);
+                } else {
+                    return response()->json(['success' => false, 'message' => Arr::get($apiResponse, 'message', 'Failed to delete city.')]);
+                }
+            } else {
+                return response()->json(['success' => false, 'message' => 'Failed to delete city.'], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'An error occurred while deleting the city.'], 500);
+        }
+    }
+
 }

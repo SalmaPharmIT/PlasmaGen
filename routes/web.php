@@ -9,6 +9,7 @@ use App\Http\Controllers\BloodBankController;
 use App\Http\Controllers\CityMasterController;
 use App\Http\Controllers\TourPlannerController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\ReportVisitsController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -93,6 +94,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/citymaster', [CityMasterController::class, 'index'])->name('citymaster.index');
     Route::get('/api/cities', [CityMasterController::class, 'getCities'])->name('api.cities');
     Route::post('/citymaster', [CityMasterController::class, 'store'])->name('citymaster.store');
+    Route::put('/citymaster/{id}', [CityMasterController::class, 'update'])->name('citymaster.update');
+    Route::delete('/citymaster/{id}', [CityMasterController::class, 'destroy'])->name('citymaster.destroy');
+
+    Route::get('/entities/features', [EntityController::class, 'entityFeatures'])->name('entities.features');
+    Route::put('/entities/features/update', [EntityController::class, 'updateFeatureSettings'])->name('entities.features.update');
     /* *********************   Masters for Admin Ends ********************************* */
 
 
@@ -109,6 +115,16 @@ Route::group(['middleware' => ['auth']], function () {
 
     /* *********************  Manage Tour Planner Starts ********************************* */
     Route::get('/tourplanner/manage', [TourPlannerController::class, 'manage'])->name('tourplanner.manage');
+    // Route::get('/tourplanner/dcr', [TourPlannerController::class, 'dcrRequests'])->name('tourplanner.dcr');
+    Route::get('/tourplanner/getDCRApprovals', [TourPlannerController::class, 'getDCRApprovals'])->name('tourplanner.getDCRApprovals');
+    Route::get('/tourplanner/dcr-details/{id}', [TourPlannerController::class, 'showDCRDetails'])->name('tourplanner.dcr-details');
+    Route::post('/tourplanner/dcr/{id}/update-status', [TourPlannerController::class, 'updateStatus'])->name('tourplanner.dcr.updateStatus');
+
+    Route::get('/tourplanner/finalDCR', [TourPlannerController::class, 'finalDCRRequests'])->name('tourplanner.finalDCR');
+    Route::get('/tourplanner/getFinalDCRApprovals', [TourPlannerController::class, 'getFinalDCRApprovals'])->name('tourplanner.getFinalDCRApprovals');
+    Route::get('/tourplanner/dcrVisit-details/{id}', [TourPlannerController::class, 'showFinalDCRVisitDetails'])->name('tourplanner.dcrVisit-details');
+    Route::get('/tourplanner/dcrVisits', [TourPlannerController::class, 'dcrVisits'])->name('tourplanner.dcrVisits');
+    Route::get('/tourplanner/dcrStatus', [TourPlannerController::class, 'dcrStatusFetch'])->name('tourplanner.dcrStatus');
     /* *********************  Manage Tour Planner Ends ********************************* */
 
     /* *********************  Collections Starts ********************************* */
@@ -121,6 +137,17 @@ Route::group(['middleware' => ['auth']], function () {
 
 
     Route::get('/dashboard/getDashboardData', [DashboardController::class, 'getDashboardData'])->name('dashboard.getDashboardData');
+
+
+    /* *********************  Report Visits Starts ********************************* */
+    Route::get('/visits', [ReportVisitsController::class, 'index'])->name('visits.index');
+    Route::get('/visits/view/{date}', [ReportVisitsController::class, 'showView'])->name('visits.view');
+    Route::get('/api/visits/{date}', [ReportVisitsController::class, 'fetchVisits'])->name('visits.fetch');
+    Route::get('/visits/getFeatureSettings', [ReportVisitsController::class, 'entityFeatures'])->name('visits.getFeatureSettings');
+    Route::post('/visits/custom_update', [ReportVisitsController::class, 'updateVisit'])->name('visits.custom_update');
+    Route::post('/visits/custom_sourcing_update', [ReportVisitsController::class, 'sourcingDCRSubmit'])->name('visits.custom_sourcing_update');
+    Route::post('/visits/finalDCRsubmit', [ReportVisitsController::class, 'finalDCRsubmit'])->name('visits.finalDCRsubmit');
+    /* *********************  Report Visits Ends ********************************* */
 
     // Other registration routes...
 });

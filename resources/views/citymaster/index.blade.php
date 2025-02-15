@@ -64,6 +64,7 @@
                   <th>Pin Code</th>
                   <th>Latitude</th>
                   <th>Longitude</th>
+                  <th>Action</th>
                   {{-- <th>Created By</th>
                   <th>Modified By</th> --}}
                 </tr>
@@ -164,11 +165,91 @@
   </div>
   <!-- End Add City Modal -->
 
+
+
+<!-- Edit City Modal -->
+<div class="modal fade" id="editCityModal" tabindex="-1" aria-labelledby="editCityModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCityModalLabel">Edit City</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editCityForm" class="row g-3 needs-validation" method="POST" enctype="multipart/form-data" novalidate>
+          @csrf
+          @method('PUT')
+          <input type="hidden" name="city_id" id="edit_city_id">
+          <div class="row g-3">
+            <!-- City Name -->
+            <div class="col-md-6">
+              <label for="edit_city_name" class="form-label">City Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="edit_city_name" name="name" required>
+              <div class="invalid-feedback">
+                Please enter the city name.
+              </div>
+            </div>
+            <!-- State -->
+            <div class="col-md-6">
+              <label for="edit_state_id" class="form-label">State <span class="text-danger">*</span></label>
+              <select id="edit_state_id" name="state_id" class="form-select select2" required>
+                  <option value="">Choose State</option>
+                  @foreach($states as $state)
+                      <option value="{{ $state->id }}">{{ $state->name }}</option>
+                  @endforeach
+              </select>
+              <div class="invalid-feedback">
+                Please select a state.
+              </div>
+            </div>
+            <!-- Pin Code -->
+            <div class="col-md-6">
+              <label for="edit_pin_code" class="form-label">Pin Code <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="edit_pin_code" name="pin_code" required>
+              <div class="invalid-feedback">
+                Please enter the pin code.
+              </div>
+            </div>
+            <!-- Latitude -->
+            <div class="col-md-6">
+              <label for="edit_latitude" class="form-label">Latitude</label>
+              <input type="number" step="0.000001" class="form-control" id="edit_latitude" name="latitude">
+              <div class="invalid-feedback">
+                Please enter a valid latitude.
+              </div>
+            </div>
+            <!-- Longitude -->
+            <div class="col-md-6">
+              <label for="edit_longitude" class="form-label">Longitude</label>
+              <input type="number" step="0.000001" class="form-control" id="edit_longitude" name="longitude">
+              <div class="invalid-feedback">
+                Please enter a valid longitude.
+              </div>
+            </div>
+            <!-- Submit and Cancel Buttons -->
+            <div class="col-12 text-center">
+              <button type="submit" class="btn btn-primary">Update</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End Edit City Modal -->
+
+
 @endsection
 
 @push('scripts')
 <script>
     $(document).ready(function() {
+
+       // Create a URL template for updating a city with a placeholder for the id
+      var updateUrlTemplate = "{{ route('citymaster.update', ['id' => ':id']) }}";
+      var destroyUrlTemplate = "{{ route('citymaster.destroy', ['id' => ':id']) }}";
+
         // Initialize DataTable
         var table = $('#citiesTable').DataTable({
             responsive: true,
@@ -196,12 +277,32 @@
                 { 
                     data: 'state',
                     render: function(data, type, row) {
-                        return data?.name || 'N/A'; // Adjust based on your API response
+                        return data?.state_name  || 'N/A'; // Adjust based on your API response
                     }
                 },
                 { data: 'pin_code', defaultContent: 'N/A' },
                 { data: 'latitude', defaultContent: 'N/A' },
                 { data: 'longitude', defaultContent: 'N/A' },
+                { // Action column
+                    data: null,
+                    orderable: false,
+                    render: function(data, type, row) {
+                        return `
+                           <button class="btn btn-warning btn-sm editCity" 
+                                   data-id="${row.id}" 
+                                   data-name="${row.name}" 
+                                   data-state-id="${row.state_id}"
+                                   data-pin-code="${row.pin_code}" 
+                                   data-latitude="${row.latitude}" 
+                                   data-longitude="${row.longitude}">
+                                <i class="bi bi-pencil-square"></i> Edit
+                           </button>
+                           <button class="btn btn-danger btn-sm deleteCity" data-id="${row.id}">
+                                <i class="bi bi-trash"></i> Delete
+                           </button>
+                        `;
+                    }
+                }
                 // { data: 'created_by', defaultContent: 'N/A' },
                 // { data: 'modified_by', defaultContent: 'N/A' }
             ],
@@ -259,6 +360,89 @@
 
             // Optionally, remove any additional validation feedback
             $(this).find('.invalid-feedback').hide();
+        });
+
+
+
+         // Initialize Select2 for Edit City Modal when shown
+         $('#editCityModal').on('shown.bs.modal', function () {
+            $('#edit_state_id').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Choose State',
+                allowClear: true,
+                dropdownParent: $('#editCityModal')
+            });
+        });
+        $('#editCityModal').on('hidden.bs.modal', function () {
+            $('#edit_state_id').select2('destroy');
+            $(this).find('form')[0].reset();
+            $(this).find('form').removeClass('was-validated');
+        });
+
+        // Edit City button click event
+        $('#citiesTable').on('click', '.editCity', function() {
+            let btn = $(this);
+
+            let cityId = btn.data('id');
+
+            // Replace the placeholder with the actual id
+            let updateUrl = updateUrlTemplate.replace(':id', cityId);
+
+            // Set the form action to the dynamically generated URL
+            $('#editCityForm').attr('action', updateUrl);
+
+            // Fill in the form fields from data attributes
+            $('#edit_city_id').val(btn.data('id'));
+            $('#edit_city_name').val(btn.data('name'));
+            $('#edit_state_id').val(btn.data('state-id')).trigger('change');
+            $('#edit_pin_code').val(btn.data('pin-code'));
+            $('#edit_latitude').val(btn.data('latitude'));
+            $('#edit_longitude').val(btn.data('longitude'));
+            // Set form action (assuming a named route 'citymaster.update')
+            // $('#editCityForm').attr('action', '/citymaster/' + btn.data('id'));
+
+            // Show the edit modal
+            $('#editCityModal').modal('show');
+        });
+
+        // Delete City button click event with confirmation
+        $('#citiesTable').on('click', '.deleteCity', function() {
+            let cityId = $(this).data('id');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you really want to delete this city?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    // Replace the placeholder in the template with the actual id
+                    let deleteUrl = destroyUrlTemplate.replace(':id', cityId);
+
+                    // AJAX call to delete the city (assuming DELETE route 'citymaster.destroy')
+                    $.ajax({
+                        url: deleteUrl,
+                        type: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+                        success: function(response) {
+                            if(response.success) {
+                                Swal.fire('Deleted!', 'City has been deleted.', 'success');
+                                table.ajax.reload(null, false);
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire('Error', 'An error occurred while deleting the city.', 'error');
+                        }
+                    });
+                }
+            });
         });
     });
 </script>

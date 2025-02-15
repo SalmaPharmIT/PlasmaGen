@@ -156,10 +156,10 @@
                   document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#reportsChart"), {
                       series: [{
-                        name: 'Sales',
+                        name: 'Blood Banks',
                         data: [31, 40, 28, 51, 42, 82, 56],
                       }, {
-                        name: 'Revenue',
+                        name: 'Wherehouses',
                         data: [11, 32, 45, 32, 34, 52, 41]
                       }, {
                         name: 'Customers',
@@ -209,10 +209,11 @@
               </div>
 
             </div>
-          </div><!-- End Reports -->
+          </div>
+          <!-- End Reports -->
 
           <!-- Recent Sales -->
-          <div class="col-12">
+          {{-- <div class="col-12">
             <div class="card recent-sales overflow-auto">
 
               <div class="filter">
@@ -283,10 +284,11 @@
               </div>
 
             </div>
-          </div><!-- End Recent Sales -->
+          </div> --}}
+          <!-- End Recent Sales -->
 
           <!-- Top Selling -->
-          <div class="col-12">
+          {{-- <div class="col-12">
             <div class="card top-selling overflow-auto">
 
               <div class="filter">
@@ -357,7 +359,8 @@
               </div>
 
             </div>
-          </div><!-- End Top Selling -->
+          </div> --}}
+          <!-- End Top Selling -->
 
         </div>
       </div><!-- End Left side columns -->
@@ -389,7 +392,7 @@
                 <div class="activite-label">32 min</div>
                 <i class='bi bi-circle-fill activity-badge text-success align-self-start'></i>
                 <div class="activity-content">
-                  Quia quae rerum <a href="#" class="fw-bold text-dark">explicabo officiis</a> beatae
+                  <a href="#" class="fw-bold text-dark">DCR</a> submitted
                 </div>
               </div><!-- End activity item-->
 
@@ -397,7 +400,7 @@
                 <div class="activite-label">56 min</div>
                 <i class='bi bi-circle-fill activity-badge text-danger align-self-start'></i>
                 <div class="activity-content">
-                  Voluptatem blanditiis blanditiis eveniet
+                   Visit updated
                 </div>
               </div><!-- End activity item-->
 
@@ -405,11 +408,11 @@
                 <div class="activite-label">2 hrs</div>
                 <i class='bi bi-circle-fill activity-badge text-primary align-self-start'></i>
                 <div class="activity-content">
-                  Voluptates corrupti molestias voluptatem
+                  <a href="#" class="fw-bold text-dark">Tour Plan</a> created.
                 </div>
               </div><!-- End activity item-->
 
-              <div class="activity-item d-flex">
+              {{-- <div class="activity-item d-flex">
                 <div class="activite-label">1 day</div>
                 <i class='bi bi-circle-fill activity-badge text-info align-self-start'></i>
                 <div class="activity-content">
@@ -430,16 +433,17 @@
                 <i class='bi bi-circle-fill activity-badge text-muted align-self-start'></i>
                 <div class="activity-content">
                   Dicta dolorem harum nulla eius. Ut quidem quidem sit quas
-                </div>
+                </div> --}}
               </div><!-- End activity item-->
 
             </div>
 
           </div>
-        </div><!-- End Recent Activity -->
+        </div>
+        <!-- End Recent Activity -->
 
         <!-- Budget Report -->
-        <div class="card">
+        {{-- <div class="card">
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -510,10 +514,11 @@
             </script>
 
           </div>
-        </div><!-- End Budget Report -->
+        </div> --}}
+        <!-- End Budget Report -->
 
         <!-- Website Traffic -->
-        <div class="card">
+        {{-- <div class="card">
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -588,10 +593,11 @@
             </script>
 
           </div>
-        </div><!-- End Website Traffic -->
+        </div> --}}
+        <!-- End Website Traffic -->
 
         <!-- News & Updates Traffic -->
-        <div class="card">
+        {{-- <div class="card">
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -642,7 +648,8 @@
             </div><!-- End sidebar recent posts-->
 
           </div>
-        </div><!-- End News & Updates -->
+        </div> --}}
+        <!-- End News & Updates -->
 
       </div><!-- End Right side columns -->
 

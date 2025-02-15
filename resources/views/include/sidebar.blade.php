@@ -66,7 +66,7 @@
      </li><!-- End Components Nav -->
      @endif
 
-    <!-- Tour Planner - Visible to Company Admin (role_id == 2) and Role ID 6 -->
+    <!-- Tour Planner - Visible to Company Admin (role_id == 2) and Role ID 6 RBE-->
     @if (Auth::check() && in_array(Auth::user()->role_id, [2, 6]))
      <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
@@ -81,6 +81,11 @@
         <li>
           <a href="{{ route('tourplanner.manage') }}">
             <i class="bi bi-circle"></i><span>Manage Tour Planner</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ route('tourplanner.finalDCR') }}">
+            <i class="bi bi-circle"></i><span>DCR Approvals</span>
           </a>
         </li>
       </ul>
@@ -110,23 +115,47 @@
       @endif
 
     
-     <!-- Adding masters for admin -->
-     @if (Auth::check() && in_array(Auth::user()->role_id, [1, 2]))
-    <li class="nav-heading">Master Settings</li>
+    <!-- Adding masters for admin -->
+    <!-- Master Settings - Visible to Admin Roles -->
+    @if (Auth::check())
+      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
+        <li class="nav-heading">Master Settings</li>
 
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="{{ route('citymaster.index') }}" >
-        <i class="bi bi-geo-alt"></i>
-        <span>City Master</span>
-      </a>
-    </li>
+        <!-- City Master - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2]))
+          <li class="nav-item">
+            <a class="nav-link collapsed" href="{{ route('citymaster.index') }}" >
+              <i class="bi bi-geo-alt"></i>
+              <span>City Master</span>
+            </a>
+          </li>
+        @endif
+
+        <!-- Entity Features - Visible Only to Role ID 2 -->
+        @if (Auth::user()->role_id == 2)
+          <li class="nav-item">
+            <a class="nav-link collapsed" href="{{ route('entities.features') }}" >
+              <i class="bi bi-gear"></i>
+              <span>Entity Features</span>
+            </a>
+          </li>
+        @endif
+      @endif
     @endif
+
+
+     <!-- Role ID 9 Collecting/Sourcing Agents-->
+     @if (Auth::user()->role_id == 9)
+     <li class="nav-item">
+       <a class="nav-link collapsed" href="{{ route('visits.index') }}" >
+         <i class="bi bi-calendar2-week"></i>
+         <span>Report Visits</span>
+       </a>
+     </li>
+   @endif
  
 
    <!-- Add more sidebar items as needed -->
-
-    
-
 
     <li class="nav-heading">Settings</li>
 

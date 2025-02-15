@@ -350,6 +350,7 @@
                         d.month = $('#monthPicker').val();
                     },
                     dataSrc: function(json) {
+                      console.log('submitted', json);
                         if(json.success) {
                             return json.data;
                         } else {

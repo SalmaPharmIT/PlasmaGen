@@ -118,7 +118,8 @@
             <div class="mb-3 sourcing-fields" style="display: none;">
               <strong>City:</strong> <span id="detailCity">N/A</span>
             </div>
-          
+
+            
             <!-- Common Fields Continued -->
             <div class="mb-3">
               <strong>Status:</strong> <span id="detailStatus">N/A</span>
@@ -141,6 +142,259 @@
       </div>
     </div>
   </div>
+
+  <!-- View DCR Details Modal -->
+<div class="modal fade" id="viewDCRVisitModal" tabindex="-1" aria-labelledby="viewDCRVisitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl"> <!-- Increased size for better visibility -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">DCR Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Visit Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header text-black">
+                        <h5 class="mb-0"><strong>Visit Information</strong></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 mt-3">
+                            <!-- Blood Bank -->
+                            <div class="col-md-4">
+                                <strong>Blood Bank:</strong>
+                                <p id="view_bloodBankDisplay">N/A</p>
+                            </div>
+                            <!-- Planned Quantity -->
+                            <div class="col-md-4">
+                                <strong>Planned Quantity:</strong>
+                                <p id="view_plannedQuantityDisplay">N/A</p>
+                            </div>
+                            <!-- Time -->
+                            <div class="col-md-4">
+                                <strong>Time:</strong>
+                                <p id="view_timeDisplay">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Available Quantity -->
+                            <div class="col-md-4">
+                                <strong>Available Quantity:</strong>
+                                <p id="view_availableQuantityDisplay">N/A</p>
+                            </div>
+                            <!-- Remaining Quantity -->
+                            <div class="col-md-4">
+                                <strong>Remaining Quantity:</strong>
+                                <p id="view_remainingQuantityDisplay">N/A</p>
+                            </div>
+                            <!-- Price -->
+                            <div class="col-md-4">
+                                <strong>Price:</strong>
+                                <p id="view_priceDisplay">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Remarks -->
+                            <div class="col-md-4">
+                                <strong>Remarks:</strong>
+                                <p id="view_tpRemarksDisplay">N/A</p>
+                            </div>
+                            <!-- Pending Documents -->
+                            <div class="col-md-4">
+                                <strong>Pending Documents:</strong>
+                                <p id="view_pendingDocumentsDisplay">None</p>
+                            </div>
+                            <!-- Added By -->
+                            <div class="col-md-4">
+                                <strong>Added By:</strong>
+                                <p id="view_addedByDisplay">N/A</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transport Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header text-black">
+                        <h5 class="mb-0"><strong>Transport Information</strong></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 mt-3">
+                            <!-- Driver Name -->
+                            <div class="col-md-4">
+                                <strong>Driver Name:</strong>
+                                <p id="view_driverNameDisplay">N/A</p>
+                            </div>
+                            <!-- Driver Contact -->
+                            <div class="col-md-4">
+                                <strong>Driver Contact:</strong>
+                                <p id="view_driverContactDisplay">N/A</p>
+                            </div>
+                            <!-- Vehicle Number -->
+                            <div class="col-md-4">
+                                <strong>Vehicle Number:</strong>
+                                <p id="view_vehicleNumberDisplay">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Transport Remarks -->
+                            <div class="col-md-12">
+                                <strong>Remarks:</strong>
+                                <p id="view_driverRemarksDisplay">N/A</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attachments Card -->
+                <div class="card">
+                    <div class="card-header text-black">
+                        <h5 class="mb-0"><strong>DCR Attachments</strong></h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Certificate of Quality -->
+                        <div class="mb-4">
+                            <h6><strong>1. Certificate of Quality</strong></h6>
+                            <div class="d-flex flex-wrap" id="view_certificateOfQualityAttachments">
+                                <!-- Attachments will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Donor Report -->
+                        <div class="mb-4">
+                            <h6><strong>2. Donor Report</strong></h6>
+                            <div class="d-flex flex-wrap" id="view_donorReportAttachments">
+                                <!-- Attachments will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Invoice Copy -->
+                        <div class="mb-4">
+                            <h6><strong>3. Invoice Copy</strong></h6>
+                            <div class="d-flex flex-wrap" id="view_invoiceCopyAttachments">
+                                <!-- Attachments will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Pending Documents -->
+                        <div class="mb-4">
+                            <h6><strong>4. Pending Documents</strong></h6>
+                            <div class="d-flex flex-wrap" id="view_pendingDocumentsAttachments">
+                                <!-- Attachments will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <!-- Close Button -->
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Sourcing DCR Details Modal -->
+<div class="modal fade" id="viewSourcingDCRVisitModal" tabindex="-1" aria-labelledby="viewSourcingDCRVisitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl"> <!-- Adjust size as needed -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">DCR Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Sourcing Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header text-black">
+                        <h5 class="mb-0"><strong>Sourcing Information</strong></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3 mt-3">
+                            <!-- Sourcing City -->
+                            <div class="col-md-4">
+                                <strong>Sourcing City:</strong>
+                                <p id="sourcing_city_name_display">N/A</p>
+                            </div>
+                            <!-- Sourcing Blood Bank Name -->
+                            <div class="col-md-4">
+                                <strong>Sourcing Blood Bank Name:</strong>
+                                <p id="sourcing_blood_bank_name_display">N/A</p>
+                            </div>
+                            <!-- Contact Person Name -->
+                            <div class="col-md-4">
+                                <strong>Contact Person Name:</strong>
+                                <p id="sourcing_contact_person_display">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Mobile No -->
+                            <div class="col-md-4">
+                                <strong>Mobile No:</strong>
+                                <p id="sourcing_mobile_number_display">N/A</p>
+                            </div>
+                            <!-- Email -->
+                            <div class="col-md-4">
+                                <strong>Email:</strong>
+                                <p id="sourcing_email_display">N/A</p>
+                            </div>
+                            <!-- Address -->
+                            <div class="col-md-4">
+                                <strong>Address:</strong>
+                                <p id="sourcing_address_display">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- FFP Procurement Company -->
+                            <div class="col-md-4">
+                                <strong>FFP Procurement Company:</strong>
+                                <p id="sourcing_ffp_company_display">N/A</p>
+                            </div>
+                            <!-- Current Plasma Price/Ltr -->
+                            <div class="col-md-4">
+                                <strong>Current Plasma Price/Ltr:</strong>
+                                <p id="sourcing_plasma_price_display">N/A</p>
+                            </div>
+                            <!-- Potential Per Month -->
+                            <div class="col-md-4">
+                                <strong>Potential Per Month:</strong>
+                                <p id="sourcing_potential_per_month_display">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Payment Terms -->
+                            <div class="col-md-4">
+                                <strong>Payment Terms:</strong>
+                                <p id="sourcing_payment_terms_display">N/A</p>
+                            </div>
+                            <!-- Remarks -->
+                            <div class="col-md-4">
+                                <strong>Remarks:</strong>
+                                <p id="sourcing_remarks_display">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Status -->
+                            <div class="col-md-4">
+                                <strong>Status:</strong>
+                                <p id="sourcing_status_display">N/A</p>
+                            </div>
+                            <!-- Added By -->
+                            <div class="col-md-4">
+                                <strong>Added By:</strong>
+                                <p id="sourcing_added_by_display">N/A</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <!-- Close Button -->
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @endsection
 
@@ -205,6 +459,37 @@
         @media (max-width: 576px) {
             .accordion-button {
                 font-size: 0.9rem;
+            }
+        }
+
+         /* Attachment Container Styling */
+         .attachment-container a {
+            margin-right: 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .attachment-container img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+        .attachment-container img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Optional: Add cursor pointer to attachments */
+        .attachment-container a img {
+            cursor: pointer;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 767.98px) {
+            .attachment-container img {
+                width: 80px;
+                height: 80px;
             }
         }
     </style>
@@ -419,11 +704,39 @@
                     var eventTime =  formatTime(event.time);
                   //  var eventTime = event.extendedProps.time ? formatTime(event.extendedProps.time) : 'All Day';
                     var eventStatus = event.extendedProps.status ? event.extendedProps.status.charAt(0).toUpperCase() + event.extendedProps.status.slice(1) : 'N/A';
-                    var tourPlanType = event.extendedProps.tour_plan_type === 1 ? 'Collections' : (event.extendedProps.tour_plan_type === 2 ? 'Sourcing' : 'N/A');
+                   // var tourPlanType = event.extendedProps.tour_plan_type === 1 ? 'Collections' : (event.extendedProps.tour_plan_type === 2 ? 'Sourcing' : 'N/A');
 
+                    var tourPlanType = 'N/A';
+                    if(event.extendedProps.tour_plan_type === 1) {
+                        tourPlanType = 'Collections';
+                    }
+                    else  if(event.extendedProps.tour_plan_type === 2) {
+                        tourPlanType = 'Sourcing';
+                    }
+                    else  if(event.extendedProps.tour_plan_type === 3) {
+                        tourPlanType = 'Both';
+                    }
+                    else {
+                        tourPlanType = 'N/A'; 
+                    }
+              
                     // Conditionally include 'Time' only for Collections
                     var timeHtml = (tourPlanType === 'Collections') ? `<small>Time: ${eventTime}</small>` : '';
 
+                    // Check if status is "dcr_submitted" to show the "View DCR Details" button
+                    var viewDCRButton = '';
+                    if (event.extendedProps.status === 'dcr_submitted' && event.extendedProps.tour_plan_type === 1 ) {
+                        viewDCRButton = `<button class="btn btn-sm btn-info mt-2 view-dcr-btn" data-event='${JSON.stringify(event)}'>
+                                            View DCR Details
+                                        </button>`;
+                    }
+                   
+                    if (event.extendedProps.status === 'dcr_submitted' && event.extendedProps.tour_plan_type === 2 ) {
+                        viewDCRButton = `<button class="btn btn-sm btn-info mt-2 view-sourcing-dcr-btn" data-event='${JSON.stringify(event)}'>
+                                            View DCR Details
+                                        </button>`;
+                    }
+                    
 
                     html += `
                         <a href="javascript:void(0)" class="list-group-item list-group-item-action flex-column align-items-start event-item" 
@@ -450,6 +763,7 @@
                                 ${timeHtml}
                             </div>
                             <p class="mb-1 event-details">Status: ${eventStatus} | Type: ${tourPlanType}</p>
+                              ${viewDCRButton}
                         </a>
                     `;
                 });
@@ -468,6 +782,9 @@
                     eventColor = '#28a745'; // Green
                 } else if(event.extendedProps.tour_plan_type === 2) { // Sourcing
                     eventColor = '#007bff'; // Blue
+                }
+                else if(event.extendedProps.tour_plan_type === 3) { // Both
+                    eventColor = '#a569bd'; // Blue
                 }
 
                 return eventColor;
@@ -564,7 +881,19 @@
                     $('#detailLongitude').text('N/A'); // Not applicable
                     $('#detailCity').text(eventCity || 'N/A');
                     $('#detailPendingDocuments').empty(); // Clear for sourcing
-                } else {
+                } else if(tourPlanType === 'Both') {
+                    $('.collection-fields').show();
+                    $('.sourcing-fields').show();
+
+                    $('#detailQuantity').text(eventQuantity || 'N/A');
+                    $('#detailAvailableQuantity').text(eventAvailableQuantity || 'N/A');
+                    $('#detailRemainingQuantity').text(eventRemainingQuantity || 'N/A');
+                    $('#detailLatitude').text(eventLatitude || 'N/A');
+                    $('#detailLongitude').text(eventLongitude || 'N/A');
+                    $('#detailPendingDocuments').html(pendingDocumentsHtml);
+                    $('#detailCity').text(eventCity || 'N/A');
+                }
+                else {
                     // If Tour Plan Type is undefined or 'N/A', hide all conditional fields
                     $('.collection-fields').hide();
                     $('.sourcing-fields').hide();
@@ -584,6 +913,154 @@
                 // Show the modal
                 $('#viewTourPlanModal').modal('show');
             });
+
+             // Handle Click on "View DCR Details" Button
+             $(document).on('click', '.view-dcr-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent the event from bubbling up to the parent <a> tag
+
+                // Retrieve the event data from the button's data-event attribute
+                var eventData = $(this).data('event');
+
+                if (!eventData) {
+                    Swal.fire('Error', 'No event data available.', 'error');
+                    return;
+                }
+
+                // Populate the DCR Modal with event data
+                populateViewDCRModal(eventData);
+
+                // Show the DCR Modal
+                $('#viewDCRVisitModal').modal('show');
+            });
+
+            $(document).on('click', '.view-sourcing-dcr-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent the event from bubbling up to the parent <a> tag
+
+                // Retrieve the event data from the button's data-event attribute
+                var eventData = $(this).data('event');
+
+                if (!eventData) {
+                    Swal.fire('Error', 'No event data available.', 'error');
+                    return;
+                }
+
+                // Populate the DCR Modal with event data
+                populateViewSourcingDCRModal(eventData);
+
+                // Show the DCR Modal
+                $('#viewSourcingDCRVisitModal').modal('show');
+            });
+
+             // Function to populate the View Sourcing DCR Details Modal
+            function populateViewSourcingDCRModal(visit) {
+                // Safely access 'extendedProps'
+                const extendedProps = visit.extendedProps || {};
+
+                // Populate Sourcing Information
+                $('#sourcing_city_name_display').text(extendedProps.sourcing_city_name || 'N/A');
+                $('#sourcing_blood_bank_name_display').text(extendedProps.sourcing_blood_bank_name || 'N/A');
+                $('#sourcing_contact_person_display').text(extendedProps.sourcing_contact_person || 'N/A');
+                $('#sourcing_mobile_number_display').text(extendedProps.sourcing_mobile_number || 'N/A');
+                $('#sourcing_email_display').text(extendedProps.sourcing_email || 'N/A');
+                $('#sourcing_address_display').text(extendedProps.sourcing_address || 'N/A');
+                $('#sourcing_ffp_company_display').text(extendedProps.sourcing_ffp_company || 'N/A');
+                $('#sourcing_plasma_price_display').text(extendedProps.sourcing_plasma_price !== null ? extendedProps.sourcing_plasma_price : 'N/A');
+                $('#sourcing_potential_per_month_display').text(extendedProps.sourcing_potential_per_month !== null ? extendedProps.sourcing_potential_per_month : 'N/A');
+                $('#sourcing_payment_terms_display').text(extendedProps.sourcing_payment_terms || 'N/A');
+                $('#sourcing_remarks_display').text(extendedProps.sourcing_remarks || 'N/A');
+                $('#sourcing_status_display').text(extendedProps.status || 'N/A');
+                $('#sourcing_added_by_display').text(extendedProps.created_by_name || 'N/A');
+
+            }
+
+            // Function to populate the View DCR Details Modal
+            function populateViewDCRModal(event) {
+                console.log("populateViewDCRModal");
+                console.log(event);
+                // Safely access 'extendedProps'
+                const extendedProps = event.extendedProps || {};
+
+                // Populate Visit Information
+                $('#view_bloodBankDisplay').text(extendedProps.blood_bank_name || 'N/A');
+                $('#view_plannedQuantityDisplay').text(extendedProps.quantity !== null ? extendedProps.quantity : '0');
+                $('#view_availableQuantityDisplay').text(extendedProps.available_quantity !== null ? extendedProps.available_quantity : '0');
+                $('#view_remainingQuantityDisplay').text(extendedProps.remaining_quantity !== null ? extendedProps.remaining_quantity : '0');
+                $('#view_priceDisplay').text(extendedProps.price !== null ? extendedProps.price : 'N/A');
+                $('#view_timeDisplay').text(event.time || 'N/A');
+                $('#view_tpRemarksDisplay').text(extendedProps.remarks || 'N/A');
+                $('#view_pendingDocumentsDisplay').text(
+                    event.pending_document_names && event.pending_document_names.length > 0 
+                        ? event.pending_document_names.join(', ') 
+                        : 'None'
+                );
+                $('#view_addedByDisplay').text(extendedProps.created_by_name || 'N/A');
+
+                // Populate Transport Information
+                if(extendedProps.transport_details) {
+                    $('#view_driverNameDisplay').text(extendedProps.transport_details.driver_name || 'N/A');
+                    $('#view_driverContactDisplay').text(extendedProps.transport_details.contact_number || 'N/A');
+                    $('#view_vehicleNumberDisplay').text(extendedProps.transport_details.vehicle_number || 'N/A');
+                    $('#view_driverRemarksDisplay').text(extendedProps.transport_details.remarks || 'N/A');
+                } else {
+                    $('#view_driverNameDisplay').text('N/A');
+                    $('#view_driverContactDisplay').text('N/A');
+                    $('#view_vehicleNumberDisplay').text('N/A');
+                    $('#view_driverRemarksDisplay').text('N/A');
+                }
+
+                // Clear existing attachments
+                $('#view_certificateOfQualityAttachments').empty();
+                $('#view_donorReportAttachments').empty();
+                $('#view_invoiceCopyAttachments').empty();
+                $('#view_pendingDocumentsAttachments').empty();
+
+                // Map attachment_type to their respective sections
+                const attachmentMap = {
+                    1: '#view_certificateOfQualityAttachments',
+                    2: '#view_donorReportAttachments',
+                    3: '#view_invoiceCopyAttachments',
+                    4: '#view_pendingDocumentsAttachments'
+                };
+
+                // Iterate over dcr_attachments and append them to respective sections
+                if(extendedProps.dcr_attachments && extendedProps.dcr_attachments.length > 0) {
+                    extendedProps.dcr_attachments.forEach(function(att) {
+                        const baseImageUrl = "{{ config('auth_api.base_image_url') }}"; // Ensure this config is set correctly
+                        const attachmentURL = baseImageUrl + att.attachment;
+                        const attachmentType = att.attachment_type;
+                        const attachmentSection = attachmentMap[attachmentType];
+
+                        if(attachmentSection) {
+                            // Create the attachment element
+                            let attachmentElement = '';
+
+                            // Determine file type for proper rendering
+                            const fileExtension = att.attachment.split('.').pop().toLowerCase();
+                            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+                            const pdfExtensions = ['pdf'];
+
+                            if(imageExtensions.includes(fileExtension)) {
+                                attachmentElement = `<a href="${attachmentURL}" target="_blank"><img src="${attachmentURL}" alt="Attachment" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px;"></a>`;
+                            } else if(pdfExtensions.includes(fileExtension)) {
+                                attachmentElement = `<a href="${attachmentURL}" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px;"></a>`;
+                            } else {
+                                // For other file types, use a generic icon
+                                attachmentElement = `<a href="${attachmentURL}" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/136/136549.png" alt="File" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px;"></a>`;
+                            }
+
+                            $(attachmentSection).append(attachmentElement);
+                        }
+                    });
+                } else {
+                    // If no attachments, you can choose to display a message or leave it empty
+                    $('#view_certificateOfQualityAttachments').html('<p class="text-muted">No attachments available.</p>');
+                    $('#view_donorReportAttachments').html('<p class="text-muted">No attachments available.</p>');
+                    $('#view_invoiceCopyAttachments').html('<p class="text-muted">No attachments available.</p>');
+                    $('#view_pendingDocumentsAttachments').html('<p class="text-muted">No attachments available.</p>');
+                }
+            }
 
         });
     </script>

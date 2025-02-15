@@ -85,6 +85,10 @@
                   <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeSourcing" value="sourcing">
                   <label class="form-check-label" for="typeSourcing">Sourcing</label>
                 </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeBoth" value="both">
+                    <label class="form-check-label" for="typeBoth">Both</label>
+                  </div>
               </div>
             </div>
 
@@ -148,27 +152,27 @@
                 </div>
               </div>
   
-             <!-- Collections Remarks -->
+             {{-- <!-- Collections Remarks -->
               <div class="mb-3">
                   <label for="tourPlanRemarks" class="form-label">Remarks</label>
                   <textarea class="form-control" id="tourPlanRemarks" name="collections_remarks" rows="2"></textarea>
                   <div class="invalid-feedback">
                   Please enter remarks.
                   </div>
-              </div>
+              </div> --}}
             </div>
             <!-- End Collections Form Section -->
   
             <!-- Sourcing Form Section -->
             <div id="sourcingFields" style="display: none;">
               <!-- Blood Bank Name -->
-              <div class="mb-3">
+              {{-- <div class="mb-3">
                 <label for="sourcingBloodBankName" class="form-label">Blood Bank Name</label>
-                <input type="text" class="form-control" id="sourcingBloodBankName" name="sourcing_blood_bank_name" placeholder="Enter Blood Bank Name" required>
+                <input type="text" class="form-control" id="sourcingBloodBankName" name="sourcing_blood_bank_name" placeholder="Enter Blood Bank Name">
                 <div class="invalid-feedback">
                   Please enter the Blood Bank Name.
                 </div>
-              </div>
+              </div> --}}
   
               <!-- City Dropdown -->
               <div class="mb-3">
@@ -182,16 +186,25 @@
                 </div>
               </div>
   
-              <!-- Sourcing Remarks -->
+              {{-- <!-- Sourcing Remarks -->
               <div class="mb-3">
                   <label for="sourcingRemarks" class="form-label">Remarks</label>
                   <textarea class="form-control" id="sourcingRemarks" name="sourcing_remarks" rows="2"></textarea>
                   <div class="invalid-feedback">
                   Please enter remarks.
                   </div>
-              </div>
+              </div> --}}
             </div>
             <!-- End Sourcing Form Section -->
+
+            <!-- Common Remarks -->
+            <div class="mb-3">
+            <label for="tourPlanRemarks" class="form-label">Remarks</label>
+                <textarea class="form-control" id="tourPlanRemarks" name="remarks" rows="2"></textarea>
+                <div class="invalid-feedback">
+                Please enter remarks.
+                </div>
+            </div>
   
           </div>
   
@@ -337,8 +350,8 @@
         }
 
         /* Enhance Select2 Dropdowns to Match Bootstrap */
-        .select2-container--default .select2-selection--single {
-            height: 38px; /* Match Bootstrap's .form-control height */
+         /*   .select2-container--default .select2-selection--single {
+            height: 38px; 
             padding: 6px 12px;
             border: 1px solid #ced4da;
             border-radius: 0.375rem;
@@ -347,7 +360,7 @@
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 36px;
             right: 10px;
-        }
+        } */
 
         /* Enhance Month Picker */
         #monthPicker {
@@ -385,37 +398,23 @@
             background-color: #f8f9fa; /* Light gray on hover */
         } 
 
-        /* === New CSS to Limit Calendar to 5 Rows === */
-        /* Note: Use with caution as some months naturally require 6 rows */
-        /* Uncomment the following CSS if you still want to limit to 5 rows */
-
-        /*
-        #tourCalendar .fc-daygrid-body table tbody tr:nth-child(6) {
-            display: none !important;
+        .modal-dialog {
+            max-height: 95vh;
+            overflow-y: auto;
+            scrollbar-width: thin; /* Options: auto, thin, none */
         }
 
-        #tourCalendar .fc-daygrid-body {
-            height: auto !important;
+        .select2-container--open {
+            z-index: 9999 !important; /* Ensure it stays above other elements */
         }
 
-        #tourCalendar .fc-daygrid-body table tbody tr {
-            height: 100px;  
-        }
-
-        #tourCalendar .fc-daygrid-body table tbody {
-            overflow: hidden;
-        }
-        */
+       
     </style>
 @endpush
 
 @push('scripts')
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    <!-- Select2 JS (Ensure you have included Select2 CSS and JS in your layout) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <!-- SweetAlert2 JS (Ensure you have included SweetAlert2 in your layout) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function() {
@@ -613,6 +612,21 @@
                     var eventObj = info.event;
                     var tourPlanId = eventObj.id; // Ensure 'id' corresponds to 'tour_plan_id'
 
+                    var planType = eventObj.extendedProps.tour_plan_type;
+                    var planTypeLabel = '';
+
+                    if (planType === 1) {
+                        planTypeLabel = 'Collections';
+                    } else if (planType === 2) {
+                        planTypeLabel = 'Sourcing';
+                    } else if (planType === 3) {
+                        planTypeLabel = 'Both: Collections & Sorcing';
+                    }
+
+                    // Update the modal title to include the plan type
+                    $('#viewTourPlanModalLabel').text('Tour Plan Details (' + planTypeLabel + ')');
+
+
                     // Extract event details from extendedProps
                     var bloodBank = eventObj.extendedProps.blood_bank_name || 'N/A';
                     var collectingAgent = eventObj.extendedProps.collecting_agent_name || 'N/A';
@@ -737,6 +751,8 @@
                                         eventColor = '#28a745'; // Green
                                     } else if(event.extendedProps.tour_plan_type === 2) { // Sourcing
                                         eventColor = '#007bff'; // Blue
+                                    } else if(event.extendedProps.tour_plan_type === 3) { // Both
+                                        eventColor = '#a569bd'; // Purple 
                                     }
 
                                     // Assign color properties
@@ -802,21 +818,27 @@
 
                // Capture remarks based on tour plan type
                 if (tourPlanType === 'collections') {
-                    formData.collections_remarks = $('#tourPlanRemarks').val();
+                    formData.remarks = $('#tourPlanRemarks').val();
                     var pendingDocuments = $('#tourPlanPendingDocuments').val(); // Array of selected IDs
                     formData.pending_documents_id = pendingDocuments; // Add to formData
                 } else if (tourPlanType === 'sourcing') {
-                    formData.sourcing_remarks = $('#sourcingRemarks').val();
+                    formData.remarks = $('#tourPlanRemarks').val();
+                    formData.sourcing_blood_bank_name = $('#sourcingBloodBankName').val();
+                    formData.sourcing_city_id = $('#sourcingCityDropdown').val();
+                } else if (tourPlanType === 'both')  {
+                    formData.remarks = $('#tourPlanRemarks').val();
+                    var pendingDocuments = $('#tourPlanPendingDocuments').val(); // Array of selected IDs
+                    formData.pending_documents_id = pendingDocuments; // Add to formData
                     formData.sourcing_blood_bank_name = $('#sourcingBloodBankName').val();
                     formData.sourcing_city_id = $('#sourcingCityDropdown').val();
                 }
 
                 // If Sourcing, validate additional fields
                 if (tourPlanType === 'sourcing') {
-                    if (!formData.sourcing_blood_bank_name) {
-                        Swal.fire('Warning', 'Please enter the Blood Bank Name for Sourcing.', 'warning');
-                        return;
-                    }
+                    // if (!formData.sourcing_blood_bank_name) {
+                    //     Swal.fire('Warning', 'Please enter the Blood Bank Name for Sourcing.', 'warning');
+                    //     return;
+                    // }
                     if (!formData.sourcing_city_id) {
                         Swal.fire('Warning', 'Please select a city for Sourcing.', 'warning');
                         return;
@@ -827,7 +849,7 @@
                console.log(formData);
 
 
-                // Send AJAX request to save the tour plan
+                // // Send AJAX request to save the tour plan
                 $.ajax({
                     url: "{{ route('tourplanner.saveTourPlan') }}",
                     type: 'POST',
@@ -1064,40 +1086,99 @@
                 var selectedType = $('input[name="tour_plan_type"]:checked').val();
                 console.log("Tour Plan Type Changed to:", selectedType); // Debugging
 
-                if (selectedType === 'sourcing') {
-                     // Hide Collections Fields
-                     $('#collectionsFields').slideUp();
-
-                    // Disable Collections Fields
-                    $('#collectionsFields').find('input, select, textarea').prop('disabled', true);
-
-                    // Show Sourcing Fields with temporary background color
-                    $('#sourcingFields').slideDown();
-
-                    // Enable Sourcing Fields
-                    $('#sourcingFields').find('input, select, textarea').prop('disabled', false);
+                if (selectedType === 'both') {
+                    // Show both sourcing and collections sections without reinitializing
+                    $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                    $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                    
+                    // Clear sourcing fields as needed without reinitializing select2
+                    $('#sourcingBloodBankName').val('');
+                    $('#sourcingCityDropdown').val(null).trigger('change');
 
                     // Load cities if not already loaded
-                    if ($('#sourcingCityDropdown').children().length <= 1) { // Only default option exists
+                    if ($('#sourcingCityDropdown').children().length <= 1) {
+                        loadCities();
+                    }
+                } else if (selectedType === 'sourcing') {
+                    // Hide collections fields and show sourcing fields
+                    $('#collectionsFields').slideUp().find('input, select, textarea').prop('disabled', true);
+                    $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                    if ($('#sourcingCityDropdown').children().length <= 1) {
                         loadCities();
                     }
                 } else {
-                    // Show Collections Fields
-                    $('#collectionsFields').slideDown();
-
-                    // Enable Collections Fields
-                    $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
-
-                    // Hide Sourcing Fields
-                    $('#sourcingFields').slideUp();
-
-                    // Disable Sourcing Fields
-                    $('#sourcingFields').find('input, select, textarea').prop('disabled', true);
-
-                    // Clear Sourcing Fields
+                    // Only collections
+                    $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                    $('#sourcingFields').slideUp().find('input, select, textarea').prop('disabled', true);
+                    // Optionally clear sourcing fields if needed
                     $('#sourcingBloodBankName').val('');
                     $('#sourcingCityDropdown').val(null).trigger('change');
                 }
+
+                // if (selectedType === 'sourcing') {
+                //      // Hide Collections Fields
+                //      $('#collectionsFields').slideUp();
+
+                //     // Disable Collections Fields
+                //     $('#collectionsFields').find('input, select, textarea').prop('disabled', true);
+
+                //     // Show Sourcing Fields with temporary background color
+                //     $('#sourcingFields').slideDown();
+
+                //     // Enable Sourcing Fields
+                //     $('#sourcingFields').find('input, select, textarea').prop('disabled', false);
+
+                //     // Load cities if not already loaded
+                //     if ($('#sourcingCityDropdown').children().length <= 1) { // Only default option exists
+                //         loadCities();
+                //     }
+                // } else if (selectedType === 'collections') {
+                //     // Show Collections Fields
+                //     $('#collectionsFields').slideDown();
+
+                //     // Enable Collections Fields
+                //     $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
+
+                //     // Hide Sourcing Fields
+                //     $('#sourcingFields').slideUp();
+
+                //     // Disable Sourcing Fields
+                //     $('#sourcingFields').find('input, select, textarea').prop('disabled', true);
+
+                //     // Clear Sourcing Fields
+                //     $('#sourcingBloodBankName').val('');
+                //     $('#sourcingCityDropdown').val(null).trigger('change');
+                // }
+                // else if (selectedType === 'both') {
+                //     // Show Sourcing Fields with temporary background color
+                //     $('#sourcingFields').slideDown();
+
+                //     // Enable Sourcing Fields
+                //     $('#sourcingFields').find('input, select, textarea').prop('disabled', false);
+                //      // Show Collections Fields
+                //      $('#collectionsFields').slideDown();
+
+                //     // Enable Collections Fields
+                //     $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
+
+                //     // Clear Sourcing Fields
+                //     $('#sourcingBloodBankName').val('');
+                //     $('#sourcingCityDropdown').val(null).trigger('change');
+
+                //     if (!$('#sourcingCityDropdown').hasClass("select2-hidden-accessible")) {
+                //         $('#sourcingCityDropdown').select2({
+                //             theme: 'bootstrap-5',
+                //             width: '100%',
+                //             placeholder: 'Choose City',
+                //             allowClear: true,
+                //             dropdownParent: $('#addTourPlanModal')
+                //         });
+                //     }
+                //     // Load cities if not already loaded
+                //     if ($('#sourcingCityDropdown').children().length <= 1) { // Only default option exists
+                //         loadCities();
+                //     }
+                // }
             });
 
 

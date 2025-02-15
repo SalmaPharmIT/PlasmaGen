@@ -102,7 +102,7 @@ class BloodBankController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function showRegistrationForm()
+    public function showRegistrationForm(Request $request)
     {
         // Fetch data for dropdowns (entity types, countries, etc.)
         $entityTypes = \App\Models\EntityTypeMaster::all();
@@ -114,8 +114,22 @@ class BloodBankController extends Controller
         $bloodBankTypeId = \App\Models\EntityTypeMaster::where('entity_name', 'Blood Bank')->value('id');
         $warehouseTypeId = \App\Models\EntityTypeMaster::where('entity_name', 'Warehouse')->value('id');
 
+        $id = $request->input('id');
 
-        return view('bloodbank.register', compact('entityTypes', 'countries', 'states', 'cities', 'bloodBankTypeId', 'warehouseTypeId'));
+        $dcrDetails = null;
+
+        if ($id && is_numeric($id)) {
+            $dcrDetails = $this->fetchDCRDetails($id);
+
+            if (!$dcrDetails) {
+                // Optionally, you can redirect back with an error message
+                return redirect()->back()->with('error', 'Failed to fetch DCR details.');
+            }
+        }
+
+
+
+        return view('bloodbank.register', compact('entityTypes', 'countries', 'states', 'cities', 'bloodBankTypeId', 'warehouseTypeId', 'dcrDetails'));
         
     }
 
@@ -523,6 +537,92 @@ class BloodBankController extends Controller
             }
         } catch (\Exception $e) {
             return back()->withErrors(['exception' => 'An error occurred while updating the blood bank details: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    /**
+     * Fetch DCR Details from external API.
+     *
+     * @param int $id
+     * @return array|null
+     */
+    private function fetchDCRDetails($id)
+    {
+        // 1. Validate the input
+        if (!$id || !is_numeric($id)) {
+            Log::warning('Invalid DCR ID provided.', ['id' => $id]);
+            return null;
+        }
+
+        // 2. Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return null;
+        }
+
+        // 3. Define the external API URL for fetching DCR details
+        $apiUrl = config('auth_api.dcr_blood_bank_details_url');
+
+        if (!$apiUrl) {
+            Log::error('DCR details fetch URL not configured.');
+            return null;
+        }
+
+        try {
+            // 4. Build query parameters
+            $queryParams = [
+                'id' => $id,
+            ];
+
+            // 5. Log the request data
+            Log::info('Fetch DCR Details request API', [
+                'data' => $queryParams,
+            ]);
+
+            // 6. Make the API call
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            // 7. Log the API response
+            Log::info('External API Response for DCR Details', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            // 8. Handle successful API response
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success') && is_array(Arr::get($apiResponse, 'data')) && count(Arr::get($apiResponse, 'data')) > 0) {
+                    // Assuming the API returns an array with at least one DCR detail
+                    $dcr = $apiResponse['data'][0];
+                    return $dcr;
+                } else {
+                    // API returned success: false or no data
+                    $message = Arr::get($apiResponse, 'message', 'Failed to fetch DCR details.');
+                    Log::warning('External API returned failure for DCR Details.', ['message' => $message]);
+                    return null;
+                }
+            } else {
+                // API call failed (non-2xx status code)
+                $status = $response->status();
+                $error = $response->body();
+
+                Log::error('Failed to fetch DCR Details from external API.', [
+                    'status' => $status,
+                    'body' => $error,
+                ]);
+
+                return null;
+            }
+        } catch (\Exception $e) {
+            // Handle exceptions, such as network issues
+            Log::error('Exception while fetching DCR Details from external API.', ['error' => $e->getMessage()]);
+            return null;
         }
     }
 

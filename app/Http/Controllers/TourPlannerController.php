@@ -213,26 +213,27 @@ class TourPlannerController extends Controller
         
         // Validate the form data with conditional rules
         $validatedData = $request->validate([
-            'tour_plan_type' => 'required|in:collections,sourcing',
+            'tour_plan_type' => 'required|in:collections,sourcing,both',
 
             // Fields required for Collections
-            'blood_bank_id' => 'nullable|required_if:tour_plan_type,collections|integer|exists:entities,id',
+            'blood_bank_id' => 'nullable|required_if:tour_plan_type,collections|required_if:tour_plan_type,both|integer|exists:entities,id',
             'date' => 'required|date',
-            'time' => 'nullable|required_if:tour_plan_type,collections|date_format:H:i',
+            'time' => 'nullable|required_if:tour_plan_type,collections|required_if:tour_plan_type,both|date_format:H:i',
           //  'collecting_agent_id' => 'nullable|required_if:tour_plan_type,collections|integer|exists:users,id',
             'pending_documents_id' => 'nullable|array',
-            'quantity' => 'nullable|required_if:tour_plan_type,collections|integer|min:1',
+            'quantity' => 'nullable|required_if:tour_plan_type,collections|required_if:tour_plan_type,both|integer|min:1',
 
             // Fields required for Sourcing
-            'sourcing_blood_bank_name' => 'nullable|required_if:tour_plan_type,sourcing|string|max:255',
-            'sourcing_city_id' => 'nullable|required_if:tour_plan_type,sourcing|integer|exists:cities,id',
+            'sourcing_blood_bank_name' => 'nullable|string|max:255',
+            'sourcing_city_id' => 'nullable|required_if:tour_plan_type,sourcing|required_if:tour_plan_type,both|integer|exists:cities,id',
 
             // Common Fields
             'collecting_agent_id' => 'required|integer|exists:users,id',
-            'collections_remarks' => 'nullable|string',
-            'sourcing_remarks' => 'nullable|string',
+            // 'collections_remarks' => 'nullable|string',
+            // 'sourcing_remarks' => 'nullable|string',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
+            'remarks' => 'nullable|string',
         ]);
 
          // Log the data being sent
@@ -269,7 +270,8 @@ class TourPlannerController extends Controller
         $payload = [
             'tour_plan_type' => $validatedData['tour_plan_type'],
             'date' => $validatedData['date'],
-            'remarks' => $validatedData['collections_remarks'] ?? $validatedData['sourcing_remarks'] ?? null,
+           // 'remarks' => $validatedData['collections_remarks'] ?? $validatedData['sourcing_remarks'] ?? null,
+            'remarks' => $validatedData['remarks'] ?? null, // Single common remarks field
             'status' => 'initiated', // default status
             'created_by' => Auth::id(), // assuming user is authenticated
             'collecting_agent_id' => $validatedData['collecting_agent_id'], // **Mapped to employee_id**
@@ -288,7 +290,21 @@ class TourPlannerController extends Controller
         }
 
         if ($validatedData['tour_plan_type'] === 'sourcing') {
-            $payload['sourcing_blood_bank_name'] = $validatedData['sourcing_blood_bank_name'];
+           // $payload['sourcing_blood_bank_name'] = $validatedData['sourcing_blood_bank_name'];
+            $payload['sourcing_city_id'] = $validatedData['sourcing_city_id'];
+        }
+
+        if ($validatedData['tour_plan_type'] === 'both') {
+            $payload['blood_bank_id'] = $validatedData['blood_bank_id'];
+            $payload['time'] = $validatedData['time'];
+            $payload['quantity'] = $validatedData['quantity'];
+           
+            // Convert array to comma-separated string for pending documents
+            if (!empty($validatedData['pending_documents_id'])) {
+                $payload['pending_documents_id'] = implode(',', $validatedData['pending_documents_id']);
+            }
+
+          //  $payload['sourcing_blood_bank_name'] = $validatedData['sourcing_blood_bank_name'];
             $payload['sourcing_city_id'] = $validatedData['sourcing_city_id'];
         }
 
@@ -895,6 +911,717 @@ class TourPlannerController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while fetching collection Submitted.',
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Show the  tour plan DCR Requests list page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function dcrRequests()
+    {
+        return view('tourplanner.dcr');
+    }
+
+    /**
+     * API Endpoint to Fetch DCRApprovals based on filters.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDCRApprovals(Request $request)
+    {
+        // Retrieve filters from the request
+        $agentId = $request->input('agent_id');
+        $month = $request->input('month'); // Expected format: YYYY-MM
+
+        // Validate inputs
+        if (!$month) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Month is required.'
+            ], 400);
+        }
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching calendar events
+        $apiUrl = config('auth_api.dcr_approvals_fetch_all_url');
+
+        if (!$apiUrl) {
+            Log::error('DCR Approvals fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'DCR Approvals fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Build query parameters
+            $queryParams = [
+                'month' => $month,
+            ];
+
+            if ($agentId) {
+                $queryParams['agent_id'] = $agentId;
+            }
+
+            // Log the data being sent
+            Log::info('Fetch DCR Approvals request API', [
+                'data' => $queryParams,
+            ]);
+
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            Log::info('External API Response for DCR Approvals', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    // Assuming the API returns events in FullCalendar-compatible format
+                    return response()->json([
+                        'success' => true,
+                        'events' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure for DCR Approvals.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch DCR Approvals from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch DCR Approvals from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching DCR Approvals from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching DCR Approvals.',
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Display the specified DCR details by fetching data from an external API.
+     *
+     * @param  int  $id
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
+    // public function showDCRDetails($id)
+    // {
+    //     // 1. Validate the input
+    //     if (!$id || !is_numeric($id)) {
+    //         return redirect()->back()->with('error', 'Visit ID is required and must be a valid number.');
+    //     }
+
+    //     // 2. Retrieve the token from the session
+    //     $token = session()->get('api_token');
+
+    //     if (!$token) {
+    //         Log::warning('API token missing in session.');
+    //         return redirect()->back()->with('error', 'Authentication token missing. Please log in again.');
+    //     }
+
+    //     // 3. Define the external API URL for fetching DCR details
+    //     $apiUrl = config('auth_api.dcr_details_url');
+
+    //     if (!$apiUrl) {
+    //         Log::error('DCR details fetch URL not configured.');
+    //         return redirect()->back()->with('error', 'DCR details fetch URL is not configured.');
+    //     }
+
+    //     try {
+    //         // 4. Build query parameters
+    //         $queryParams = [
+    //             'id' => $id,
+    //         ];
+
+    //         // 5. Log the request data
+    //         Log::info('Fetch DCR Details request API', [
+    //             'data' => $queryParams,
+    //         ]);
+
+    //         // 6. Make the API call
+    //         $response = Http::withHeaders([
+    //             'Authorization' => 'Bearer ' . $token,
+    //             'Accept' => 'application/json',
+    //         ])->get($apiUrl, $queryParams);
+
+    //         // 7. Log the API response
+    //         Log::info('External API Response for DCR Details', [
+    //             'status' => $response->status(),
+    //             'body' => $response->body(),
+    //         ]);
+
+    //         // 8. Handle successful API response
+    //         if ($response->successful()) {
+    //             $apiResponse = $response->json();
+
+    //             if (Arr::get($apiResponse, 'success') && is_array(Arr::get($apiResponse, 'data')) && count(Arr::get($apiResponse, 'data')) > 0) {
+    //                 // Assuming the API returns an array with at least one DCR detail
+    //                 $dcr = $apiResponse['data'][0];
+
+    //                 // 9. Determine the tour_plan_type
+    //                 $tourPlanType = Arr::get($dcr, 'extendedProps.tour_plan_type');
+
+    //                 if ($tourPlanType == 1) {
+    //                     // Collections
+    //                     return view('tourplanner.dcrCollections', ['dcr' => $dcr]);
+    //                 } elseif ($tourPlanType == 2) {
+    //                     // Sourcing
+    //                     return view('tourplanner.dcrSourcing', ['dcr' => $dcr]);
+    //                 } else {
+    //                     Log::warning('Invalid DCR type received from API.', [
+    //                         'tour_plan_type' => $tourPlanType,
+    //                     ]);
+    //                     return redirect()->back()->with('error', 'Invalid DCR type received.');
+    //                 }
+    //             } else {
+    //                 // API returned success: false or no data
+    //                 $message = Arr::get($apiResponse, 'message', 'Failed to fetch DCR details.');
+    //                 Log::warning('External API returned failure for DCR Details.', ['message' => $message]);
+    //                 return redirect()->back()->with('error', $message);
+    //             }
+    //         } else {
+    //             // API call failed (non-2xx status code)
+    //             $status = $response->status();
+    //             $error = $response->body();
+
+    //             Log::error('Failed to fetch DCR Details from external API.', [
+    //                 'status' => $status,
+    //                 'body' => $error,
+    //             ]);
+
+    //             return redirect()->back()->with('error', 'Failed to fetch DCR Details from the external API.');
+    //         }
+    //     } catch (\Exception $e) {
+    //         // Handle exceptions, such as network issues
+    //         Log::error('Exception while fetching DCR Details from external API.', ['error' => $e->getMessage()]);
+    //         return redirect()->back()->with('error', 'An error occurred while fetching DCR Details.');
+    //     }
+    // }
+
+    public function showDCRDetails($id)
+    {
+        // Validate the input
+        if (!$id || !is_numeric($id)) {
+            return response()->json(['error' => 'Visit ID is required and must be a valid number.'], 400);
+        }
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json(['error' => 'Authentication token missing. Please log in again.'], 401);
+        }
+
+        // Define the external API URL for fetching DCR details
+        $apiUrl = config('auth_api.dcr_details_url');
+        if (!$apiUrl) {
+            return response()->json(['error' => 'DCR details fetch URL is not configured.'], 500);
+        }
+
+        try {
+            $queryParams = ['id' => $id];
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success') && is_array(Arr::get($apiResponse, 'data')) && count(Arr::get($apiResponse, 'data')) > 0) {
+                    $dcr = $apiResponse['data'][0];
+                    $tourPlanType = Arr::get($dcr, 'extendedProps.tour_plan_type');
+
+                    // Return the appropriate partial view based on tour plan type
+                    if ($tourPlanType == 1) {
+                        return view('tourplanner.dcrCollectionsPartial', ['dcr' => $dcr]);
+                    } elseif ($tourPlanType == 2) {
+                        return view('tourplanner.dcrSourcingPartial', ['dcr' => $dcr]);
+                    } elseif ($tourPlanType == 3) {
+                        return view('tourplanner.dcrBothPartial', ['dcr' => $dcr]);
+                    } else {
+                        return response()->json(['error' => 'Invalid DCR type received.'], 400);
+                    }
+                } else {
+                    return response()->json(['error' => 'Failed to fetch DCR details.'], 400);
+                }
+            } else {
+                return response()->json(['error' => 'Failed to fetch DCR Details from the external API.'], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching DCR Details from external API.', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'An error occurred while fetching DCR Details.'], 500);
+        }
+    }
+
+
+
+    public function updateStatus(Request $request, $id)
+    {
+        // 1. Validate the incoming request
+        $validatedData = $request->validate([
+            'status' => 'required|in:approved,rejected,accepted',
+        ]);
+
+         // 2. Retrieve the token from the session
+         $token = session()->get('api_token');
+
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Authentication token missing. Please log in again.'
+             ], 401);
+         }
+
+            // 3. Define the external API URL for updating DCR status
+        $apiUrl = config('auth_api.dcr_update_status_url');
+
+        if (!$apiUrl) {
+            Log::error('DCR Update Status URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'DCR Update Status URL is not configured.'
+            ], 500);
+        }
+
+          // 4. Prepare the payload for the API request
+          $payload = [
+            'id' => $id,
+            'status' => $validatedData['status'],
+            'updated_by' => Auth::id(), // Assuming the authenticated user is performing the update
+        ];
+
+        // Log the payload being sent
+        Log::info('Sending DCR Status Update to External API', [
+            'api_url' => $apiUrl,
+            'payload' => $payload,
+        ]);
+
+        try {
+            // Step 7: Make the API call to update the DCR status
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->post($apiUrl, $payload);
+    
+            // Log the API response
+            Log::info('External API Response for DCR Status Update', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+    
+            // Step 8: Handle the API response
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+    
+                if (Arr::get($apiResponse, 'success')) {
+                    return redirect()->back()->with('success', Arr::get($apiResponse, 'message', 'DCR status updated successfully.'));
+                } else {
+                    Log::warning('External API returned failure for DCR Status Update.', [
+                        'message' => Arr::get($apiResponse, 'message'),
+                    ]);
+                    return redirect()->back()->with('error', Arr::get($apiResponse, 'message', 'Failed to update DCR status.'));
+                }
+            } else {
+                Log::error('Failed to update DCR status via external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return redirect()->back()->with('error', 'Failed to update DCR status via the external API.');
+            }
+        } catch (\Exception $e) {
+            // Handle exceptions, such as network issues
+            Log::error('Exception while updating DCR status via external API.', [
+                'error' => $e->getMessage(),
+            ]);
+            return redirect()->back()->with('error', 'An error occurred while updating the DCR status.');
+        }
+    }
+
+
+    /**
+     * Show the  tour plan FINAL DCR Requests list page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function finalDCRRequests()
+    {
+        return view('tourplanner.finalDCR');
+    }
+
+
+     /**
+     * API Endpoint to Fetch DInal DCRApprovals based on filters.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFinalDCRApprovals(Request $request)
+    {
+        // Retrieve filters from the request
+        $agentId = $request->input('agent_id');
+        $month = $request->input('month'); // Expected format: YYYY-MM
+
+    
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching calendar events
+        $apiUrl = config('auth_api.final_dcr_approvals_fetch_all_url');
+
+        if (!$apiUrl) {
+            Log::error('Final DCR Approvals fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Final DCR Approvals fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Build query parameters
+            $queryParams = [
+                'month' => $month,
+            ];
+
+            if ($agentId) {
+                $queryParams['agent_id'] = $agentId;
+            }
+
+            // Log the data being sent
+            Log::info('Final Fetch DCR Approvals request API', [
+                'data' => $queryParams,
+            ]);
+
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            Log::info('External API Response for Final DCR Approvals', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    // Assuming the API returns events in FullCalendar-compatible format
+                    return response()->json([
+                        'success' => true,
+                        'events' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure for Final DCR Approvals.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch Final DCR Approvals from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch Final DCR Approvals from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Final DCR Approvals from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching Final DCR Approvals.',
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Display the specified DCR final visit details by fetching data from an external API.
+     *
+     * @param  int  $id
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function showFinalDCRVisitDetails(Request $request, $id)
+    {
+        // 1. Validate the input
+        if (!$id || !is_numeric($id)) {
+            return redirect()->back()->with('error', 'DCR Visit ID is required and must be a valid number.');
+        }
+
+        // Retrieve the additional query parameters
+        $empId = $request->query('emp_id');
+        $visitDate = $request->query('visit_date');
+
+        // Log the additional parameters if needed
+        Log::info('DCR Visit Details Params', [
+            'id' => $id,
+            'emp_id' => $empId,
+            'visit_date' => $visitDate,
+        ]);
+
+        // Redirect to the dcrVisits route with the query parameters
+        return redirect()->route('tourplanner.dcrVisits', [
+            'id' => $id,
+            'emp_id' => $empId,
+            'visit_date' => $visitDate,
+        ]);
+
+        // // 2. Retrieve the token from the session
+        // $token = session()->get('api_token');
+
+        // if (!$token) {
+        //     Log::warning('API token missing in session.');
+        //     return redirect()->back()->with('error', 'Authentication token missing. Please log in again.');
+        // }
+
+
+        // // 3. Define the external API URL for fetching DCR details
+        // $apiUrl = config('auth_api.final_dcr_visit_details_fetch_all_url');
+
+        // if (!$apiUrl) {
+        //     Log::error('DCR details fetch URL not configured.');
+        //     return redirect()->back()->with('error', 'DCR details fetch URL is not configured.');
+        // }
+
+        // try {
+        //     // 4. Build query parameters
+        //     $queryParams = [
+        //         'id' => $id,
+        //         'emp_id' => $empId,
+        //         'visit_date' => $visitDate,
+        //     ];
+
+        //     // 5. Log the request data
+        //     Log::info('Fetch DCR Details request API', [
+        //         'data' => $queryParams,
+        //     ]);
+
+        //     // 6. Make the API call
+        //     $response = Http::withHeaders([
+        //         'Authorization' => 'Bearer ' . $token,
+        //         'Accept' => 'application/json',
+        //     ])->get($apiUrl, $queryParams);
+
+        //     // 7. Log the API response
+        //     Log::info('External API Response for DCR Details', [
+        //         'status' => $response->status(),
+        //         'body' => $response->body(),
+        //     ]);
+
+        //     // 8. Handle successful API response
+        //     if ($response->successful()) {
+        //         $apiResponse = $response->json();
+
+        //         if (Arr::get($apiResponse, 'success') && is_array(Arr::get($apiResponse, 'data')) && count(Arr::get($apiResponse, 'data')) > 0) {
+        //             // Assuming the API returns an array with at least one DCR detail
+        //             $dcr = $apiResponse['data'][0];
+    
+        //             // Instead of determining tour plan type and redirecting to separate views,
+        //             // return a single view (tourplanner.dcrVisits) with the complete DCR details.
+        //             return view('tourplanner.dcrVisits', ['dcr' => $dcr]);
+        //         } else {
+        //             // API returned success: false or no data
+        //             $message = Arr::get($apiResponse, 'message', 'Failed to fetch DCR details.');
+        //             Log::warning('External API returned failure for DCR Details.', ['message' => $message]);
+        //             return redirect()->back()->with('error', $message);
+        //         }
+        //     } else {
+        //         $status = $response->status();
+        //     $error = $response->body();
+
+        //     Log::error('Failed to fetch DCR Details from external API.', [
+        //         'status' => $status,
+        //         'body' => $error,
+        //     ]);
+
+        //     return redirect()->back()->with('error', 'Failed to fetch DCR Details from the external API.');
+        //     }
+        // } catch (\Exception $e) {
+        //     // Handle exceptions, such as network issues
+        //     Log::error('Exception while fetching DCR Details from external API.', ['error' => $e->getMessage()]);
+        //     return redirect()->back()->with('error', 'An error occurred while fetching DCR Details.');
+        // }
+    }
+
+    public function dcrVisits(Request $request)
+    {
+        // Retrieve the query parameters
+        $id = $request->query('id');
+        $empId = $request->query('emp_id');
+        $visitDate = $request->query('visit_date');
+
+        // Log received parameters
+        Log::info('dcrVisits called with params', [
+            'id' => $id,
+            'emp_id' => $empId,
+            'visit_date' => $visitDate,
+        ]);
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            return redirect()->back()->with('error', 'Authentication token missing. Please log in again.');
+        }
+
+        // Define your external API URL for fetching the details
+        $apiUrl = config('auth_api.final_dcr_visit_details_fetch_all_url');
+        if (!$apiUrl) {
+            return redirect()->back()->with('error', 'DCR details fetch URL is not configured.');
+        }
+
+        try {
+            // Build the query parameters for the API call
+            $queryParams = [
+                'id' => $id,
+                'emp_id' => $empId,
+                'visit_date' => $visitDate,
+            ];
+
+            // Make the API call
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success') && !empty(Arr::get($apiResponse, 'data'))) {
+                    // Here we assume the API returns a JSON with "success" and "data" keys
+                    $dcrData = $apiResponse;
+                } else {
+                    return redirect()->back()->with('error', 'Failed to fetch DCR Details from the external API.');
+                }
+            } else {
+                return redirect()->back()->with('error', 'Failed to fetch DCR Details from the external API.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching DCR Details', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'An error occurred while fetching DCR Details.');
+       }
+
+        // Pass the full data array (as received from the API) to the view
+        return view('tourplanner.dcrVisits', ['dcrData' => $dcrData]);
+    }
+
+
+    public function dcrStatusFetch(Request $request)
+    {
+        // Retrieve the query parameters
+        $id = $request->query('id');
+        $empId = $request->query('emp_id');
+        $visitDate = $request->query('visit_date');
+
+        // Log received parameters
+        Log::info('dcrStatusFetch called with params', [
+            'id' => $id,
+            'emp_id' => $empId,
+            'visit_date' => $visitDate,
+        ]);
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define your external API URL for fetching the details
+        $apiUrl = config('auth_api.final_dcr_status_fetch_url');
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'DCR details fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Build the query parameters for the API call
+            $queryParams = [
+                'id' => $id,
+                'emp_id' => $empId,
+                'visit_date' => $visitDate,
+            ];
+
+            // Make the API call
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success') && !empty(Arr::get($apiResponse, 'data'))) {
+                    // Return the entire API response as JSON
+                    return response()->json($apiResponse);
+                } else {
+                    Log::warning('External API returned failure for DCR Status fetch.', [
+                        'message' => Arr::get($apiResponse, 'message')
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Failed to fetch DCR status.')
+                    ], 400);
+                }
+            } else {
+                Log::error('Failed to fetch DCR status via external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch DCR status via the external API.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching DCR Details', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching DCR Details.'
             ], 500);
         }
     }

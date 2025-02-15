@@ -165,7 +165,7 @@
                                         <i class="bi bi-gear"></i>
                                     </button>
                                     <ul class="dropdown-menu" aria-labelledby="actionMenu${row.id}">
-                                        <li><a class="dropdown-item" href="{{ route('entity.edit', '') }}/${row.id}">Edit</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('bloodbank.edit', '') }}/${row.id}">Edit</a></li>
                                        
                                     </ul>
                                 </div>

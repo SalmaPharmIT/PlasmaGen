@@ -2,7 +2,9 @@
 
 // Define base URL path for api here:
 $base_url = 'http://127.0.0.1/PlasmaGenAPIs/api/';
-$base_image_url = 'http://localhost/plasmaGenUploads/';
+// $base_image_url = 'http://localhost/plasmaGenUploads/';
+$base_image_url = 'https://sfatestuploads.pharmit.in/plasmaGenUploads/';
+$google_maps_api_key = 'AIzaSyBFwtHIaHQ1J8PKur9RmQy4Z5WsM6kVVPE';
 
 return [
     /*
@@ -33,6 +35,8 @@ return [
 
     'getAllCities_url' =>  $base_url . 'cities_get_all.php',
     'add_city_url' =>  $base_url . 'city_add.php',
+    'update_city_url' =>  $base_url . 'city_update.php',
+    'delete_city_url' =>  $base_url . 'city_delete.php',
 
     'blood_bank_fetch_all_url' =>  $base_url . 'blood_bank_fetch_all.php',
     'blood_bank_register_url' =>  $base_url . 'blood_bank_register.php',
@@ -60,4 +64,18 @@ return [
     'collection_requests_all_url' =>  $base_url . 'collection_requests_all.php',
     'vehicle_details_submit_url' =>  $base_url . 'vehicle_details_submit.php',
     'collection_submitted_all_url' =>  $base_url . 'collection_submitted_all.php',
+    'entity_features_fetch_url' =>  $base_url . 'entity_features_fetch.php',
+    'entity_features_update_url' =>  $base_url . 'entity_features_update.php',
+    'visits_per_day_all_url' =>  $base_url . 'visits_per_day_all.php',
+    'drc_collections_submit_url' =>  $base_url . 'drc_collections_submit.php',
+    'drc_sourcing_submit_url' =>  $base_url . 'drc_sourcing_submit.php',
+    'dcr_approvals_fetch_all_url' =>  $base_url . 'dcr_approvals_fetch_all.php',
+    'dcr_details_url' =>  $base_url . 'dcr_details.php',
+    'dcr_update_status_url' =>  $base_url . 'dcr_update_status.php',
+    'final_dcr_submit_url' =>  $base_url . 'final_dcr_submit.php',
+    'final_dcr_approvals_fetch_all_url' =>  $base_url . 'final_dcr_approvals_fetch_all.php',
+    'final_dcr_visit_details_fetch_all_url' =>  $base_url . 'final_dcr_visit_details_fetch_all.php',
+    'final_dcr_status_fetch_url' =>  $base_url . 'final_dcr_status_fetch.php',
+    'dcr_blood_bank_details_url' =>  $base_url . 'dcr_blood_bank_details.php',
+    
 ];

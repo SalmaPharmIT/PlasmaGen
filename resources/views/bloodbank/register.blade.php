@@ -45,10 +45,16 @@
             <form class="row g-3" action="{{ route('bloodbank.register.submit') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
+
+                <!-- Optional: Hidden Field for DCR ID -->
+                @if($dcrDetails)
+                    <input type="hidden" name="dcr_id" value="{{ $dcrDetails['id'] }}">
+                @endif
+
                 <!-- Name -->
                 <div class="col-md-6">
                     <label for="name" class="form-label">Blood Bank Name</label>
-                    <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $dcrDetails['blood_bank_name'] ?? '') }}" required>
                 </div>
 
             
@@ -67,19 +73,19 @@
                  <!-- Entity Customer Care No -->
                  <div class="col-md-6">
                     <label for="entity_contact_person" class="form-label">Contact Person Name</label>
-                    <input type="text" class="form-control" id="entity_contact_person" name="entity_contact_person" value="{{ old('entity_contact_person') }}" required>
+                    <input type="text" class="form-control" id="entity_contact_person" name="entity_contact_person" value="{{ old('entity_contact_person', $dcrDetails['sourcing_contact_person'] ?? '') }}" required>
                 </div>
 
                   <!-- Email -->
                   <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $dcrDetails['sourcing_email'] ?? '') }}" required>
                 </div>
 
                 <!-- Mobile No -->
                 <div class="col-md-6">
                     <label for="mobile_no" class="form-label">Mobile No</label>
-                    <input type="text" class="form-control" id="mobile_no" name="mobile_no" value="{{ old('mobile_no') }}" required>
+                    <input type="text" class="form-control" id="mobile_no" name="mobile_no" value="{{ old('mobile_no', $dcrDetails['sourcing_mobile_number'] ?? '') }}" required>
                 </div>
 
                  <!-- GSTIN -->
@@ -136,7 +142,7 @@
                 <!-- Address -->
                 <div class="col-md-6">
                     <label for="address" class="form-label">Address</label>
-                    <textarea class="form-control" id="address" name="address" rows="2">{{ old('address') }}</textarea>
+                    <textarea class="form-control" id="address" name="address" rows="2">{{ old('address', $dcrDetails['sourcing_address'] ?? '') }}</textarea>
                 </div>
 
                  <!-- Pincode -->
@@ -148,19 +154,19 @@
                  <!-- FFP Pocurement Company -->
                  <div class="col-md-6">
                     <label for="FFP_procurement_company" class="form-label">Past/Current FFP Pocurement Company</label>
-                    <input type="text" class="form-control" id="FFP_procurement_company" name="FFP_procurement_company" value="{{ old('FFP_procurement_company') }}">
+                    <input type="text" class="form-control" id="FFP_procurement_company" name="FFP_procurement_company" value="{{ old('FFP_procurement_company', $dcrDetails['sourcing_ffp_company'] ?? '') }}">
                 </div>
 
                  <!--Final Accepted Offer -->
                  <div class="col-md-6">
                     <label for="final_accepted_offer" class="form-label">Final Accepted Offer</label>
-                    <input type="text" class="form-control" id="final_accepted_offer" name="final_accepted_offer" value="{{ old('final_accepted_offer') }}">
+                    <input type="text" class="form-control" id="final_accepted_offer" name="final_accepted_offer" value="{{ old('final_accepted_offer', $dcrDetails['sourcing_plasma_price'] ?? '') }}">
                 </div>
 
                  <!--Payment Terms -->
                  <div class="col-md-6">
                     <label for="payment_terms" class="form-label">Payment Terms</label>
-                    <input type="text" class="form-control" id="payment_terms" name="payment_terms" value="{{ old('payment_terms') }}">
+                    <input type="text" class="form-control" id="payment_terms" name="payment_terms" value="{{ old('payment_terms', $dcrDetails['sourcing_payment_terms'] ?? '') }}">
                 </div>
 
                 <!-- Fax Number -->

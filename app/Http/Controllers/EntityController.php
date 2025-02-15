@@ -546,5 +546,157 @@ class EntityController extends Controller
             ], 500);
         }
     }
+
+
+    /**
+     * Show the entities feature settings page.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    */
+    public function entityFeatures()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+        }
+
+        // Define the external API URL for fetching entity features
+        $apiUrl = config('auth_api.entity_features_fetch_url');
+
+        if (!$apiUrl) {
+            Log::error('Entity Features Fetch URL not configured.');
+            return back()->withErrors(['api_error' => 'Entity Features Fetch URL is not configured.']);
+        }
+
+        try {
+            // Make the API request to fetch entity features
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('Entity Features Fetch API Response', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if ($apiResponse['success']) {
+                    $features = $apiResponse['data'];
+
+                    // Convert features array to an object for easier access in Blade
+                    $entity = (object) $features;
+
+                    // Log the fetched features
+                    Log::info('Fetched Entity Features', ['features' => $entity]);
+
+                    // Pass 'entity' to the view instead of 'features'
+                    return view('entities.featuresettings', compact('entity'));
+                } else {
+                    Log::warning('Entity Features Fetch API returned failure.', ['message' => $apiResponse['message']]);
+                    return back()->withErrors(['api_error' => $apiResponse['message']]);
+                }
+            } else {
+                Log::error('Failed to fetch entity features from external API.', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+                return back()->withErrors(['api_error' => 'Failed to fetch entity features from the external API.']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching entity features from external API.', ['error' => $e->getMessage()]);
+            return back()->withErrors(['exception' => 'An error occurred while fetching entity features.']);
+        }
+    }
+
+
+       /**
+     * Handle the Entity Feature Settings form submission.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateFeatureSettings(Request $request)
+    {
+        // Validate the form data
+        $validatedData = $request->validate([
+            'km_bound' => 'required|numeric|min:0',
+            'location_enabled' => 'required|in:yes,no',
+            // Add other validation rules as necessary
+        ]);
+
+        // Retrieve the token from the session
+        $token = $request->session()->get('api_token');
+
+        if (!$token) {
+            return redirect()->route('login')->withErrors(['token_error' => 'Authentication token not found. Please log in again.']);
+        }
+
+        // Define the external API URL for updating feature settings
+        $apiUrl = config('auth_api.entity_features_update_url'); // Ensure this is set in config/auth_api.php
+
+        if (!$apiUrl) {
+            Log::error('Entity Features Update URL not configured.');
+            return back()->withErrors(['api_error' => 'Entity Features Update URL is not configured.']);
+        }
+
+        // Prepare the data to send to the external API
+        $postData = [
+            'km_bound'          => $validatedData['km_bound'],
+            'location_enabled'  => $validatedData['location_enabled'],
+            'modified_by'       => Auth::id(),
+        ];
+
+        Log::info('Entity Features Update API Request', [
+            'data' => $postData
+        ]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->put($apiUrl, $postData);
+
+            Log::info('Entity Features Update API Response', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if ($apiResponse['success']) {
+                    // Handle successful update
+                    return back()->with('success', 'Entity Feature Settings updated successfully.');
+                } else {
+                    // Log the failure message from the API
+                    Log::warning('Entity Features Update API returned failure.', ['message' => $apiResponse['message']]);
+
+                    // Redirect back with the error message
+                    return back()->withErrors(['update_error' => $apiResponse['message']])->withInput();
+                }
+            } else {
+                // Log the HTTP status code and response body
+                Log::error('Failed to update entity features via external API.', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+
+                // Redirect back with a generic error message
+                return back()->withErrors(['api_error' => 'Failed to update entity features via the external API.'])->withInput();
+            }
+        } catch (\Exception $e) {
+            // Log the exception message
+            Log::error('Exception while updating entity features via external API.', ['error' => $e->getMessage()]);
+
+            // Redirect back with an exception message
+            return back()->withErrors(['exception' => 'An error occurred while updating entity features.'])->withInput();
+        }
+    }
     
 }
