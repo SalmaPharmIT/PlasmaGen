@@ -53,14 +53,14 @@
 
                 <!-- Name -->
                 <div class="col-md-6">
-                    <label for="name" class="form-label">Blood Bank Name</label>
+                    <label for="name" class="form-label">Blood Bank Name <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $dcrDetails['blood_bank_name'] ?? '') }}" required>
                 </div>
 
             
                 <!-- Entity Licence Number -->
                 <div class="col-md-6">
-                    <label for="entity_license_number" class="form-label">License Number</label>
+                    <label for="entity_license_number" class="form-label">License Number <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="entity_license_number" name="entity_license_number" value="{{ old('entity_license_number') }}" required>
                 </div>
 
@@ -72,37 +72,37 @@
 
                  <!-- Entity Customer Care No -->
                  <div class="col-md-6">
-                    <label for="entity_contact_person" class="form-label">Contact Person Name</label>
+                    <label for="entity_contact_person" class="form-label">Contact Person Name <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="entity_contact_person" name="entity_contact_person" value="{{ old('entity_contact_person', $dcrDetails['sourcing_contact_person'] ?? '') }}" required>
                 </div>
 
                   <!-- Email -->
                   <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $dcrDetails['sourcing_email'] ?? '') }}" required>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $dcrDetails['sourcing_email'] ?? '') }}">
                 </div>
 
                 <!-- Mobile No -->
                 <div class="col-md-6">
-                    <label for="mobile_no" class="form-label">Mobile No</label>
+                    <label for="mobile_no" class="form-label">Mobile No <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="mobile_no" name="mobile_no" value="{{ old('mobile_no', $dcrDetails['sourcing_mobile_number'] ?? '') }}" required>
                 </div>
 
                  <!-- GSTIN -->
                 <div class="col-md-6">
-                    <label for="gstin" class="form-label">GSTIN</label>
+                    <label for="gstin" class="form-label">GSTIN <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="gstin" name="gstin" value="{{ old('gstin') }}" required>
                 </div>
 
                 <!-- PAN ID -->
                 <div class="col-md-6">
-                    <label for="pan_id" class="form-label">PAN ID</label>
+                    <label for="pan_id" class="form-label">PAN ID <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="pan_id" name="pan_id" value="{{ old('pan_id') }}" required>
                 </div>
 
                 <!-- Country -->
                 <div class="col-md-6">
-                    <label for="country_id" class="form-label">Country</label>
+                    <label for="country_id" class="form-label">Country <span style="color:red">*</span></label>
                     <select id="country_id" name="country_id" class="form-select select2" required>
                         <option value="">Choose Country</option>
                         @foreach($countries as $country)
@@ -115,7 +115,7 @@
 
                 <!-- State -->
                 <div class="col-md-6">
-                    <label for="state_id" class="form-label">State</label>
+                    <label for="state_id" class="form-label">State <span style="color:red">*</span></label>
                     <select id="state_id" name="state_id" class="form-select select2" required>
                         <option value="">Choose State</option>
                         @foreach($states as $state)
@@ -128,7 +128,7 @@
 
                 <!-- City -->
                 <div class="col-md-6">
-                    <label for="city_id" class="form-label">City</label>
+                    <label for="city_id" class="form-label">City <span style="color:red">*</span></label>
                     <select id="city_id" name="city_id" class="form-select select2" required>
                         <option value="">Choose City</option>
                         @foreach($cities as $city)
@@ -147,26 +147,26 @@
 
                  <!-- Pincode -->
                  <div class="col-md-6">
-                    <label for="pincode" class="form-label">Pincode</label>
+                    <label for="pincode" class="form-label">Pincode <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="pincode" name="pincode" value="{{ old('pincode') }}" required>
                 </div>
 
                  <!-- FFP Pocurement Company -->
                  <div class="col-md-6">
-                    <label for="FFP_procurement_company" class="form-label">Past/Current FFP Pocurement Company</label>
-                    <input type="text" class="form-control" id="FFP_procurement_company" name="FFP_procurement_company" value="{{ old('FFP_procurement_company', $dcrDetails['sourcing_ffp_company'] ?? '') }}">
+                    <label for="FFP_procurement_company" class="form-label">Past/Current FFP Procurement Company <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" id="FFP_procurement_company" name="FFP_procurement_company" value="{{ old('FFP_procurement_company', $dcrDetails['sourcing_ffp_company'] ?? '') }}" required>
                 </div>
 
                  <!--Final Accepted Offer -->
                  <div class="col-md-6">
-                    <label for="final_accepted_offer" class="form-label">Final Accepted Offer</label>
-                    <input type="text" class="form-control" id="final_accepted_offer" name="final_accepted_offer" value="{{ old('final_accepted_offer', $dcrDetails['sourcing_plasma_price'] ?? '') }}">
+                    <label for="final_accepted_offer" class="form-label">Final Accepted Offer <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" id="final_accepted_offer" name="final_accepted_offer" value="{{ old('final_accepted_offer', $dcrDetails['sourcing_plasma_price'] ?? '') }}" required>
                 </div>
 
                  <!--Payment Terms -->
                  <div class="col-md-6">
-                    <label for="payment_terms" class="form-label">Payment Terms</label>
-                    <input type="text" class="form-control" id="payment_terms" name="payment_terms" value="{{ old('payment_terms', $dcrDetails['sourcing_payment_terms'] ?? '') }}">
+                    <label for="payment_terms" class="form-label">Payment Terms <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" id="payment_terms" name="payment_terms" value="{{ old('payment_terms', $dcrDetails['sourcing_payment_terms'] ?? '') }}" required>
                 </div>
 
                 <!-- Fax Number -->
@@ -195,7 +195,7 @@
 
                 <!-- Entity Customer Care No -->
                 <div class="col-md-6">
-                    <label for="entity_customer_care_no" class="form-label">Customer Care No</label>
+                    <label for="entity_customer_care_no" class="form-label">Customer Care No <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="entity_customer_care_no" name="entity_customer_care_no" value="{{ old('entity_customer_care_no') }}" required>
                 </div>
 

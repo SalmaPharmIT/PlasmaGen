@@ -48,14 +48,14 @@
 
                 <!-- Name -->
                 <div class="col-md-6">
-                    <label for="name" class="form-label">Warehouse Name</label>
+                    <label for="name" class="form-label">Warehouse Name <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $entity['name']) }}" required>
                 </div>
 
                    <!-- Entity License Number -->
                 <div class="col-md-6">
-                    <label for="entity_license_number" class="form-label">Entity License Number</label>
-                    <input type="text" class="form-control" id="entity_license_number" name="entity_license_number" value="{{ old('entity_license_number', $entity['entity_license_number']) }}">
+                    <label for="entity_license_number" class="form-label">Entity License Number <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" id="entity_license_number" name="entity_license_number" value="{{ old('entity_license_number', $entity['entity_license_number']) }}" required>
                 </div>
 
                 <!-- License Validity -->
@@ -66,7 +66,7 @@
 
                 <!-- Entity Customer Care No -->
                 <div class="col-md-6">
-                    <label for="entity_contact_person" class="form-label">Contact Person Name</label>
+                    <label for="entity_contact_person" class="form-label">Contact Person Name <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="entity_contact_person" name="entity_contact_person" value="{{ old('entity_contact_person', $entity['entity_contact_person']) }}" required>
                 </div>
 
@@ -104,25 +104,25 @@
 
                 <!-- Mobile No -->
                 <div class="col-md-6">
-                    <label for="mobile_no" class="form-label">Mobile No</label>
+                    <label for="mobile_no" class="form-label">Mobile No <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="mobile_no" name="mobile_no" value="{{ old('mobile_no', $entity['mobile_no']) }}" required>
                 </div>
 
                 <!-- GSTIN -->
                 <div class="col-md-6">
-                    <label for="gstin" class="form-label">GSTIN</label>
-                    <input type="text" class="form-control" id="gstin" name="gstin" value="{{ old('gstin', $entity['gstin']) }}">
+                    <label for="gstin" class="form-label">GSTIN <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" id="gstin" name="gstin" value="{{ old('gstin', $entity['gstin']) }}" required>
                 </div>
 
                 <!-- PAN ID -->
                 <div class="col-md-6">
-                    <label for="pan_id" class="form-label">PAN ID</label>
-                    <input type="text" class="form-control" id="pan_id" name="pan_id" value="{{ old('pan_id', $entity['pan_id']) }}">
+                    <label for="pan_id" class="form-label">PAN ID <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" id="pan_id" name="pan_id" value="{{ old('pan_id', $entity['pan_id']) }}" required>
                 </div>
 
                 <!-- Country -->
                 <div class="col-md-6">
-                    <label for="country_id" class="form-label">Country</label>
+                    <label for="country_id" class="form-label">Country <span style="color:red">*</span></label>
                     <select id="country_id" name="country_id" class="form-select select2" required>
                         <option value="">Choose Country</option>
                         @foreach($countries as $country)
@@ -135,7 +135,7 @@
 
                 <!-- State -->
                 <div class="col-md-6">
-                    <label for="state_id" class="form-label">State</label>
+                    <label for="state_id" class="form-label">State <span style="color:red">*</span></label>
                     <select id="state_id" name="state_id" class="form-select select2" required>
                         <option value="">Choose State</option>
                         @foreach($states as $state)
@@ -148,7 +148,7 @@
 
                 <!-- City -->
                 <div class="col-md-6">
-                    <label for="city_id" class="form-label">City</label>
+                    <label for="city_id" class="form-label">City <span style="color:red">*</span></label>
                     <select id="city_id" name="city_id" class="form-select select2" required>
                         <option value="">Choose City</option>
                         @foreach($cities as $city)
@@ -167,13 +167,13 @@
 
                  <!-- Pincode -->
                  <div class="col-md-6">
-                    <label for="pincode" class="form-label">Pincode</label>
-                    <input type="text" class="form-control" id="pincode" name="pincode" value="{{ old('pincode', $entity['pincode']) }}">
+                    <label for="pincode" class="form-label">Pincode <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" id="pincode" name="pincode" value="{{ old('pincode', $entity['pincode']) }}" required>
                 </div>
 
                 <!-- FFP Pocurement Company -->
                 <div class="col-md-6">
-                    <label for="FFP_procurement_company" class="form-label">Past/Current FFP Pocurement Company</label>
+                    <label for="FFP_procurement_company" class="form-label">Past/Current FFP Procurement Company</label>
                     <input type="text" class="form-control" id="FFP_procurement_company" name="FFP_procurement_company" value="{{ old('FFP_procurement_company', $entity['FFP_procurement_company']) }}">
                 </div>
 
@@ -265,7 +265,7 @@
 
                   <!-- Account Status -->
                   <div class="col-md-6">
-                    <label for="account_status" class="form-label">Account Status</label>
+                    <label for="account_status" class="form-label">Account Status <span style="color:red">*</span></label>
                     <select id="account_status" name="account_status" class="form-select" required>
                         <option value="">Choose Status</option>
                         @foreach(\App\Models\Entity::$statuses as $value => $label)

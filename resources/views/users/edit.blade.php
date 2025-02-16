@@ -47,7 +47,7 @@
 
                 <!-- Name -->
                 <div class="col-md-6">
-                    <label for="name" class="form-label">User Name</label>
+                    <label for="name" class="form-label">User Name <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $user['name']) }}" required>
                 </div>
 
@@ -68,7 +68,7 @@
                    <!-- Entity (Conditional) -->
                    @if (Auth::user()->role_id == 1)
                    <div class="col-md-6">
-                    <label for="entity_id" class="form-label">Entity</label>
+                    <label for="entity_id" class="form-label">Entity <span style="color:red">*</span></label>
                     <select id="entity_id" name="entity_id" class="form-select select2" required>
                         <option value="">Choose Entity</option>
                         @foreach($entities as $entity)
@@ -88,7 +88,7 @@
 
                 <!-- Role -->
                 <div class="col-md-6">
-                    <label for="role_id" class="form-label">Role</label>
+                    <label for="role_id" class="form-label">Role <span style="color:red">*</span></label>
                     <select id="role_id" name="role_id" class="form-select select2" required>
                         <option value="">Choose Role</option>
                         @foreach($roles as $role)
@@ -101,7 +101,7 @@
 
                 <!-- Gender -->
                 <div class="col-md-6">
-                    <label for="gender" class="form-label">Gender</label>
+                    <label for="gender" class="form-label">Gender <span style="color:red">*</span></label>
                     <select id="gender" name="gender" class="form-select select2" required>
                         <option value="">Choose Gender</option>
                         @foreach($userGender as $value => $label)
@@ -114,13 +114,13 @@
 
                 <!-- Mobile No -->
                 <div class="col-md-6">
-                    <label for="mobile_no" class="form-label">Mobile No</label>
+                    <label for="mobile_no" class="form-label">Mobile No <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="mobile_no" name="mobile_no" value="{{ old('mobile_no', $user['mobile']) }}" required>
                 </div>
 
                 <!-- Email -->
                 <div class="col-md-6">
-                    <label for="email" class="form-label">Email</label>
+                    <label for="email" class="form-label">Email <span style="color:red">*</span></label>
                     <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $user['email']) }}" required>
                 </div>
 
@@ -132,19 +132,19 @@
 
                 <!-- PAN ID -->
                 <div class="col-md-6">
-                    <label for="pan_id" class="form-label">PAN ID</label>
+                    <label for="pan_id" class="form-label">PAN ID <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="pan_id" name="pan_id" value="{{ old('pan_id', $user['pan_id']) }}" required>
                 </div>
 
                 <!-- Aadhar ID -->
                 <div class="col-md-6">
-                    <label for="aadhar_id" class="form-label">Aadhar ID</label>
+                    <label for="aadhar_id" class="form-label">Aadhar ID <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="aadhar_id" name="aadhar_id" value="{{ old('aadhar_id', $user['aadhar_id']) }}" required>
                 </div>
 
                 <!-- Account Status -->
                 <div class="col-md-6">
-                    <label for="account_status" class="form-label">Account Status</label>
+                    <label for="account_status" class="form-label">Account Status <span style="color:red">*</span></label>
                     <select id="account_status" name="account_status" class="form-select select2" required>
                         <option value="">Choose Status</option>
                         @foreach($userStatuses as $value => $label)
@@ -157,7 +157,7 @@
 
                 <!-- Country -->
                 <div class="col-md-6">
-                    <label for="country_id" class="form-label">Country</label>
+                    <label for="country_id" class="form-label">Country <span style="color:red">*</span></label>
                     <select id="country_id" name="country_id" class="form-select select2" required>
                         <option value="">Choose Country</option>
                         @foreach($countries as $country)
@@ -170,7 +170,7 @@
 
                 <!-- State -->
                 <div class="col-md-6">
-                    <label for="state_id" class="form-label">State</label>
+                    <label for="state_id" class="form-label">State <span style="color:red">*</span></label>
                     <select id="state_id" name="state_id" class="form-select select2" required>
                         <option value="">Choose State</option>
                         @foreach($states as $state)
@@ -183,7 +183,7 @@
 
                 <!-- City -->
                 <div class="col-md-6">
-                    <label for="city_id" class="form-label">City</label>
+                    <label for="city_id" class="form-label">City <span style="color:red">*</span></label>
                     <select id="city_id" name="city_id" class="form-select select2" required>
                         <option value="">Choose City</option>
                         @foreach($cities as $city)
@@ -196,7 +196,7 @@
 
                 <!-- Pincode -->
                 <div class="col-md-6">
-                    <label for="pincode" class="form-label">Pincode</label>
+                    <label for="pincode" class="form-label">Pincode <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="pincode" name="pincode" value="{{ old('pincode', $user['pin_code']) }}" required>
                 </div>
 

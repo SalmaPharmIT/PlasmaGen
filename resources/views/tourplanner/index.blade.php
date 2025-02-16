@@ -75,7 +75,7 @@
   
             <!-- Tour Plan Type Radio Buttons -->
             <div class="mb-3">
-              <label class="form-label">Tour Plan Type</label>
+              <label class="form-label">Tour Plan Type <span style="color:red">*</span></label>
               <div>
                 <div class="form-check form-check-inline">
                   <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeCollections" value="collections" checked>
@@ -94,7 +94,7 @@
 
              <!-- **Common** Collecting Agents Dropdown -->
               <div class="mb-3">
-                <label for="tourPlanCollectingAgent" class="form-label">Collecting Agent</label>
+                <label for="tourPlanCollectingAgent" class="form-label">Collecting Agent <span style="color:red">*</span></label>
                 <select id="tourPlanCollectingAgent" class="form-select select2" name="collecting_agent_id" required>
                   <option value="">Choose Collecting Agent</option>
                   <!-- Options will be populated via AJAX -->
@@ -108,7 +108,7 @@
             <div id="collectionsFields">
               <!-- Blood Bank Dropdown -->
               <div class="mb-3">
-                <label for="tourPlanBloodBank" class="form-label">Blood Bank</label>
+                <label for="tourPlanBloodBank" class="form-label">Blood Bank <span style="color:red">*</span></label>
                 <select id="tourPlanBloodBank" class="form-select select2" name="blood_bank_id" required>
                   <option value="">Choose Blood Bank</option>
                   <!-- Options will be populated via AJAX -->
@@ -121,7 +121,7 @@
   
               <!-- Time Input -->
               <div class="mb-3">
-                <label for="tourPlanTime" class="form-label">Time</label>
+                <label for="tourPlanTime" class="form-label">Time <span style="color:red">*</span></label>
                 <input type="time" class="form-control" id="tourPlanTime" name="time" required>
                 <div class="invalid-feedback">
                   Please provide a valid time.
@@ -133,7 +133,7 @@
   
               <!-- Quantity -->
               <div class="mb-3">
-                <label for="tourPlanQuantity" class="form-label">Quantity</label>
+                <label for="tourPlanQuantity" class="form-label">Quantity <span style="color:red">*</span></label>
                 <input type="number" class="form-control" id="tourPlanQuantity" name="quantity" min="1" required>
                 <div class="invalid-feedback">
                   Please enter a valid quantity (minimum 1).
@@ -176,7 +176,7 @@
   
               <!-- City Dropdown -->
               <div class="mb-3">
-                <label for="sourcingCityDropdown" class="form-label">City</label>
+                <label for="sourcingCityDropdown" class="form-label">City <span style="color:red">*</span></label>
                 <select id="sourcingCityDropdown" class="form-select select2" name="sourcing_city_id" required>
                   <option value="">Choose City</option>
                   <!-- Options will be populated via AJAX -->
