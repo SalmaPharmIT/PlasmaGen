@@ -120,6 +120,12 @@ class UserController extends Controller
         // Fetch roles via API
         $rolesResponse = $this->getRoles();
 
+        $parentEntityTypesResponse = $this->getParentEntities();
+
+        $responseContent = $parentEntityTypesResponse->getContent();
+        $parentEntityTypesData = json_decode($responseContent, true);
+        $parentEntityTypes = $parentEntityTypesData['data'] ?? [];
+
         // Handle API response
         if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
             // Successfully retrieved roles
@@ -136,7 +142,7 @@ class UserController extends Controller
 
         // Log::info('Fetching userStatuses.', ['userStatuses' => $userStatuses]);
 
-        return view('users.register', compact('entity', 'countries', 'states', 'cities', 'roles', 'user', 'userStatuses', 'userGender'));
+        return view('users.register', compact('entity', 'countries', 'states', 'cities', 'roles', 'user', 'userStatuses', 'userGender', 'parentEntityTypes'));
         
     }
 
@@ -351,6 +357,12 @@ class UserController extends Controller
                      // Fetch roles via API
                     $rolesResponse = $this->getRoles();
 
+                    $parentEntityTypesResponse = $this->getParentEntities();
+
+                    $responseContent = $parentEntityTypesResponse->getContent();
+                    $parentEntityTypesData = json_decode($responseContent, true);
+                    $parentEntityTypes = $parentEntityTypesData['data'] ?? [];
+
                     // Handle API response
                     if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
                         // Successfully retrieved roles
@@ -367,7 +379,7 @@ class UserController extends Controller
 
                     Log::info('Fetching single user data from external API.', ['user' => $user]);
 
-                    return view('users.edit', compact('user','entities', 'countries', 'states', 'cities', 'roles',  'userStatuses', 'userGender'));
+                    return view('users.edit', compact('user','entities', 'countries', 'states', 'cities', 'roles',  'userStatuses', 'userGender', 'parentEntityTypes'));
                 } else {
                     Log::warning('External API returned failure for single user.', ['message' => Arr::get($apiResponse, 'message')]);
                     return back()->withErrors(['api_error' => Arr::get($apiResponse, 'message', 'Unknown error from API.')]);
@@ -726,5 +738,75 @@ class UserController extends Controller
         }
     }
 
+
+    
+    /**
+     * Fetch Parent Entities for the Parent Entity Dropdown.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getParentEntities()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.entity_fetch_parent_active_url');
+
+        if (!$apiUrl) {
+            Log::error('Entity fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Entity fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if ($apiResponse['success']) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => $apiResponse['data'],
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => $apiResponse['message']]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => $apiResponse['message'],
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch entities from external API.', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch entities from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching entities from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching entities.',
+            ], 500);
+        }
+    }
 
 }

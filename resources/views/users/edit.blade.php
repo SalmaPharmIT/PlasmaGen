@@ -71,11 +71,11 @@
                     <label for="entity_id" class="form-label">Entity <span style="color:red">*</span></label>
                     <select id="entity_id" name="entity_id" class="form-select select2" required>
                         <option value="">Choose Entity</option>
-                        @foreach($entities as $entity)
-                            <option value="{{ $entity->id }}" {{ (old('entity_id', $user['entity_id']) == $entity->id) ? 'selected' : '' }}>
-                                {{ $entity->name }}
-                            </option>
-                        @endforeach
+                        @foreach($parentEntityTypes as $parentEntity)
+                        <option value="{{ $parentEntity['id'] }}" {{ (old('entity_id', $user['entity_id']) == $parentEntity['id']) ? 'selected' : '' }}>
+                            {{ $parentEntity['name'] }}
+                        </option>
+                    @endforeach
                     </select>
                 </div> 
                @else
