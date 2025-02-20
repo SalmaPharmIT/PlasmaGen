@@ -10,6 +10,7 @@ use App\Http\Controllers\CityMasterController;
 use App\Http\Controllers\TourPlannerController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\ReportVisitsController;
+use App\Http\Controllers\ReportsMasterController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -147,6 +148,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/visits/custom_update', [ReportVisitsController::class, 'updateVisit'])->name('visits.custom_update');
     Route::post('/visits/custom_sourcing_update', [ReportVisitsController::class, 'sourcingDCRSubmit'])->name('visits.custom_sourcing_update');
     Route::post('/visits/finalDCRsubmit', [ReportVisitsController::class, 'finalDCRsubmit'])->name('visits.finalDCRsubmit');
+    /* *********************  Report Visits Ends ********************************* */
+
+
+    /* *********************  Reports for Admin Starts ********************************* */
+    Route::get('/reports', [ReportsMasterController::class, 'index'])->name('reports.reports_work_summary');
+    Route::post('/reports/getPeriodicWorkSummary', [ReportsMasterController::class, 'getPeriodicWorkSummaryData'])->name('reports.getPeriodicWorkSummary');
     /* *********************  Report Visits Ends ********************************* */
 
     // Other registration routes...

@@ -114,6 +114,25 @@
       </li><!-- End Forms Nav -->
       @endif
 
+
+    
+      <!-- Reports - Visible to Admin & Manager Roles -->
+      @if (Auth::check())
+      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
+        <li class="nav-heading">Reports</li>
+
+        <!-- Reports - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2]))
+          <li class="nav-item">
+            <a class="nav-link collapsed" href="{{ route('reports.reports_work_summary') }}" >
+              <i class="bi bi-geo-alt"></i>
+              <span>Periodic Work Summary</span>
+            </a>
+          </li>
+        @endif
+      @endif
+    @endif
+
     
     <!-- Adding masters for admin -->
     <!-- Master Settings - Visible to Admin Roles -->

@@ -77,5 +77,6 @@ return [
     'final_dcr_visit_details_fetch_all_url' =>  $base_url . 'final_dcr_visit_details_fetch_all.php',
     'final_dcr_status_fetch_url' =>  $base_url . 'final_dcr_status_fetch.php',
     'dcr_blood_bank_details_url' =>  $base_url . 'dcr_blood_bank_details.php',
+    'reports_periodic_work_summary_url' =>  $base_url . 'reports_periodic_work_summary.php',
     
 ];
