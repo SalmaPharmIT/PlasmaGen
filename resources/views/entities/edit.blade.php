@@ -68,11 +68,11 @@
                 <!-- Parent Entity (Initially Hidden) -->
                 <div class="col-md-6" id="parent_entity_div">
                     <label for="parent_entity_id" class="form-label">Parent Entity</label>
-                    <select id="parent_entity_id" name="parent_entity_id" class="form-select select2" required>
+                    <select id="parent_entity_id" name="parent_entity_id" class="form-select select2">
                         <option value="">Choose Parent Entity</option>
-                        @foreach($entities as $parentEntity)
-                            <option value="{{ $parentEntity->id }}" {{ (old('parent_entity_id', $entity['parent_entity_id']) == $parentEntity->id) ? 'selected' : '' }}>
-                                {{ $parentEntity->name }}
+                        @foreach($parentEntityTypes as $parentEntity)
+                            <option value="{{ $parentEntity['id'] }}" {{ (old('parent_entity_id', $entity['parent_entity_id']) == $parentEntity['id']) ? 'selected' : '' }}>
+                                {{ $parentEntity['name'] }}
                             </option>
                         @endforeach
                     </select>
@@ -286,10 +286,11 @@ console.log('warehouseTypeId: {{ $warehouseTypeId }}');
             var selectedType = $('#entity_type_id').val();
             if (selectedType == bloodBankTypeId || selectedType == warehouseTypeId) {
                 $('#parent_entity_div').removeClass('d-none');
+                $('#parent_entity_id').attr('required', true);
                 fetchParentEntities();
             } else {
                 $('#parent_entity_div').addClass('d-none');
-                $('#parent_entity_id').empty().append('<option value="">Choose Parent Entity...</option>');
+                $('#parent_entity_id').removeAttr('required').empty().append('<option value="">Choose Parent Entity...</option>');
             }
         }
 

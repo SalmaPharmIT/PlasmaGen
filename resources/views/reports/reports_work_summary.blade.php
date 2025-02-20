@@ -84,8 +84,8 @@
                   <th class="text-center">Total Both</th>
                   <th class="text-center">Avg. Collections</th>
                   <th class="text-center">Avg. Sourcing</th>
-                  <th class="text-center">Avg. Both</th>
-                  <th class="text-center">Total Days</th>
+                  <th class="text-center">Avg. of Both</th>
+                  {{-- <th class="text-center">Total Days</th> --}}
                 </tr>
               </thead>
               <tbody>
@@ -179,7 +179,7 @@
                 { data: 'average_collections', className: "text-center" },
                 { data: 'average_sourcing', className: "text-center" },
                 { data: 'average_both', className: "text-center" },
-                { data: 'days_in_range', className: "text-center" }
+                // { data: 'days_in_range', className: "text-center" }
             ],
             pageLength: 10,
             lengthMenu: [5, 10, 25, 50, 100],

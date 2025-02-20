@@ -329,6 +329,11 @@ class EntityController extends Controller
                     $countries    = \App\Models\Country::all();
                     $states       = \App\Models\State::all();
                     $cities       = \App\Models\City::all();
+                    $parentEntityTypesResponse = $this->getParentEntities();
+
+                    $responseContent = $parentEntityTypesResponse->getContent();
+                    $parentEntityTypesData = json_decode($responseContent, true);
+                    $parentEntityTypes = $parentEntityTypesData['data'] ?? [];
 
                     // Get the IDs for Blood Bank and Warehouse
                     $bloodBankTypeId = \App\Models\EntityTypeMaster::where('entity_name', 'Blood Bank')->value('id');
@@ -338,7 +343,7 @@ class EntityController extends Controller
 
                     Log::info('Fetching single entity data from external API.', ['entity' => $entity]);
 
-                    return view('entities.edit', compact('entity', 'entityTypes', 'countries', 'states', 'cities', 'entities', 'bloodBankTypeId', 'warehouseTypeId'));
+                    return view('entities.edit', compact('entity', 'entityTypes', 'countries', 'states', 'cities', 'entities', 'bloodBankTypeId', 'warehouseTypeId', 'parentEntityTypes'));
                 } else {
                     Log::warning('External API returned failure for single entity.', ['message' => Arr::get($apiResponse, 'message')]);
                     return back()->withErrors(['api_error' => Arr::get($apiResponse, 'message', 'Unknown error from API.')]);
@@ -497,7 +502,7 @@ class EntityController extends Controller
         }
 
         // Define the external API URL for fetching entities
-        $apiUrl = config('auth_api.entity_fetch_all_active_url');
+        $apiUrl = config('auth_api.entity_fetch_parent_active_url');
 
         if (!$apiUrl) {
             Log::error('Entity fetch URL not configured.');

@@ -264,10 +264,11 @@ console.log('warehouseTypeId: {{ $warehouseTypeId }}');
             var selectedType = $('#entity_type_id').val();
             if (selectedType == bloodBankTypeId || selectedType == warehouseTypeId) {
                 $('#parent_entity_div').removeClass('d-none');
+                $('#parent_entity_id').attr('required', true);
                 fetchParentEntities();
             } else {
                 $('#parent_entity_div').addClass('d-none');
-                $('#parent_entity_id').empty().append('<option value="">Choose Parent Entity...</option>');
+                $('#parent_entity_id').removeAttr('required').empty().append('<option value="">Choose Parent Entity...</option>');
             }
         }
 
