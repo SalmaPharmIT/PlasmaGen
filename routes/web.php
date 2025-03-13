@@ -68,8 +68,8 @@ Route::group(['middleware' => ['auth']], function () {
     /* *********************  Users Ends ********************************* */
 
     /* *********************  Settings Starts ********************************* */
-    Route::get('/api/states/{countryId}', [UserController::class, 'getStatesById']);
-    Route::get('/api/cities/{stateId}', [UserController::class, 'getCitiesById']);
+    Route::get('/api/states/{countryId}', [UserController::class, 'getStatesById'])->name('api.states');
+    Route::get('/api/cities/{stateId}', [UserController::class, 'getCitiesById'])->name('api.cities');
     /* *********************   Settings Ends ********************************* */
 
     /* *********************  Blood Bank Starts ********************************* */
@@ -100,6 +100,20 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::get('/entities/features', [EntityController::class, 'entityFeatures'])->name('entities.features');
     Route::put('/entities/features/update', [EntityController::class, 'updateFeatureSettings'])->name('entities.features.update');
+
+    Route::get('/users/reportMapping', [UserController::class, 'showUserReportMapping'])->name('users.reportMapping');
+    Route::get('/get-user-report-mapping', [UserController::class, 'getUserReportMapping'])->name('getUserReportMapping');
+    Route::get('/get-employee-by-role/{roleId}', [UserController::class, 'getEmployeeByRoleId'])->name('getEmployeeByRoleId');
+    Route::get('/get-roles-by-hierarchy/{roleId}', [UserController::class, 'getRoleByDownwardHierarchy'])->name('getRoleByDownwardHierarchy');
+    Route::post('/users/reportMapping/submit', [UserController::class, 'submitUserReportMapping'])->name('users.reportMapping.submit');
+    Route::post('/users/reportMapping/edit', [UserController::class, 'editUserReportMapping'])->name('users.reportMapping.edit');
+    Route::post('/users/reportMapping/delete', [UserController::class, 'deleteUserReportMapping'])->name('users.reportMapping.delete');
+
+    Route::get('/users/workLocationMapping', [UserController::class, 'showWorkLocationMapping'])->name('users.workLocationMapping');
+    Route::post('/users/workLocationMapping/submit', [UserController::class, 'submitWorkLocationMapping'])->name('users.workLocationMapping.submit');
+    Route::get('/get-user-work-location-mapping', [UserController::class, 'getUserWorkLocationMapping'])->name('getUserWorkLocationMapping');
+    Route::post('/users/workLocationMapping/editSubmit', [UserController::class, 'submitWorkLocationMappingEdit'])->name('users.workLocationMapping.editSubmit');
+    Route::post('/users/workLocationMapping/delete', [UserController::class, 'deleteWorkLocationMapping'])->name('users.workLocationMapping.delete');
     /* *********************   Masters for Admin Ends ********************************* */
 
 
@@ -107,11 +121,21 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner', [TourPlannerController::class, 'index'])->name('tourplanner.index');
     Route::get('/tourplanner/getCollectingAgents', [TourPlannerController::class, 'getCollectingAgents'])->name('tourplanner.getCollectingAgents');     //Fetch Collecting Agents Users list api
     Route::get('/tourplanner/getBloodBanks', [TourPlannerController::class, 'getBloodBanks'])->name('tourplanner.getBloodBanks');
+    Route::get('/tourplanner/getEmployeesBloodBanks', [TourPlannerController::class, 'getEmployeesBloodBanks'])->name('tourplanner.getEmployeesBloodBanks');
+    Route::get('/tourplanner/getEmployeesCities', [TourPlannerController::class, 'getEmployeeCities'])->name('tourplanner.getEmployeesCities');
     Route::get('/tourplanner/getPendingDocuments', [TourPlannerController::class, 'getPendingDocuments'])->name('tourplanner.getPendingDocuments');
     // New route for fetching calendar events
     Route::get('/tourplanner/getCalendarEvents', [TourPlannerController::class, 'getCalendarEvents'])->name('tourplanner.getCalendarEvents');
     Route::post('/tourplanner/saveTourPlan', [TourPlannerController::class, 'saveTourPlan'])->name('tourplanner.saveTourPlan');
     Route::delete('/tourplanner/deleteTourPlan', [TourPlannerController::class, 'deleteTourPlan'])->name('tourplanner.deleteTourPlan');
+
+    Route::get('/tourplanner/sourcingCreateTourPlan', [TourPlannerController::class, 'showSourcingCreateTourPlan'])->name('tourplanner.sourcingCreateTourPlan');
+    Route::post('/tourplanner/submit_monthly_tour_plan', [TourPlannerController::class, 'submitMonthlyTourPlan'])->name('tourplanner.submitMonthlyTourPlan');
+    Route::post('/tourplanner/submit_edit_request', [TourPlannerController::class, 'submitEditRequest'])->name('tourplanner.submitEditRequest');
+    Route::post('/tourplanner/requestCollection', [TourPlannerController::class, 'requestCollection'])->name('tourplanner.requestCollection');
+    Route::get('/tourplanner/collectionIncomingRequests', [TourPlannerController::class, 'showCollectionIncomingRequests'])->name('tourplanner.collectionIncomingRequests');
+    Route::get('/tourplanner/tpCollectionRequests', [TourPlannerController::class, 'getTPCollectionIncomingRequests'])->name('tourplanner.tpCollectionRequests');
+    Route::get('/tourplanner/markTPAdded', [TourPlannerController::class, 'markTPAdded'])->name('tourplanner.markTPAdded');
     /* *********************  Tour Planner Ends ********************************* */
 
     /* *********************  Manage Tour Planner Starts ********************************* */
@@ -138,7 +162,7 @@ Route::group(['middleware' => ['auth']], function () {
 
 
     Route::get('/dashboard/getDashboardData', [DashboardController::class, 'getDashboardData'])->name('dashboard.getDashboardData');
-
+    Route::get('/dashboard/getDashboardGraphData', [DashboardController::class, 'getDashboardGraphData'])->name('dashboard.getDashboardGraphData');
 
     /* *********************  Report Visits Starts ********************************* */
     Route::get('/visits', [ReportVisitsController::class, 'index'])->name('visits.index');
@@ -148,6 +172,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/visits/custom_update', [ReportVisitsController::class, 'updateVisit'])->name('visits.custom_update');
     Route::post('/visits/custom_sourcing_update', [ReportVisitsController::class, 'sourcingDCRSubmit'])->name('visits.custom_sourcing_update');
     Route::post('/visits/finalDCRsubmit', [ReportVisitsController::class, 'finalDCRsubmit'])->name('visits.finalDCRsubmit');
+    Route::get('/visits/getEmployeesTPStatus', [ReportVisitsController::class, 'getEmployeesTPStatus'])->name('visits.getEmployeesTPStatus');
     /* *********************  Report Visits Ends ********************************* */
 
 

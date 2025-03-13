@@ -218,7 +218,8 @@ class TourPlannerController extends Controller
             // Fields required for Collections
             'blood_bank_id' => 'nullable|required_if:tour_plan_type,collections|required_if:tour_plan_type,both|integer|exists:entities,id',
             'date' => 'required|date',
-            'time' => 'nullable|required_if:tour_plan_type,collections|required_if:tour_plan_type,both|date_format:H:i',
+            'time' => 'nullable|date_format:H:i',
+          //  'time' => 'nullable|required_if:tour_plan_type,collections|required_if:tour_plan_type,both|date_format:H:i',
           //  'collecting_agent_id' => 'nullable|required_if:tour_plan_type,collections|integer|exists:users,id',
             'pending_documents_id' => 'nullable|array',
             'quantity' => 'nullable|required_if:tour_plan_type,collections|required_if:tour_plan_type,both|integer|min:1',
@@ -1622,6 +1623,641 @@ class TourPlannerController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while fetching DCR Details.'
+            ], 500);
+        }
+    }
+
+
+    /**
+     * API Endpoint to Fetch Employee  City Mapped Blood Banks Lists.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getEmployeesBloodBanks(Request $request)
+    {
+        // Retrieve the auth user id from the query parameter (if needed)
+        $employeeId = $request->input('auth_user_id');
+        Log::info('Received auth_user_id for employee blood banks fetch', ['employeeId' => $employeeId]);
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching blood banks
+        $apiUrl = config('auth_api.employee_blood_bank_fetch_url');
+
+        if (!$apiUrl) {
+            Log::error('Blood Banks fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Blood Banks fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, ['employeeId' => $employeeId]); // Pass auth_user_id to external API
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch blood banks from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch blood banks from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching blood banks from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching blood banks.',
+            ], 500);
+        }
+    }
+
+
+    public function getEmployeeCities(Request $request)
+    {
+
+        // Retrieve the auth user id from the query parameter (if needed)
+        $employeeId = $request->input('agent_id');
+        Log::info('Received auth_user_id for employee cities fetch', ['employeeId' => $employeeId]);
+
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.employee_cities_fetch_url');
+
+        if (!$apiUrl) {
+            Log::error('Users fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Users fetch URL is not configured.'
+            ], 500);
+        }
+
+      //  Log::info('Fetching users from external API.', ['api_url' => $apiUrl]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, ['employeeId' => $employeeId]); // Pass auth_user_id to external API
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch users from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch users from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching users from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching users.',
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Show the tour plan list page.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function showSourcingCreateTourPlan()
+    {
+        return view('tourplanner.sourcingCreateTourPlan');
+    }
+
+
+    public function submitMonthlyTourPlan(Request $request)
+    {
+        $employeeId = $request->input('agent_id');
+        $month      = $request->input('month');
+        $status     = $request->input('status');
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication token missing. Please log in again.'
+                ], 401);
+            }
+            return redirect()->back()->with('error', 'Authentication token missing. Please log in again.');
+        }
+
+        // Define your external API URL for submission
+        $apiUrl = config('auth_api.tour_plan_monthly_submit_url');
+        if (!$apiUrl) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Monthly submission URL is not configured.'
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Monthly submission URL is not configured.');
+        }
+
+        try {
+            // Build the POST data for the API call
+            $postData = [
+                'employeeId' => $employeeId,
+                'month'      => $month,
+                'status'     => $status,
+            ];
+
+            Log::info('Received employee monthly TP Submit postData', ['postData' => $postData]);
+
+            // Make the API call using POST
+            $apiResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            if ($apiResponse->successful()) {
+                $apiData = $apiResponse->json();
+                Log::info('Received employee monthly TP Submit apiData', ['apiData' => $apiData]);
+
+                if (Arr::get($apiData, 'success')) {
+                    // For AJAX, return JSON response
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Monthly tour plan submitted successfully.',
+                            'data' => $apiData['data'] // e.g., updated_rows, new_status
+                        ]);
+                    }
+                    // Otherwise, redirect
+                    return redirect()->route('tourplanner.sourcingCreateTourPlan')
+                        ->with('success', 'Monthly tour plan submitted successfully.');
+                } else {
+                    Log::warning('External API returned failure on monthly tour plan submission.', [
+                        'message' => Arr::get($apiData, 'message')
+                    ]);
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => Arr::get($apiData, 'message', 'Failed to submit monthly tour plan.')
+                        ], 400);
+                    }
+                    return redirect()->back()->with('error', Arr::get($apiData, 'message', 'Failed to submit monthly tour plan.'));
+                }
+            } else {
+                Log::error('Failed to submit monthly tour plan. API response:', [
+                    'status' => $apiResponse->status(),
+                    'body'   => $apiResponse->body(),
+                ]);
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to submit monthly tour plan due to an API error.'
+                    ], $apiResponse->status());
+                }
+                return redirect()->back()->with('error', 'Failed to submit monthly tour plan due to an API error.');
+            }
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to submit monthly tour plan: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to submit monthly tour plan: ' . $e->getMessage());
+        }
+    }
+
+
+    public function submitEditRequest(Request $request)
+    {
+        $agentId = $request->input('agent_id');
+        $month   = $request->input('month');
+        $editRequest = $request->input('edit_request'); // Should be 1
+        $editRequestReason = $request->input('edit_request_reason');
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication token missing. Please log in again.'
+                ], 401);
+            }
+            return redirect()->back()->with('error', 'Authentication token missing. Please log in again.');
+        }
+
+        // Define your external API URL for edit request submission
+        $apiUrl = config('auth_api.tour_plan_edit_request_url');
+        if (!$apiUrl) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Edit request submission URL is not configured.'
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Edit request submission URL is not configured.');
+        }
+
+        try {
+            // Build the POST data for the API call
+            $postData = [
+                'employeeId' => $agentId,
+                'month'      => $month,
+                'edit_request' => $editRequest, // expected to be 1
+                'edit_request_reason' => $editRequestReason,
+            ];
+
+            Log::info('Received employee edit request postData', ['postData' => $postData]);
+
+            // Make the API call using POST
+            $apiResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            if ($apiResponse->successful()) {
+                $apiData = $apiResponse->json();
+                Log::info('Received employee edit request apiData', ['apiData' => $apiData]);
+
+                if (Arr::get($apiData, 'success')) {
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Edit request submitted successfully.',
+                            'data' => $apiData['data'] // e.g., updated_rows, etc.
+                        ]);
+                    }
+                    return redirect()->route('tourplanner.sourcingCreateTourPlan')
+                        ->with('success', 'Edit request submitted successfully.');
+                } else {
+                    Log::warning('External API returned failure on edit request submission.', [
+                        'message' => Arr::get($apiData, 'message')
+                    ]);
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => Arr::get($apiData, 'message', 'Failed to submit edit request.')
+                        ], 400);
+                    }
+                    return redirect()->back()->with('error', Arr::get($apiData, 'message', 'Failed to submit edit request.'));
+                }
+            } else {
+                Log::error('Failed to submit edit request. API response:', [
+                    'status' => $apiResponse->status(),
+                    'body'   => $apiResponse->body(),
+                ]);
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to submit edit request due to an API error.'
+                    ], $apiResponse->status());
+                }
+                return redirect()->back()->with('error', 'Failed to submit edit request due to an API error.');
+            }
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to submit edit request: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to submit edit request: ' . $e->getMessage());
+        }
+    }
+
+
+    public function requestCollection(Request $request)
+    {
+        $tourPlanId = $request->input('tour_plan_id');
+        $requestSameCity = $request->input('request_same_city'); // Expected to be 0 or 1
+        $message = $request->input('message');
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication token missing. Please log in again.'
+                ], 401);
+            }
+            return redirect()->back()->with('error', 'Authentication token missing. Please log in again.');
+        }
+
+        // Define your external API URL for collection request submission
+        $apiUrl = config('auth_api.tour_plan_collection_request_url');
+        if (!$apiUrl) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Collection request URL is not configured.'
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Collection request URL is not configured.');
+        }
+
+        try {
+            // Build the POST data for the API call
+            $postData = [
+                'tour_plan_id'       => $tourPlanId,
+                'request_same_city'  => $requestSameCity, // expected to be 0 or 1
+                'message'            => $message,
+            ];
+
+            Log::info('Received collection request postData', ['postData' => $postData]);
+
+            // Make the API call using POST
+            $apiResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            if ($apiResponse->successful()) {
+                $apiData = $apiResponse->json();
+                Log::info('Received collection request apiData', ['apiData' => $apiData]);
+
+                if (Arr::get($apiData, 'success')) {
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Collection request submitted successfully.',
+                            'data'    => $apiData['data'] // e.g., updated_rows, etc.
+                        ]);
+                    }
+                    return redirect()->route('tourplanner.sourcingCreateTourPlan')
+                        ->with('success', 'Collection request submitted successfully.');
+                } else {
+                    Log::warning('External API returned failure on collection request submission.', [
+                        'message' => Arr::get($apiData, 'message')
+                    ]);
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => Arr::get($apiData, 'message', 'Failed to submit collection request.')
+                        ], 400);
+                    }
+                    return redirect()->back()->with('error', Arr::get($apiData, 'message', 'Failed to submit collection request.'));
+                }
+            } else {
+                Log::error('Failed to submit collection request. API response:', [
+                    'status' => $apiResponse->status(),
+                    'body'   => $apiResponse->body(),
+                ]);
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to submit collection request due to an API error.'
+                    ], $apiResponse->status());
+                }
+                return redirect()->back()->with('error', 'Failed to submit collection request due to an API error.');
+            }
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to submit collection request: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to submit collection request: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
+     * Show the tour plan Collection Reuest from Sourcing Agentslist page.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function showCollectionIncomingRequests()
+    {
+        return view('tourplanner.collectionIncomingRequests');
+    }
+
+    
+    /**
+     * API Endpoint to Fetch TP Collection Requests.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getTPCollectionIncomingRequests()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.tour_plan_collection_fetch_url');
+
+        if (!$apiUrl) {
+            Log::error('Collection Requests fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Collection Requests fetch URL is not configured.'
+            ], 500);
+        }
+
+        Log::info('Fetching Collection Requests from external API.', ['api_url' => $apiUrl]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                Log::warning('External API Collection Requests apiResponse', ['apiResponse' => $apiResponse]);
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch collection requests from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch collection requests  from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching collection requests  from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching collection requests.',
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Mark TP as added by calling the external API.
+     * Expects a GET parameter 'tp_id'.
+     */
+    public function markTPAdded(Request $request)
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session for markTPAdded.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Validate that tp_id is provided
+        $tp_id = $request->query('tp_id');
+        if (!$tp_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'TP id is required.'
+            ], 400);
+        }
+
+        // Define the external API URL for marking TP as added.
+        // Make sure this is set in your configuration, e.g., config/auth_api.php
+        $apiUrl = config('auth_api.mark_tp_added_url');
+
+        if (!$apiUrl) {
+            Log::error('Mark TP Added URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Mark TP Added URL is not configured.'
+            ], 500);
+        }
+
+        Log::info('Marking TP as added via external API.', ['api_url' => $apiUrl, 'tp_id' => $tp_id]);
+
+        try {
+            // Call the external API with the tp_id as parameter (GET request in this example)
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl, ['tp_id' => $tp_id]);
+
+            Log::info('External API Response for markTPAdded', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => Arr::get($apiResponse, 'message', 'TP marked as added successfully.')
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Failed to mark TP as added.')
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to mark TP as added from the external API.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while marking TP as added from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while marking TP as added.'
             ], 500);
         }
     }

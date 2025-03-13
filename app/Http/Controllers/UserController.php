@@ -809,4 +809,567 @@ class UserController extends Controller
         }
     }
 
+
+    /**
+     * Show the User Report Mapping form.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function showUserReportMapping()
+    { 
+        // Fetch roles via API
+        $rolesResponse = $this->getRoles();
+
+        // Handle API response
+        if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
+            // Successfully retrieved roles
+            $roles = $rolesResponse;
+        } elseif ($rolesResponse instanceof \Illuminate\Http\JsonResponse) {
+            // An error occurred while fetching roles
+            // You can choose to handle the error as needed
+            // For example, redirect back with an error message
+            return back()->withErrors(['roles_error' => 'Unable to fetch roles at this time. Please try again later.']);
+        } else {
+            // Unexpected response structure
+            return back()->withErrors(['roles_error' => 'Unexpected error while fetching roles.']);
+        }
+
+        return view('users.reportMapping', compact('roles'));
+        
+    }
+
+
+    public function getEmployeeByRoleId($roleId)
+    {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Authentication token missing. Please log in again.'
+             ], 401);
+         }
+
+        $apiUrl = config('auth_api.employee_by_roleId_url');
+
+        if (!$apiUrl) {
+            Log::error('Employee By Role ID API URL not configured.');
+            return back()->withErrors(['api_error' => 'Employee By Role ID API URL is not configured.']);
+        }
+
+        // Replace {countryId} placeholder with the actual value
+        $apiUrl = str_replace('{id}', $roleId, $apiUrl);
+        Log::info('Employee By Role ID API from external API.', ['api_url' => $apiUrl]);
+       
+    
+        try {
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response for States', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+    
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+              //  Log::info('Fetching states for country ID', ['apiResponse' => $apiResponse]);
+                return response()->json([
+                    'success' => true,
+                    'data' => $apiResponse['data'] ?? []
+                ]);
+            }
+    
+            Log::error('Failed to fetch Employees', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Failed to fetch Employees.'], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Employees', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'An error occurred.'], 500);
+        }
+    }
+
+
+    public function getRoleByDownwardHierarchy($roleId)
+    {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Authentication token missing. Please log in again.'
+             ], 401);
+         }
+
+        $apiUrl = config('auth_api.roles_downward_hierarchy_url');
+
+        if (!$apiUrl) {
+            Log::error('Role By Downward Hirarchy ID API URL not configured.');
+            return back()->withErrors(['api_error' => 'Role By Downward Hirarchy API URL is not configured.']);
+        }
+
+        // Replace {countryId} placeholder with the actual value
+        $apiUrl = str_replace('{id}', $roleId, $apiUrl);
+        Log::info('Role By Downward Hirarchy API from external API.', ['api_url' => $apiUrl]);
+       
+    
+        try {
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response for States', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+    
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+              //  Log::info('Fetching states for country ID', ['apiResponse' => $apiResponse]);
+                return response()->json([
+                    'success' => true,
+                    'data' => $apiResponse['data'] ?? []
+                ]);
+            }
+    
+            Log::error('Failed to fetch roles', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Failed to fetch roles.'], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching roles', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'An error occurred.'], 500);
+        }
+    }
+
+    public function submitUserReportMapping(Request $request)
+    {
+
+        Log::info('submitUserReportMapping', ['request' => $request]);
+        // Validate all mandatory fields from the mapping form
+        $validated = $request->validate([
+            'role'           => 'required|exists:roles,id', // Manager Role
+            'manager'        => 'required|exists:users,id',
+            'employee_role'  => 'required|exists:roles,id',
+            'employee'       => 'required|exists:users,id',
+        ]);
+
+        // Determine entity_id (for example, from the authenticated user's record)
+        $entity_id = Auth::user()->entity_id ?? null;
+        $created_by = Auth::id();
+        $modified_by = Auth::id();
+
+        // Build the data to post (mapping fields as defined in your migration)
+        $postData = [
+            'entity_id'         => $entity_id,
+            'manager_id'        => $validated['manager'],
+            'manager_role_id'   => $validated['role'],
+            'employee_id'       => $validated['employee'],
+            'employee_role_id'  => $validated['employee_role'],
+            'created_by'        => $created_by,
+            'modified_by'       => $modified_by,
+        ];
+
+        Log::info('submitUserReportMapping from external API.', ['postData' => $postData]);
+
+        // Retrieve the API token from session
+        $token = session()->get('api_token');
+        if (!$token) {
+            return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+        }
+
+        // Get the external API URL for creating a mapping (make sure this is set in your config)
+        $apiUrl = config('auth_api.user_report_mapping_create_url');
+        if (!$apiUrl) {
+            return redirect()->back()->withErrors(['api_error' => 'Mapping API URL not configured.']);
+        }
+
+        try {
+            // Send the data to the external API via POST
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success')) {
+                    return redirect()->back()->with('success', 'Mapping created successfully.');
+                } else {
+                    return redirect()->back()->withErrors(['submit_error' => Arr::get($apiResponse, 'message', 'Unknown error.')])->withInput();
+                }
+            } else {
+                return redirect()->back()->withErrors(['submit_error' => 'Failed to connect to the mapping API.'])->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['submit_error' => 'An error occurred: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+
+    public function getUserReportMapping()
+    {
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+        $apiUrl = config('auth_api.user_report_mapping_fetch_url');
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mapping fetch URL is not configured.'
+            ], 500);
+        }
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch mapping data.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred.'
+            ], 500);
+        }
+    }
+
+
+    public function editUserReportMapping(Request $request)
+    {
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json(['success' => false, 'message' => 'Authentication token missing.'], 401);
+        }
+        $apiUrl = config('auth_api.user_report_mapping_edit_url'); // Set this in your config
+        if (!$apiUrl) {
+            return response()->json(['success' => false, 'message' => 'Edit API URL not configured.'], 500);
+        }
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+            ])->post($apiUrl, $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    public function deleteUserReportMapping(Request $request)
+    {
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+        
+        $apiUrl = config('auth_api.user_report_mapping_delete_url');
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mapping delete URL not configured.'
+            ], 500);
+        }
+        
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+            ])->post($apiUrl, $request->all());
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    /**
+     * Show the showWorkLocationMapping form.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function showWorkLocationMapping()
+    { 
+
+         // Fetch roles via API
+         $rolesResponse = $this->getRoles();
+
+         // Handle API response
+         if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
+             // Successfully retrieved roles
+             $roles = $rolesResponse;
+         } elseif ($rolesResponse instanceof \Illuminate\Http\JsonResponse) {
+             // An error occurred while fetching roles
+             // You can choose to handle the error as needed
+             // For example, redirect back with an error message
+             return back()->withErrors(['roles_error' => 'Unable to fetch roles at this time. Please try again later.']);
+         } else {
+             // Unexpected response structure
+             return back()->withErrors(['roles_error' => 'Unexpected error while fetching roles.']);
+         }
+ 
+
+        $countries = \App\Models\Country::all();
+        return view('users.workLocationMapping', compact('countries', 'roles'));
+        
+    }
+
+    public function submitWorkLocationMapping(Request $request)
+    {
+        $validated = $request->validate([
+            'role'       => 'required|exists:roles,id',
+            'manager'    => 'required|exists:users,id',
+            'country_id' => 'required|exists:countries,id',
+            'state_id'   => 'required|exists:states,id',
+            'city_id'    => 'required|array',
+            'city_id.*'  => 'required|exists:cities,id',
+        ]);
+    
+        // Ensure city_id is always an array (even if only one is selected)
+        $cityIds = Arr::wrap($validated['city_id']);
+    
+        // Retrieve additional details
+        $entity_id  = Auth::user()->entity_id ?? null;
+        $user_id    = $validated['manager'];
+        $created_by = Auth::id();
+        $modified_by = Auth::id();
+    
+        // Build the data payload, passing the entire array for city_id
+        $postData = [
+            'entity_id'   => $entity_id,
+            'user_id'     => $user_id,
+            'city_id'     => $cityIds, // Entire array
+            'state_id'    => $validated['state_id'],
+            'country_id'  => $validated['country_id'],
+            'created_by'  => $created_by,
+            'modified_by' => $modified_by,
+        ];
+    
+        // Log the post data for debugging
+        Log::info('submitWorkLocationMapping payload to external API.', ['postData' => $postData]);
+    
+        $token = session()->get('api_token');
+        $apiUrl = config('auth_api.user_work_location_mapping_create_url');
+    
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+            ])->post($apiUrl, $postData);
+        
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success')) {
+                    return redirect()->back()->with('success', 'Work location mapping(s) created successfully.');
+                } else {
+                    return redirect()->back()->withErrors(['submit_error' => Arr::get($apiResponse, 'message', 'Unknown error.')])->withInput();
+                }
+            } else {
+                return redirect()->back()->withErrors(['submit_error' => 'Failed to connect to the work location mapping API.'])->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['submit_error' => 'An error occurred: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+
+    public function getUserWorkLocationMapping()
+    {
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        $apiUrl = config('auth_api.user_work_location_mapping_fetch_url');
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mapping fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                Log::info('getUserWorkLocationMapping response from external API.', ['apiResponse' => $apiResponse]);
+
+                // Simply return the raw data array as received from the API.
+                return response()->json([
+                    'success' => true,
+                    'data'    => Arr::get($apiResponse, 'data', [])
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch mapping data.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching mapping data.'
+            ], 500);
+        }
+    }
+
+
+    public function submitWorkLocationMappingEdit(Request $request)
+    {
+        $validated = $request->validate([
+            'entity_id'   => 'required|exists:entities,id',
+            'user_id'     => 'required|exists:users,id',
+            'country_id'  => 'required|exists:countries,id',
+            'state_id'    => 'required|exists:states,id',
+            'city_id'     => 'required|array',
+            'city_id.*'   => 'required|exists:cities,id',
+        ]);
+
+        // Retrieve additional details like created_by and modified_by
+        $created_by = Auth::id();
+        $modified_by = Auth::id();
+
+        // Build the payload including the grouping keys and new array of city IDs
+        $postData = [
+            'entity_id'   => $validated['entity_id'],
+            'user_id'     => $validated['user_id'],
+            'country_id'  => $validated['country_id'],
+            'state_id'    => $validated['state_id'],
+            'city_id'     => $validated['city_id'],  // Array of city IDs
+            'created_by'  => $created_by,
+            'modified_by' => $modified_by,
+        ];
+
+        $token = session()->get('api_token');
+        $apiUrl = config('auth_api.user_work_location_mapping_edit_url');
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success')) {
+                    return redirect()->back()->with('success', 'User Work location mapping updated successfully.');
+                } else {
+                    return redirect()->back()->withErrors(['edit_error' => Arr::get($apiResponse, 'message', 'Unknown error.')])->withInput();
+                }
+            } else {
+                return redirect()->back()->withErrors(['edit_error' => 'Failed to connect to the mapping edit API.'])->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['edit_error' => 'An error occurred: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+
+    public function deleteWorkLocationMapping(Request $request)
+    {
+        $request->validate([
+            'entity_id'   => 'required|integer',
+            'user_id'     => 'required|integer',
+            'state_id'    => 'required|integer',
+            'country_id'  => 'required|integer',
+        ]);
+
+        $entity_id = $request->input('entity_id');
+        $user_id   = $request->input('user_id');
+        $state_id  = $request->input('state_id');
+        $country_id = $request->input('country_id');
+
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        $apiUrl = config('auth_api.user_work_location_mapping_delete_url');
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mapping delete URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+            ])->post($apiUrl, [
+                'entity_id'   => $entity_id,
+                'user_id'     => $user_id,
+                'state_id'    => $state_id,
+                'country_id'  => $country_id,
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                return response()->json($apiResponse);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to connect to the mapping delete API.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 }

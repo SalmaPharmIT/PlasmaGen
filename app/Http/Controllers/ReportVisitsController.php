@@ -588,10 +588,16 @@ class ReportVisitsController extends Controller
                            'data'    => $apiResponse['data'] ?? null, // Optional: include data if needed
                        ]);
                    } else {
-                       return response()->json([
-                           'success' => false,
-                           'message' => $apiResponse['message'] ?? 'Unknown error from API.'
-                       ], 400);
+                        if ($apiResponse['message'] === "DCR already submitted.") {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "DCR already submitted."
+                            ], 200);
+                        }
+                        return response()->json([
+                            'success' => false,
+                            'message' => $apiResponse['message'] ?? 'Unknown error from API.'
+                        ], 200); // You can change this status if needed.
                    }
                } else {
                    // Log the HTTP status code and response body
@@ -614,4 +620,85 @@ class ReportVisitsController extends Controller
              ], 500);
            }
        }
+
+
+    /**
+     * API Endpoint to Fetch Employee TP Status Lists.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getEmployeesTPStatus(Request $request)
+    {
+        // Retrieve the auth user id from the query parameter (if needed)
+        $employeeId = $request->input('auth_user_id');
+        $selectedMonth = $request->input('selectedMonth');
+        Log::info('Received auth_user_id for employee TP Status fetch', ['employeeId' => $employeeId, 'selectedMonth' => $selectedMonth]);
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching TP Status
+        $apiUrl = config('auth_api.employee_tp_status_url');
+
+        if (!$apiUrl) {
+            Log::error('TP Status fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'TP Status fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, ['employeeId' => $employeeId, 'month' => $selectedMonth]); // Pass auth_user_id to external API
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch TP Status from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch TP Status from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching TP Status from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching TP Status.',
+            ], 500);
+        }
+    }
+
 }

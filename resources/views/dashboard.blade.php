@@ -129,7 +129,7 @@
 
           </div><!-- End Customers Card -->
 
-          <!-- Reports -->
+ 
           <div class="col-12">
             <div class="card">
 
@@ -147,12 +147,12 @@
               </div>
 
               <div class="card-body">
-                <h5 class="card-title">Reports <span>/Today</span></h5>
+                <h5 class="card-title">Reports</h5>
 
                 <!-- Line Chart -->
                 <div id="reportsChart"></div>
 
-                <script>
+                {{-- <script>
                   document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#reportsChart"), {
                       series: [{
@@ -203,7 +203,7 @@
                       }
                     }).render();
                   });
-                </script>
+                </script> --}}
                 <!-- End Line Chart -->
 
               </div>
@@ -693,8 +693,87 @@
             }
 
 
+             // Function to load dashboard graph data and render the Reports chart
+             function loadDashboardGraphData() {
+                $.ajax({
+                    url: "{{ route('dashboard.getDashboardGraphData') }}",
+                    type: 'GET',
+                    success: function(response) {
+                        if(response.success) {
+                            const data = response.data;
+                            // Reverse the array if the API returns months in descending order so that the chart displays in chronological order
+                            data.reverse();
+                            
+                            // Prepare arrays for the chart series and x-axis labels
+                            const months = data.map(item => item.month);
+                            const bloodBanks = data.map(item => item.blood_bank_count);
+                            const warehouses = data.map(item => item.warehouse_count);
+                            const customers = data.map(item => item.customer_count);
+
+                            // Render the ApexCharts Reports Chart with dynamic data
+                            new ApexCharts(document.querySelector("#reportsChart"), {
+                                series: [{
+                                    name: 'Blood Banks',
+                                    data: bloodBanks,
+                                }, {
+                                    name: 'Warehouses',
+                                    data: warehouses,
+                                }, {
+                                    name: 'Customers',
+                                    data: customers,
+                                }],
+                                chart: {
+                                    height: 350,
+                                    type: 'area',
+                                    toolbar: {
+                                        show: false
+                                    },
+                                },
+                                markers: {
+                                    size: 4
+                                },
+                                colors: ['#4154f1', '#2eca6a', '#ff771d'],
+                                fill: {
+                                    type: "gradient",
+                                    gradient: {
+                                        shadeIntensity: 1,
+                                        opacityFrom: 0.3,
+                                        opacityTo: 0.4,
+                                        stops: [0, 90, 100]
+                                    }
+                                },
+                                dataLabels: {
+                                    enabled: false
+                                },
+                                stroke: {
+                                    curve: 'smooth',
+                                    width: 2
+                                },
+                                xaxis: {
+                                    type: 'category',
+                                    categories: months,
+                                },
+                                tooltip: {
+                                    x: {
+                                        format: 'yyyy-MM'
+                                    },
+                                }
+                            }).render();
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching dashboard graph data:", error);
+                        Swal.fire('Error', 'An error occurred while fetching dashboard graph data.', 'error');
+                    }
+                });
+            }
+
+
            // Load DashboardData on page load
            loadDashboardData();
+           loadDashboardGraphData();
         });
     </script>
     

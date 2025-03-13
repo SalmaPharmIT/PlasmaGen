@@ -947,13 +947,28 @@
                         // });
 
                         // Check if any visit has status "updated"
-                        const anyUpdated = visits.some(visit => {
-                            return visit.extendedProps &&
-                                visit.extendedProps.status &&
-                                visit.extendedProps.status.toLowerCase() === "updated";
-                        });
+                        // const anyUpdated = visits.some(visit => {
+                        //     return visit.extendedProps &&
+                        //         visit.extendedProps.status &&
+                        //         visit.extendedProps.status.toLowerCase() === "updated";
+                        // });
 
-                        if(allUpdated) {
+                        const anyUpdated = visits.some(visit => {
+                            if (!visit.extendedProps || !visit.extendedProps.status) return false;
+                            const status = visit.extendedProps.status.toLowerCase();
+                            const tourPlanType = Number(visit.extendedProps.tour_plan_type);
+                            // For tour_plan_type 1, status should be "updated"
+                            // For tour_plan_type 2, status should be "initiated"
+                            if (tourPlanType === 1 && status === "updated" && visit.extendedProps.tp_status == 'accepted') {
+                                return true;
+                            }
+                            if (tourPlanType === 2 && (status === "updated" || status === "dcr_submitted")  && visit.extendedProps.tp_status == 'accepted') {
+                                return true;
+                            }
+                            return false;
+                        }); 
+
+                        if(anyUpdated) {
                             $("#finalDcrSubmitForm").show();
                         } else {
                             $("#finalDcrSubmitForm").hide();
@@ -1208,7 +1223,7 @@
             // Check if the visit_date is the current date
             const visitDate = visit.visit_date ? formatDate(visit.visit_date) : null;
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 1 &&visit.extendedProps.status == 'submitted') {
+            if(visitDate && visitDate === currentDate && tourPlanType === 1 && visit.extendedProps.status == 'submitted' && visit.extendedProps.tp_status == 'accepted') {
                 // Add Update button centered
                 const updateButton = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateVisitModal" data-visit-id="${visit.id}" data-visit='${JSON.stringify(visit)}'>Update Visit</button>`;
                 detailsHtml += `<div class="mt-3 text-center">${updateButton}</div>`;
@@ -1216,7 +1231,7 @@
                 // The Fetch Entity Features is now handled within the modal show event
             }
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 2) {   // For Sourcing DCR Submit Button
+            if(visitDate && visitDate === currentDate && tourPlanType === 2  && visit.extendedProps.tp_status == 'accepted') {   // For Sourcing DCR Submit Button
               // Encode the visit data to safely include in the data attribute
                 const encodedVisit = encodeURIComponent(JSON.stringify(visit));
 
@@ -1233,7 +1248,7 @@
                 detailsHtml += `<div class="mt-3 text-center">${submitButton}</div>`;
             }
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 3) {
+            if(visitDate && visitDate === currentDate && tourPlanType === 3  && visit.extendedProps.tp_status == 'accepted') {
         
 
                 // Collection Submit - For Both 
@@ -1930,7 +1945,12 @@
                                     Swal.fire('Success', response.message, 'success');
                                     // Optionally, refresh visits or perform other actions.
                                 } else {
-                                    Swal.fire('Error', response.message, 'error');
+                                    // This will now trigger for "DCR already submitted." and other API errors returned with HTTP 200.
+                                    if(response.message === "DCR already submitted.") {
+                                        Swal.fire('Warning', response.message, 'warning');
+                                    } else {
+                                        Swal.fire('Error', response.message, 'error');
+                                    }
                                 }
                             },
                             error: function(xhr, status, error) {
