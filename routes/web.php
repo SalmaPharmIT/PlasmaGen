@@ -173,6 +173,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/visits/custom_sourcing_update', [ReportVisitsController::class, 'sourcingDCRSubmit'])->name('visits.custom_sourcing_update');
     Route::post('/visits/finalDCRsubmit', [ReportVisitsController::class, 'finalDCRsubmit'])->name('visits.finalDCRsubmit');
     Route::get('/visits/getEmployeesTPStatus', [ReportVisitsController::class, 'getEmployeesTPStatus'])->name('visits.getEmployeesTPStatus');
+    Route::get('/visits/getCoreSourcingBloodBanks', [ReportVisitsController::class, 'getCoreSourcingBloodBanks'])->name('visits.getCoreSourcingBloodBanks');
+    Route::get('/visits/getSourcingGSTRates', [ReportVisitsController::class, 'getSourcingGSTRates'])->name('visits.getSourcingGSTRates');
     /* *********************  Report Visits Ends ********************************* */
 
 

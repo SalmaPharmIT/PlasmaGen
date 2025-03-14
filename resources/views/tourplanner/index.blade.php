@@ -24,10 +24,10 @@
             <!-- Filters Row -->
             <div class="row mb-4 mt-2 align-items-end">
                 <!-- Collecting Agent Dropdown -->
-                <div class="col-md-3">
-                    <label for="collectingAgentDropdown" class="form-label">Collecting Agent</label>
+                <div class="col-md-4">
+                    <label for="collectingAgentDropdown" class="form-label">Collecting / Sourcing Executives</label>
                     <select id="collectingAgentDropdown" class="form-select select2">
-                        <option value="">Choose Collecting Agent</option>
+                        <option value="">Choose Collecting/Sourcing Executives</option>
                         <!-- Options will be populated via AJAX -->
                     </select>
                 </div>
@@ -39,7 +39,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-2 d-flex align-items-end">
                     <button id="filterButton" class="btn btn-success w-100">
                         <i class="bi bi-filter me-1"></i> Submit
                    </button>
@@ -99,13 +99,13 @@
 
              <!-- **Common** Collecting Agents Dropdown -->
               <div class="mb-3">
-                <label for="tourPlanCollectingAgent" class="form-label">Collecting Agent <span style="color:red">*</span></label>
+                <label for="tourPlanCollectingAgent" class="form-label">Collecting/Sourcing Executives <span style="color:red">*</span></label>
                 <select id="tourPlanCollectingAgent" class="form-select select2" name="collecting_agent_id" required>
-                  <option value="">Choose Collecting Agent</option>
+                  <option value="">Choose Collecting/Sourcing Executives</option>
                   <!-- Options will be populated via AJAX -->
                 </select>
                 <div class="invalid-feedback">
-                  Please select a Collecting Agent.
+                  Please select a Collecting/Sourcing Executives.
                 </div>
               </div>
   
@@ -427,10 +427,11 @@
                             var agents = response.data;
                             var dropdown = $('#collectingAgentDropdown');
                             var modalDropdown = $('#tourPlanCollectingAgent');
-                            dropdown.empty().append('<option value="">Choose Collecting Agent</option>');
-                            modalDropdown.empty().append('<option value="">Choose Collecting Agent</option>');
+                            dropdown.empty().append('<option value="">Choose Executives</option>');
+                            modalDropdown.empty().append('<option value="">Choose Executives</option>');
                             $.each(agents, function(index, agent) {
-                                var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                               // var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                                var option = '<option value="' + agent.id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
                                 dropdown.append(option);
                                 modalDropdown.append(option);
                             });
@@ -1063,7 +1064,7 @@
                 $('#tourPlanCollectingAgent').select2({
                     theme: 'bootstrap-5',
                     width: '100%',
-                    placeholder: 'Choose Collecting Agent',
+                    placeholder: 'Choose Collecting/Sourcing Executives',
                     allowClear: true,
                     dropdownParent: $('#addTourPlanModal')
                 });

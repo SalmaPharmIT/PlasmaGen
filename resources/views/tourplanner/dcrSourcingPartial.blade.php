@@ -37,7 +37,7 @@
                         <div class="card mb-3">
                             <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                                 <strong>Sourcing Visit #{{ $loop->iteration }}</strong>
-                                @if($dcr['extendedProps']['tour_plan_type'] == 2 && (strtolower($dcr['extendedProps']['manager_status']) == 'accepted' || strtolower($dcr['extendedProps']['manager_status']) == 'approved'))
+                                @if($dcr['extendedProps']['tour_plan_type'] == 2 && (strtolower($dcr['extendedProps']['manager_status']) == 'accepted' || strtolower($dcr['extendedProps']['manager_status']) == 'approved') && Auth::user()->role_id == 2)
                                     @php
                                         $registerUrl = route('bloodbank.register', ['id' => $visit['id']]);
                                     @endphp
@@ -85,6 +85,30 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <p><strong>Remarks:</strong> {{ $visit['sourcing_remarks'] ?? 'N/A' }}</p>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <p><strong>Part-A Price:</strong> {{ $visit['sourcing_part_a_price'] ?? 'N/A' }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Part-B Price:</strong> {{ $visit['sourcing_part_b_price'] ?? 'N/A' }}</p>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <p><strong>Part-C Price:</strong> {{ $visit['sourcing_part_c_price'] ?? 'N/A' }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Include GST:</strong> {{ $visit['include_gst'] == 1 ? 'Yes' : 'No' }}</p>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <p><strong>GST Rate (%):</strong> {{ $visit['gst_rate'] ?? 'N/A' }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Total Plasma Price:</strong> {{ $visit['sourcing_total_plasma_price'] ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                             </div>

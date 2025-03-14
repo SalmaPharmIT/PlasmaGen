@@ -98,4 +98,6 @@ return [
     'tour_plan_collection_fetch_url' =>  $base_url . 'tour_plan_collection_fetch.php',
     'mark_tp_added_url' =>  $base_url . 'mark_tp_added.php',
     'dashboard_web_by_month_url' =>  $base_url . 'dashboard_web_by_month.php',
+    'core_sourcing_bloodbanks_fetch_url' =>  $base_url . 'core_sourcing_bloodbanks_fetch.php',
+    'gst_rates_fetch_url' =>  $base_url . 'gst_rates_fetch.php',
 ];

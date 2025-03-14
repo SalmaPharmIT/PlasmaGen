@@ -25,9 +25,9 @@
             <div class="row mb-4 mt-2 align-items-end">
                 <!-- Collecting Agent Dropdown -->
                 <div class="col-md-4">
-                    <label for="collectingAgentDropdown" class="form-label">Collecting Agent</label>
+                    <label for="collectingAgentDropdown" class="form-label">Collecting/Sourcing Executives</label>
                     <select id="collectingAgentDropdown" class="form-select select2">
-                        <option value="">Choose Collecting Agent</option>
+                        <option value="">Choose Collecting/Sourcing Executives</option>
                         <!-- Options will be populated via AJAX -->
                     </select>
                 </div>
@@ -161,9 +161,10 @@
                         if(response.success) {
                             var agents = response.data;
                             var dropdown = $('#collectingAgentDropdown');
-                            dropdown.empty().append('<option value="">Choose Collecting Agent</option>');
+                            dropdown.empty().append('<option value="">Choose Collecting Executives</option>');
                             $.each(agents, function(index, agent) {
-                                var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                                //var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                                var option = '<option value="' + agent.id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
                                 dropdown.append(option);
                             });
                             // Trigger Select2 to reinitialize with new options

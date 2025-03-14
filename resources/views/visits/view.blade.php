@@ -96,7 +96,7 @@
         @csrf
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title" id="updateVisitModalLabel">DCR Submit</h5>
+            <h5 class="modal-title" id="updateVisitModalLabel">Update Visit</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -510,18 +510,14 @@
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Submit DCR</h5>
+                    <h5 class="modal-title">Update Visit</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Existing Sourcing Details -->
+                    <!-- Existing Sourcing Details (if any) -->
                     <h5><strong>Sourcing Details</strong></h5>
                     <table class="table table-bordered">
                         <tbody>
-                            {{-- <tr>
-                                <th scope="row" style="width: 40%;">Event Type</th>
-                                <td id="sourcingEventTypeDisplay">Sourcing</td>
-                            </tr> --}}
                             <tr>
                                 <th scope="row">Sourcing City</th>
                                 <td id="sourcingCityDisplay">N/A</td>
@@ -538,52 +534,114 @@
                     </table>
                     <hr>
                     
-                    <!-- Form to Add Additional Information -->
+                    <!-- Form to Add Additional Blood Bank Information -->
                     <h5><strong>Add Blood Bank Information</strong></h5>
                     <input type="hidden" name="visit_id" id="sourcingVisitId">
                     <input type="hidden" name="sourcing_user_latitude" id="sourcing_user_latitude">
                     <input type="hidden" name="sourcing_user_longitude" id="sourcing_user_longitude">
                     
-                    <div class="mb-3">
-                        <label for="bloodBankName" class="form-label">Blood Bank Name <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" id="bloodBankName" name="blood_bank_name" required>
+                    <!-- Checkbox to Import from Master -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="1" id="importFromMaster" name="import_from_master">
+                        <label class="form-check-label" for="importFromMaster">
+                            Import from master
+                        </label>
                     </div>
-                    <div class="mb-3">
-                        <label for="contactPersonName" class="form-label">Contact Person Name <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" id="contactPersonName" name="contact_person_name" required>
+                    
+                    <!-- Manual Blood Bank Section (default visible) -->
+                    <div id="manualBloodBankSection">
+                        <div class="mb-3">
+                            <label for="bloodBankName" class="form-label">Blood Bank Name <span style="color:red">*</span></label>
+                            <input type="text" class="form-control" id="bloodBankName" name="blood_bank_name" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="mobileNo" class="form-label">Mobile No <span style="color:red">*</span></label>
-                        <input type="tel" class="form-control" id="mobileNo" name="mobile_no" pattern="[0-9]{10}" required>
-                        <div class="form-text">Enter a 10-digit mobile number.</div>
+                    
+                    <!-- Master Blood Bank Section (hidden by default) -->
+                    <div id="masterBloodBankSection" style="display: none;">
+                        <div class="mb-3">
+                            <label for="masterBloodBankSelect" class="form-label">Select Blood Bank</label>
+                            <select class="form-select select2" id="masterBloodBankSelect" name="master_blood_bank_id">
+                                <option value="">-- Select Blood Bank --</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="address" class="form-label">Address</label>
-                        <textarea class="form-control" id="address" name="address" rows="2"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="FFP_procurement_company" class="form-label">Past/Current FFP Pocurement Company <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" id="FFPProcurementCompany" name="FFPProcurementCompany" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="payment_terms" class="form-label">Current Plasma Price/Ltr <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" id="currentPlasmaPrice" name="currentPlasmaPrice" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="payment_terms" class="form-label">Potential Per Month <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" id="potentialPerMonth" name="potentialPerMonth" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="payment_terms" class="form-label">Payment Terms <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" id="paymentTerms" name="paymentTerms" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="address" class="form-label">Remarks</label>
-                        <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+                    
+                    <!-- Auto-filled Fields (visible by default and editable) -->
+                    <div id="autoFillFieldsSection">
+                        <div class="mb-3">
+                            <label for="contactPersonName" class="form-label">Contact Person Name <span style="color:red">*</span></label>
+                            <input type="text" class="form-control" id="contactPersonName" name="contact_person_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="mobileNo" class="form-label">Mobile No <span style="color:red">*</span></label>
+                            <input type="tel" class="form-control" id="mobileNo" name="mobile_no" pattern="[0-9]{10,}" required>
+                            <div class="form-text">Enter a 10-digit mobile number.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="FFPProcurementCompany" class="form-label">Past/Current FFP Procurement Company <span style="color:red">*</span></label>
+                            <input type="text" class="form-control" id="FFPProcurementCompany" name="FFPProcurementCompany" required>
+                        </div>
+                        <div class="mb-3" style="display: none;">
+                            <label for="currentPlasmaPrice" class="form-label">Current Plasma Price/Ltr</label>
+                            <input type="text" class="form-control" id="currentPlasmaPrice" name="currentPlasmaPrice">
+                        </div>
+                        <div class="mb-3">
+                            <label for="potentialPerMonth" class="form-label">Potential Per Month <span style="color:red">*</span></label>
+                            <input type="text" class="form-control" id="potentialPerMonth" name="potentialPerMonth" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="paymentTerms" class="form-label">Payment Terms <span style="color:red">*</span></label>
+                            <input type="text" class="form-control" id="paymentTerms" name="paymentTerms" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="remarks" class="form-label">Remarks</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+                        </div>
+
+                        <!-- After Current Plasma Price/Ltr field -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                            <label for="partAPrice" class="form-label">Part-A Price</label>
+                            <input type="number" class="form-control" id="partAPrice" name="part_a_price" step="0.01" value="0">
+                            </div>
+                            <div class="col-md-4">
+                            <label for="partBPrice" class="form-label">Part-B Price</label>
+                            <input type="number" class="form-control" id="partBPrice" name="part_b_price" step="0.01" value="0">
+                            </div>
+                            <div class="col-md-4">
+                            <label for="partCPrice" class="form-label">Part-C Price</label>
+                            <input type="number" class="form-control" id="partCPrice" name="part_c_price" step="0.01" value="0">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeGST" name="include_gst">
+                            <label class="form-check-label" for="includeGST">
+                                Include GST
+                            </label>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="gstRateSection" style="display:none;">
+                            <label for="gstRateSelect" class="form-label">GST Rate (%)</label>
+                            <select class="form-select select2" id="gstRateSelect" name="gst_rate">
+                            <option value="">-- Select GST Rate --</option>
+                            <!-- Options will be populated dynamically from the API -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="totalPlasmaPrice" class="form-label">Total Plasma Price</label>
+                            <input type="text" class="form-control" id="totalPlasmaPrice" name="total_plasma_price" readonly>
+                        </div>
+  
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -594,6 +652,7 @@
         </form>
     </div>
 </div>
+
 
 <!-- View Sourcing DCR Details Modal -->
 <div class="modal fade" id="viewSourcingDCRVisitModal" tabindex="-1" aria-labelledby="viewSourcingDCRVisitModalLabel" aria-hidden="true">
@@ -917,6 +976,9 @@
         let entityFeatures = {}; // To store km_bound and location_enabled
         let userLocation = null; // To store user's current location
 
+        // Assume coreBloodBanks is a global variable to hold the API data.
+        var coreBloodBanks = [];
+
         console.log('currentDate: '+currentDate);
 
         // Function to fetch visits data
@@ -1231,7 +1293,7 @@
                 // The Fetch Entity Features is now handled within the modal show event
             }
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 2  && visit.extendedProps.tp_status == 'accepted') {   // For Sourcing DCR Submit Button
+            if(visitDate && visitDate === currentDate && tourPlanType === 2 && (visit.extendedProps.status == 'initiated' || visit.extendedProps.status == 'updated') && visit.extendedProps.tp_status == 'accepted') {   // For Sourcing DCR Submit Button
               // Encode the visit data to safely include in the data attribute
                 const encodedVisit = encodeURIComponent(JSON.stringify(visit));
 
@@ -1459,6 +1521,17 @@
             fetchEntityFeatures(modal, 'user_latitude', 'user_longitude');
         });
 
+
+        // Initialize Select2 for the master blood bank select element
+        $('#masterBloodBankSelect').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Choose Blood Bank',
+            allowClear: true,
+            closeOnSelect: true,
+            dropdownParent: $('#updateSourcingVisitModal')
+        });
+
          // Event listener for Update Sourcing Visit Modal to populate data
          $('#updateSourcingVisitModal').on('show.bs.modal', function (event) {
             const modal = $(this);
@@ -1488,6 +1561,31 @@
 
             // Fetch Entity Features and handle location
             fetchEntityFeatures(modal, 'sourcing_user_latitude', 'sourcing_user_longitude');
+
+
+            // Fetch Core Blood Bank Details
+            // fetchCoreBloodBanks(modal);
+            // Call your function to fetch core blood banks.
+            fetchCoreBloodBanks().done(function(response) {
+                if(response.success) {
+                    coreBloodBanks = response.data;
+                    // Populate the dropdown only once if empty.
+                    if ($('#masterBloodBankSelect option').length <= 1) {
+                        $.each(coreBloodBanks, function(index, bank) {
+                            $('#masterBloodBankSelect').append(
+                                $('<option>', {
+                                    value: bank.id,
+                                    text: bank.sourcing_blood_bank_name,
+                                    'data-bank': JSON.stringify(bank)
+                                })
+                            );
+                        });
+                    }
+                }
+            });
+
+             // Fetch GST Rates Details
+             fetchGSTRates(modal);
         });
 
 
@@ -1752,7 +1850,7 @@
             html += `
                 <div class="card mb-3 dynamic-sourcing-sections">
                 <div class="card-header text-white bg-secondary">
-                    <strong>Sourcing Visit #${index+1}</strong>
+                    <strong>Sourcing Visit #${index+1} : ${escapeHtml(sv.blood_bank_name) || '-'}</strong>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
@@ -1791,6 +1889,19 @@
                     <div class="col-md-12">
                         <strong>Remarks:</strong> ${escapeHtml(sv.sourcing_remarks) || 'N/A'}
                     </div>
+                    </div>
+                    <!-- Extra Fields for Part Prices and GST -->
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Part-A Price:</strong> ${sv.sourcing_part_a_price != null ? sv.sourcing_part_a_price : '-'}</div>
+                        <div class="col-md-6"><strong>Part-B Price:</strong> ${sv.sourcing_part_b_price != null ? sv.sourcing_part_b_price : '-'}</div>
+                     </div>
+                    <div class="row mb-3">
+                       <div class="col-md-6"><strong>Part-C Price:</strong> ${sv.sourcing_part_c_price != null ? sv.sourcing_part_c_price : '-'}</div>
+                        <div class="col-md-6"><strong>Include GST:</strong> ${sv.include_gst == 1 ? 'Yes' : 'No'}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>GST Rate (%):</strong> ${sv.gst_rate != null ? sv.gst_rate : '-'}</div>
+                        <div class="col-md-6"><strong>Total Plasma Price:</strong> ${sv.sourcing_total_plasma_price != null ? sv.sourcing_total_plasma_price : '-'}</div>
                     </div>
                 </div>
                 </div>
@@ -1961,6 +2072,188 @@
                     }
                 });
             });
+
+
+         // Function to fetch Core Blood Bank Lits when modal opens
+         function fetchCoreBloodBanks(modal) {
+            return $.ajax({
+                url: "{{ route('visits.getCoreSourcingBloodBanks') }}",
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if(response.success) {
+                        coreBloodBanks = response.data;
+                        console.log('coreBloodBanks:', coreBloodBanks);
+
+                       
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching CoreBloodBanks:", error);
+                    Swal.fire('Error', 'An error occurred while fetching CoreBloodBanks.', 'error');
+                }
+            });
+        }
+
+         // Function to fetch GST Rates when modal opens
+         function fetchGSTRates(modal) {
+            return $.ajax({
+                url: "{{ route('visits.getSourcingGSTRates') }}",
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if(response.success) {
+                        GSTRates = response.data;
+                        console.log('GST Rates:', GSTRates);
+
+                       
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching GST Rates:", error);
+                    Swal.fire('Error', 'An error occurred while fetching GST Rates.', 'error');
+                }
+            });
+        }
+
+
+
+        // Toggle between manual input and master dropdown when checkbox changes.
+        $('#importFromMaster').change(function(){
+            if($(this).is(':checked')){
+                // Hide manual blood bank input.
+                $('#manualBloodBankSection').hide();
+                // Make auto-fill fields read-only.
+              //  $('#autoFillFieldsSection input, #autoFillFieldsSection textarea').prop('readonly', true);
+            //    $('#autoFillFieldsSection input:not(#partAPrice, #partBPrice, #partCPrice), #autoFillFieldsSection textarea').prop('readonly', true);
+                // Show the master blood bank dropdown.
+                $('#masterBloodBankSection').show();
+            } else {
+                // Show manual blood bank input.
+                $('#manualBloodBankSection').show();
+                // Make auto-fill fields editable.
+                $('#autoFillFieldsSection input, #autoFillFieldsSection textarea').prop('readonly', false);
+                // Hide the master blood bank dropdown.
+                $('#masterBloodBankSection').hide();
+                // Clear the dropdown selection and auto-fill fields.
+                $('#masterBloodBankSelect').val('');
+                $('#contactPersonName, #mobileNo, #email, #address, #FFPProcurementCompany, #currentPlasmaPrice, #potentialPerMonth, #paymentTerms, #remarks').val('');
+            }
+        });
+
+        // When a blood bank is selected from the dropdown, auto-fill the fields.
+        $('#masterBloodBankSelect').change(function(){
+            var selectedOption = $(this).find('option:selected');
+            var bankData = selectedOption.data('bank');
+            console.log('bankData', bankData);
+
+            if(bankData){
+               // bankData = JSON.parse(bankData);
+                // Set the manual blood bank text field with the blood bank name
+                $('#bloodBankName').val(bankData.sourcing_blood_bank_name);
+                $('#contactPersonName').val(bankData.sourcing_contact_person);
+                $('#mobileNo').val(bankData.sourcing_mobile_number);
+                $('#email').val(bankData.sourcing_email);
+                $('#address').val(bankData.sourcing_address);
+                $('#FFPProcurementCompany').val(bankData.sourcing_ffp_company);
+                // $('#currentPlasmaPrice').val(bankData.sourcing_plasma_price);
+                $('#potentialPerMonth').val(bankData.sourcing_potential_per_month);
+                $('#paymentTerms').val(bankData.sourcing_payment_terms);
+                $('#remarks').val(bankData.sourcing_remarks);
+            } else {
+                // If no valid selection, clear the auto-fill fields.
+                $('#bloodBankName, #contactPersonName, #mobileNo, #email, #address, #FFPProcurementCompany, #currentPlasmaPrice, #potentialPerMonth, #paymentTerms, #remarks').val('');
+            }
+
+            $(this).select2('close');
+        }); 
+
+
+        $('#updateSourcingVisitModal').on('change', '#masterBloodBankSelect', function(){
+            var selectedOption = $(this).find('option:selected');
+            var bankData = selectedOption.data('bank');
+            console.log('bankData', bankData);
+            // Check if bankData is a string. If it's already an object, no need to parse.
+            if(typeof bankData === 'string'){
+                bankData = JSON.parse(bankData);
+            }
+            if(bankData){
+                // Update the auto-fill fields within the same modal scope
+                $('#updateSourcingVisitModal #contactPersonName').val(bankData.sourcing_contact_person);
+                $('#updateSourcingVisitModal #mobileNo').val(bankData.sourcing_mobile_number);
+                $('#updateSourcingVisitModal #email').val(bankData.sourcing_email);
+                $('#updateSourcingVisitModal #address').val(bankData.sourcing_address);
+                $('#updateSourcingVisitModal #FFPProcurementCompany').val(bankData.sourcing_ffp_company);
+              //  $('#updateSourcingVisitModal #currentPlasmaPrice').val(bankData.sourcing_plasma_price);
+                $('#updateSourcingVisitModal #potentialPerMonth').val(bankData.sourcing_potential_per_month);
+                $('#updateSourcingVisitModal #paymentTerms').val(bankData.sourcing_payment_terms);
+                $('#updateSourcingVisitModal #remarks').val(bankData.sourcing_remarks);
+            } else {
+                // Clear auto-fill fields if no valid option is selected.
+                $('#updateSourcingVisitModal #contactPersonName, #updateSourcingVisitModal #mobileNo, #updateSourcingVisitModal #email, #updateSourcingVisitModal #address, #updateSourcingVisitModal #FFPProcurementCompany, #updateSourcingVisitModal #currentPlasmaPrice, #updateSourcingVisitModal #potentialPerMonth, #updateSourcingVisitModal #paymentTerms, #updateSourcingVisitModal #remarks').val('');
+            }
+
+        
+        });
+
+
+
+        // Function to calculate the total plasma price
+        function calculateTotalPlasmaPrice(){
+            var partA = parseFloat($('#partAPrice').val()) || 0;
+            var partB = parseFloat($('#partBPrice').val()) || 0;
+            var partC = parseFloat($('#partCPrice').val()) || 0;
+            var sum = partA + partB + partC;
+            if($('#includeGST').is(':checked')){
+                var gstRate = parseFloat($('#gstRateSelect').val()) || 0;
+                // Calculate GST amount as percentage of the sum
+                var gstAmount = sum * (gstRate / 100);
+                sum += gstAmount;
+            }
+            $('#totalPlasmaPrice').val(sum.toFixed(2));
+        }
+
+        // When any of the part price inputs change, recalc total
+        $('#partAPrice, #partBPrice, #partCPrice').on('input', calculateTotalPlasmaPrice);
+
+        // When the Include GST checkbox is toggled
+        $('#includeGST').change(function(){
+            if($(this).is(':checked')){
+                $('#gstRateSection').show();
+            } else {
+                $('#gstRateSection').hide();
+            }
+            calculateTotalPlasmaPrice();
+        });
+
+        // When the GST rate selection changes
+        $('#gstRateSelect').on('change', calculateTotalPlasmaPrice);
+
+        // Populate the GST dropdown after fetching GST Rates
+        function populateGSTRates(gstRates) {
+            // Clear existing options (except the first placeholder)
+            $('#gstRateSelect').find('option:not(:first)').remove();
+            $.each(gstRates, function(index, rate) {
+                $('#gstRateSelect').append(
+                    $('<option>', {
+                        value: rate.gst, // using the gst percentage value
+                        text: rate.gst + '%'
+                    })
+                );
+            });
+        }
+
+        // In your fetchGSTRates callback, after you confirm success:
+        fetchGSTRates().done(function(response) {
+            if(response.success){
+                populateGSTRates(response.data);
+            }
+        });
+
 
 
     });

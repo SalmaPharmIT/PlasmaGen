@@ -387,7 +387,7 @@ class ReportVisitsController extends Controller
             $validatedData = $request->validate([
                 'blood_bank_name'           => 'required|string|max:255',
                 'contact_person_name'       => 'required|string|max:255',
-                'mobile_no'                 => 'required|digits:10',
+                'mobile_no'                 => 'required|digits_between:10,20',
                 'email'                     => 'nullable|email|max:255',
                 'address'                   => 'nullable|string|max:500',
                 'FFPProcurementCompany'     => 'nullable|string|max:255',
@@ -397,8 +397,18 @@ class ReportVisitsController extends Controller
                 'remarks'                   => 'nullable|string|max:1000',
                 'sourcing_user_latitude'    => 'nullable|numeric',
                 'sourcing_user_longitude'   => 'nullable|numeric',
+                 // New extra fields
+                'part_a_price'              => 'nullable|numeric|min:0',
+                'part_b_price'              => 'nullable|numeric|min:0',
+                'part_c_price'              => 'nullable|numeric|min:0',
+                'include_gst'               => 'sometimes|accepted', // if checkbox is ticked, its value should be "on" or "1"
+                'gst_rate'                  => 'nullable|numeric',
+                'total_plasma_price'        => 'nullable|numeric|min:0'
             ]);
   
+            // Convert the 'include_gst' field to 1 or 0
+            $includeGST = $request->has('include_gst') && $request->input('include_gst') === 'on' ? 1 : 0;
+
   
           // Log the data being sent
           Log::info('Update Collection DCR API validatedData', [
@@ -415,6 +425,7 @@ class ReportVisitsController extends Controller
                   'message' => 'Authentication token missing. Please log in again.'
               ], 401);
           }
+
   
             // Prepare the data to send to the external API
             $postData = [
@@ -433,7 +444,19 @@ class ReportVisitsController extends Controller
                 'user_longitude'        => $validatedData['sourcing_user_longitude'] ?? null,
                 'created_by'            => Auth::id(), // Assuming you want to capture the authenticated user
                 'modified_by'           => Auth::id(),
+                 // Extra fields
+                'part_a_price'            => $validatedData['part_a_price'] ?? 0,
+                'part_b_price'            => $validatedData['part_b_price'] ?? 0,
+                'part_c_price'            => $validatedData['part_c_price'] ?? 0,
+                'include_gst'             => $includeGST,
+                'gst_rate'                => $validatedData['gst_rate'] ?? 0,
+                'total_plasma_price'      => $validatedData['total_plasma_price'] ?? 0,
             ];
+
+             // Log the data being sent
+            Log::info('Sourcing  DCR postData API validatedData', [
+                'validatedData' => $validatedData,
+            ]);
 
   
           // Define the external API URL for saving the tour plan
@@ -700,5 +723,148 @@ class ReportVisitsController extends Controller
             ], 500);
         }
     }
+
+
+     /**
+     * Fetch core blood banks data for a specific date via API.
+     *
+     * @param  string  $date
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+     public function getCoreSourcingBloodBanks()
+     {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+ 
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+         }
+ 
+         // Define the external API URL for fetching Core Sourcing Blood Banks
+         $apiUrl = config('auth_api.core_sourcing_bloodbanks_fetch_url');
+ 
+         if (!$apiUrl) {
+             Log::error('Core Sourcing Blood Banks Fetch URL not configured.');
+             return back()->withErrors(['api_error' => 'Core Sourcing Blood Banks Fetch URL is not configured.']);
+         }
+ 
+         try {
+             // Make the API request to fetch Core Sourcing Blood Banks
+             $response = Http::withHeaders([
+                 'Authorization' => 'Bearer ' . $token,
+                 'Accept'        => 'application/json',
+             ])->get($apiUrl);
+ 
+             Log::info('Core Sourcing Blood Banks Fetch API Response', [
+                 'status' => $response->status(),
+                 'body'   => $response->body(),
+             ]);
+ 
+             if ($response->successful()) {
+                 $apiResponse = $response->json();
+ 
+                 if ($apiResponse['success']) {
+                    return response()->json([
+                         'success' => true,
+                         'data' => Arr::get($apiResponse, 'data', []),
+                     ]);
+                 } else {
+                     Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                     return response()->json([
+                         'success' => false,
+                         'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                     ]);
+                 }
+             } else {
+                 Log::error('Failed to fetch Core Sourcing Blood Banks from external API.', [
+                     'status' => $response->status(),
+                     'body' => $response->body(),
+                 ]);
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Failed to fetch Core Sourcing Blood Banks from the external API.',
+                 ], $response->status());
+             }
+         } catch (\Exception $e) {
+             Log::error('Exception while fetching Core Sourcing Blood Banks from external API.', ['error' => $e->getMessage()]);
+             return response()->json([
+                 'success' => false,
+                 'message' => 'An error occurred while fetching Core Sourcing Blood Banks.',
+             ], 500);
+         }
+     }
+
+     /**
+     * Fetch GST Rates data for a specific date via API.
+     *
+     * @param  string  $date
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+     public function getSourcingGSTRates()
+     {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+ 
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+         }
+ 
+         // Define the external API URL for fetching GST Rates
+         $apiUrl = config('auth_api.gst_rates_fetch_url');
+ 
+         if (!$apiUrl) {
+             Log::error('GST Rates Fetch URL not configured.');
+             return back()->withErrors(['api_error' => 'GST Rates Fetch URL is not configured.']);
+         }
+ 
+         try {
+             // Make the API request to fetch GST Rates
+             $response = Http::withHeaders([
+                 'Authorization' => 'Bearer ' . $token,
+                 'Accept'        => 'application/json',
+             ])->get($apiUrl);
+ 
+             Log::info('GST Rates Fetch API Response', [
+                 'status' => $response->status(),
+                 'body'   => $response->body(),
+             ]);
+ 
+             if ($response->successful()) {
+                 $apiResponse = $response->json();
+ 
+                 if ($apiResponse['success']) {
+                    return response()->json([
+                         'success' => true,
+                         'data' => Arr::get($apiResponse, 'data', []),
+                     ]);
+                 } else {
+                     Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                     return response()->json([
+                         'success' => false,
+                         'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                     ]);
+                 }
+             } else {
+                 Log::error('Failed to fetch GST Rates from external API.', [
+                     'status' => $response->status(),
+                     'body' => $response->body(),
+                 ]);
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Failed to fetch GST Rates from the external API.',
+                 ], $response->status());
+             }
+         } catch (\Exception $e) {
+             Log::error('Exception while fetching GST Rates from external API.', ['error' => $e->getMessage()]);
+             return response()->json([
+                 'success' => false,
+                 'message' => 'An error occurred while fetching GST Rates.',
+             ], 500);
+         }
+     }
 
 }
