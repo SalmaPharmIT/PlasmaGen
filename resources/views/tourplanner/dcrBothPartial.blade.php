@@ -318,6 +318,78 @@
         @endif
 
 
+              <!-- Expenses Information Card -->
+       @if(isset($dcr['extendedProps']['expenses']) && count($dcr['extendedProps']['expenses']) > 0)
+       <div class="card mb-4 mt-4">
+           <div class="card-header text-black">
+               <h5 class="mb-0"><strong>Expenses Information</strong></h5>
+           </div>
+           <div class="card-body">
+               @foreach($dcr['extendedProps']['expenses'] as $expense)
+               <div class="row mb-3 mt-2">
+                   <!-- Description -->
+                   <div class="col-md-12">
+                       <strong>Description:</strong>
+                       <p>{{ $expense['description'] ?? 'N/A' }}</p>
+                   </div>
+                   <!-- Food -->
+                   <div class="col-md-4">
+                       <strong>Food:</strong>
+                       <p>{{ number_format($expense['food'], 2) }}</p>
+                   </div>
+                    <!-- Convention -->
+                    <div class="col-md-4">
+                        <strong>Convention:</strong>
+                        <p>{{ number_format($expense['convention'], 2) }}</p>
+                    </div>
+                    <!-- Tel/Fax -->
+                    <div class="col-md-4">
+                        <strong>Tel/Fax:</strong>
+                        <p>{{ number_format($expense['tel_fax'], 2) }}</p>
+                    </div>
+                    <!-- Lodging/Boarding -->
+                    <div class="col-md-4">
+                        <strong>Lodging/Boarding:</strong>
+                        <p>{{ number_format($expense['lodging'], 2) }}</p>
+                    </div>
+                    <!-- Sundry -->
+                    <div class="col-md-4">
+                        <strong>Sundry:</strong>
+                        <p>{{ number_format($expense['sundry'], 2) }}</p>
+                    </div>
+                    
+                   <!-- Total Price -->
+                   <div class="col-md-4">
+                       <strong>Total Price:</strong>
+                       <p>{{ number_format($expense['total_price'], 2) }}</p>
+                   </div>
+               </div>
+               <div class="row mb-3">
+                   <!-- Attachments -->
+                   <div class="col-md-12">
+                       <strong>Attachments:</strong>
+                       <div class="d-flex flex-wrap">
+                           @foreach($expense['attachments'] as $attachment)
+                               <a href="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" target="_blank">
+                                   <img src="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" alt="Expense Attachment" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; margin-bottom: 10px;">
+                               </a>
+                           @endforeach
+                       </div>
+                   </div>
+               </div>
+               @endforeach
+           </div>
+       </div>
+       @else
+       <div class="card mb-4 mt-4">
+           <div class="card-header text-black">
+               <h5 class="mb-0"><strong>No Expenses Available</strong></h5>
+           </div>
+           <div class="card-body">
+               <p>No expenses have been recorded for this DCR.</p>
+           </div>
+       </div>
+       @endif
 
     </div>
 </div>

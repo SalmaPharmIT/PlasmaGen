@@ -11,6 +11,7 @@ use App\Http\Controllers\TourPlannerController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\ReportVisitsController;
 use App\Http\Controllers\ReportsMasterController;
+use App\Http\Controllers\ExpensesController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -69,7 +70,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     /* *********************  Settings Starts ********************************* */
     Route::get('/api/states/{countryId}', [UserController::class, 'getStatesById'])->name('api.states');
-    Route::get('/api/cities/{stateId}', [UserController::class, 'getCitiesById'])->name('api.cities');
+    Route::get('/api/citiesById/{stateId}', [UserController::class, 'getCitiesById'])->name('api.citiesById');
+    Route::get('/api/citiesByStateIds/{stateId}', [UserController::class, 'getCitiesByMultipleStateId'])->name('api.citiesByStateIds');
     /* *********************   Settings Ends ********************************* */
 
     /* *********************  Blood Bank Starts ********************************* */
@@ -114,6 +116,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/get-user-work-location-mapping', [UserController::class, 'getUserWorkLocationMapping'])->name('getUserWorkLocationMapping');
     Route::post('/users/workLocationMapping/editSubmit', [UserController::class, 'submitWorkLocationMappingEdit'])->name('users.workLocationMapping.editSubmit');
     Route::post('/users/workLocationMapping/delete', [UserController::class, 'deleteWorkLocationMapping'])->name('users.workLocationMapping.delete');
+    Route::get('/users/workLocationMapping/bloodbanks/{cityIds}', [UserController::class, 'getBloodbanksByCity'])->name('users.workLocationMapping.bloodbanks');
     /* *********************   Masters for Admin Ends ********************************* */
 
 
@@ -181,7 +184,27 @@ Route::group(['middleware' => ['auth']], function () {
     /* *********************  Reports for Admin Starts ********************************* */
     Route::get('/reports', [ReportsMasterController::class, 'index'])->name('reports.reports_work_summary');
     Route::post('/reports/getPeriodicWorkSummary', [ReportsMasterController::class, 'getPeriodicWorkSummaryData'])->name('reports.getPeriodicWorkSummary');
+    Route::get('/reports/blood_banks', [ReportsMasterController::class, 'bloodbankSummaryIndex'])->name('reports.blood_banks_summary');
+    Route::post('/reports/getBloodBankSummary', [ReportsMasterController::class, 'getBloodBankSummaryData'])->name('reports.getBloodBankSummary');
+    Route::get('/reports/userWiseCollectionSummary', [ReportsMasterController::class, 'userWiseCollectionSummaryIndex'])->name('reports.user_wise_collection_summary');
+    Route::post('/reports/getUserWiseColllectionSummary', [ReportsMasterController::class, 'getUserWiseColllectionSummaryData'])->name('reports.getUserWiseColllectionSummary');
+    Route::get('/reports/bloodbankWiseCollectionSummary', [ReportsMasterController::class, 'bloodBankWiseCollectionSummaryIndex'])->name('reports.bloodbank_wise_collection_summary');
+    Route::post('/reports/getBloodBankWiseColllectionSummary', [ReportsMasterController::class, 'getBloodBankWiseColllectionSummaryData'])->name('reports.getBloodBankWiseColllectionSummary');
+    Route::get('/reports/tourPlanDateWiseSummary', [ReportsMasterController::class, 'tourPlanDateWiseSummaryIndex'])->name('reports.tour_palnner_datewise_summary');
+    Route::post('/reports/getTourPlannerDateWiseSummary', [ReportsMasterController::class, 'getTourPlannerDateWiseSummaryData'])->name('reports.getTourPlannerDateWiseSummary');
     /* *********************  Report Visits Ends ********************************* */
+
+
+    /* ********************* Expenses Starts ********************************* */
+    Route::get('/expenses', [ExpensesController::class, 'index'])->name('expenses.index');
+    Route::get('/expenses/getUpdatedVisits', [ExpensesController::class, 'getUpdatedVisits'])->name('expenses.getUpdatedVisits');
+    Route::get('/expenses/view', [ExpensesController::class, 'showExpenseView'])->name('expenses.view');
+    Route::get('/expenses/fetchVisits', [ExpensesController::class, 'fetchVisitsExpenses'])->name('expenses.fetchVisits');
+    Route::post('/expenses/submit', [ExpensesController::class, 'submitExpenses'])->name('expenses.submit');  
+    Route::get('expenses/fetchExpenses/{tp_id}', [ExpensesController::class, 'fetchExpenses'])->name('expenses.fetchExpenses');
+    Route::delete('/expenses/delete/{id}', [ExpensesController::class, 'deleteExpense'])->name('expenses.delete');
+    /* *********************  Report Visits Ends ********************************* */
+
 
     // Other registration routes...
 });

@@ -126,7 +126,7 @@
   
               <!-- Time Input -->
               <div class="mb-3">
-                <label for="tourPlanTime" class="form-label">Time (24 Hrs, hh:mm)</label>
+                <label for="tourPlanTime" class="form-label">Time</label>
                 <input type="time" class="form-control" id="tourPlanTime" name="time" required>
                 <div class="invalid-feedback">
                   Please provide a valid time.
@@ -431,7 +431,7 @@
                             modalDropdown.empty().append('<option value="">Choose Executives</option>');
                             $.each(agents, function(index, agent) {
                                // var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
-                                var option = '<option value="' + agent.id + '" data-role-id="' + agent.role_id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
+                                var option = '<option value="' + agent.id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
                                 dropdown.append(option);
                                 modalDropdown.append(option);
                             });
@@ -554,12 +554,6 @@
 
             // Function to populate City Dropdown (Assuming you have an API endpoint for cities)
             function loadCities(agentId) {
-
-                // Clear the dropdown before appending new options
-                var dropdown = $('#sourcingCityDropdown');
-                dropdown.empty().append('<option value="">Choose City</option>'); // Clear existing options
-
-
                 $.ajax({
                     url: "{{ route('tourplanner.getEmployeesCities') }}", // Ensure this route exists
                     data: { agent_id: agentId }, // Pass the agentId if your API uses it for filtering
@@ -881,93 +875,25 @@
             $('#addTourPlanModal').on('shown.bs.modal', function () {
                 $('#tourPlanCollectingAgent').on('change', function() {
                     var agentId = $(this).val();
-                    var selectedAgentRoleId = $(this).find('option:selected').data('role-id');
-                    console.log("Selected Agent Role ID: " + selectedAgentRoleId);
-                    
                     // Update the filter dropdown value as well
                     $('#collectingAgentDropdown').val(agentId).trigger('change.select2');
                     loadBloodBanks(agentId);
 
                     // Now call loadCities with the new agent id to load cities based on that agent
                     loadCities(agentId);
-
-                    // role Id 9- only for collection, 8- only for sourcing else both
-                    // if (selectedAgentRoleId === 9) {
-                    //     // For a Collecting Executive: show collections form and re-enable its fields
-                    //     $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                    //     $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                    //     $('#collectionsFields').show();
-                    //     // Re-enable all collection fields
-                    //     $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
-                    //     $('#sourcingFields').hide();
-                    //     $('input[name="tour_plan_type"][value="sourcing"]').closest('div').hide();
-                    // } else if (selectedAgentRoleId === 8) {
-                    //     // For a Sourcing Executive: show sourcing form and enable its fields
-                    //     $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                    //     $('input[name="tour_plan_type"][value="sourcing"]').prop('checked', true);
-                    //     $('#sourcingFields').show();
-                    //     // Enable all sourcing fields so that the city dropdown and other inputs are active
-                    //     $('#sourcingFields').find('input, select, textarea').prop('disabled', false);
-                    //     $('#collectionsFields').hide();
-                    //     $('input[name="tour_plan_type"][value="collections"]').closest('div').hide();
-                    // } else {
-                    //     // For any other role: show both radio buttons and default to collections
-                    //     $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                    //     $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                    //     $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                    //     $('#collectionsFields').show();
-                    //     $('#sourcingFields').hide();
-                    //     // Re-enable collection fields
-                    //     $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
-                    // }
-
-                    if (selectedAgentRoleId === 9) {
-                        // For a Collecting Executive: show collections form only
-                        $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                        $('#collectionsFields').show();
-                        // Re-enable all collection fields
-                        $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
-                        $('#sourcingFields').hide();
-                        $('input[name="tour_plan_type"][value="sourcing"]').closest('div').hide();
-                    } else if (selectedAgentRoleId === 8) {
-                        // For a Sourcing Executive: show BOTH radio options
-                        $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                        // Default selection is sourcing
-                        $('input[name="tour_plan_type"][value="sourcing"]').prop('checked', true);
-                        // Show sourcing fields and hide collections fields initially
-                        $('#sourcingFields').show();
-                        $('#collectionsFields').hide();
-                        // Enable sourcing fields (e.g. city dropdown, etc.)
-                        $('#sourcingFields').find('input, select, textarea').prop('disabled', false);
-                    } else {
-                        // For any other role: show both radio buttons and default to collections
-                        $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                        $('#collectionsFields').show();
-                        $('#sourcingFields').hide();
-                        // Re-enable collection fields
-                        $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
-                    }
                 });
             });
 
             // Handle form submission for adding a tour plan
             $('#addTourPlanForm').on('submit', function(e) {
                 e.preventDefault();
-                console.log("addTourPlanForm collection submit");
+                console.log("addTourPlanForm submit");
 
                 var form = $(this);
                 if (form[0].checkValidity() === false) {
                     e.stopPropagation();
                     form.addClass('was-validated');
                     console.log("addTourPlanForm validate - validation failed");
-                    // Find and log each invalid field
-                    form.find(':invalid').each(function() {
-                        console.log("Invalid field:", $(this).attr('name'), $(this).prop('validationMessage'));
-                    });
                     return;
                 }
                 console.log("addTourPlanForm validate - validation passed");
@@ -1093,12 +1019,9 @@
 
     
               // 1. Handle the filter's Collecting Agent dropdown change
-              $('#collectingAgentDropdown').on('change', function() {
+              $('#collectingAgentDropdown').on('change', function(){
                 var selectedAgentId = $(this).val();
                 currentFilteredAgentId = selectedAgentId ? selectedAgentId : null;
-                var selectedAgentRoleId = $(this).find('option:selected').data('role-id');
-                console.log("Selected Agent ID: " + selectedAgentId);
-                console.log("Selected Agent Role ID: " + selectedAgentRoleId);
                 
                 // Update the modal's Collecting Agent dropdown
                 $('#tourPlanCollectingAgent').val(selectedAgentId).trigger('change.select2');
@@ -1123,73 +1046,8 @@
                 calendar.gotoDate(selectedMonth);
                 // This will trigger datesSet, which in turn loads the events
 
-                
                 // Call loadBloodBanks with the new agent id so the blood bank dropdown updates
                  loadBloodBanks(agentId);
-
-                 if(agentId) {   // For Admin auto select user not there
-                    // Now call loadCities with the new agent id to load cities based on that agent
-                    loadCities(agentId);
-                 }
-              
-               // Now, based on the selected role id, adjust the tour plan type UI:  9- only for collection, 8- only for sourcing else both
-                // if (selectedAgentRoleId === 9) {
-                //     // For a Collecting Executive, show collections only
-                //     $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                //     $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                //     $('#collectionsFields').show();
-                //     $('#sourcingFields').hide();
-                //     // Hide the sourcing option
-                //     $('input[name="tour_plan_type"][value="sourcing"]').closest('div').hide();
-                // } else if (selectedAgentRoleId === 8) {
-                //     // For a Sourcing Executive, show sourcing only
-                //     $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                //     $('input[name="tour_plan_type"][value="sourcing"]').prop('checked', true);
-                //     $('#sourcingFields').show();
-                //     $('#collectionsFields').hide();
-                //     // Hide the collections option
-                //     $('input[name="tour_plan_type"][value="collections"]').closest('div').hide();
-                // } 
-                // else {
-                //     // For any other role, show both radio buttons (or choose a default)
-                //     $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                //     $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                //     // Default to collections (or you can choose a "both" option if available)
-                //     $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                //     $('#collectionsFields').show();
-                //     $('#sourcingFields').hide();
-                // }
-
-                if (selectedAgentRoleId === 9) {
-                        // For a Collecting Executive: show collections form only
-                        $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                        $('#collectionsFields').show();
-                        // Re-enable all collection fields
-                        $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
-                        $('#sourcingFields').hide();
-                        $('input[name="tour_plan_type"][value="sourcing"]').closest('div').hide();
-                    } else if (selectedAgentRoleId === 8) {
-                        // For a Sourcing Executive: show BOTH radio options
-                        $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                        // Default selection is sourcing
-                        $('input[name="tour_plan_type"][value="sourcing"]').prop('checked', true);
-                        // Show sourcing fields and hide collections fields initially
-                        $('#sourcingFields').show();
-                        $('#collectionsFields').hide();
-                        // Enable sourcing fields (e.g. city dropdown, etc.)
-                        $('#sourcingFields').find('input, select, textarea').prop('disabled', false);
-                    } else {
-                        // For any other role: show both radio buttons and default to collections
-                        $('input[name="tour_plan_type"][value="collections"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="sourcing"]').closest('div').show();
-                        $('input[name="tour_plan_type"][value="collections"]').prop('checked', true);
-                        $('#collectionsFields').show();
-                        $('#sourcingFields').hide();
-                        // Re-enable collection fields
-                        $('#collectionsFields').find('input, select, textarea').prop('disabled', false);
-                    }
             });
 
 
@@ -1256,8 +1114,7 @@
                 $('#collectionsFields').show();
 
                 // **IMPORTANT**: Disable sourcing fields as default
-               // $('#sourcingFields').find('input, select, textarea').prop('disabled', true);
-                $('#sourcingFields').find('input, select, textarea').not('#sourcingCityDropdown').prop('disabled', true);
+                $('#sourcingFields').find('input, select, textarea').prop('disabled', true);
             });
 
 
@@ -1328,7 +1185,7 @@
                 var selectedType = $('input[name="tour_plan_type"]:checked').val();
                 console.log("Tour Plan Type Changed to:", selectedType); // Debugging
 
-             /*   if (selectedType === 'both') {
+                if (selectedType === 'both') {
                     // Show both sourcing and collections sections without reinitializing
                     $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);
                     $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
@@ -1358,30 +1215,11 @@
                 } else {
                     // Only collections
                     $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
-                  //  $('#sourcingFields').slideUp().find('input, select, textarea').prop('disabled', true);
-                    $('#sourcingFields').slideUp().find('input, select, textarea').not('#sourcingCityDropdown').prop('disabled', true);
+                    $('#sourcingFields').slideUp().find('input, select, textarea').prop('disabled', true);
                     // Optionally clear sourcing fields if needed
                     $('#sourcingBloodBankName').val('');
                     $('#sourcingCityDropdown').val(null).trigger('change');
                 }
-                    */
-
-                    if (selectedType === 'both') {
-                        // Enable both sections
-                        $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);
-                        $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
-                    } else if (selectedType === 'sourcing') {
-                        // Enable sourcing and disable collections
-                        $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);
-                        $('#collectionsFields').slideUp().find('input, select, textarea').prop('disabled', true);
-                    } else {
-                        // Only collections: disable all sourcing fields (including sourcingCityDropdown)
-                        $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
-                        $('#sourcingFields').slideUp().find('input, select, textarea').prop('disabled', true);
-                        // Optionally clear sourcing fields if needed
-                        $('#sourcingBloodBankName').val('');
-                        $('#sourcingCityDropdown').val(null).trigger('change');
-                    }
 
                 // if (selectedType === 'sourcing') {
                 //      // Hide Collections Fields

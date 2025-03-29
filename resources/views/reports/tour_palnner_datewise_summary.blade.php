@@ -5,10 +5,10 @@
 @section('content')
 
 <div class="pagetitle">
-    <h1>Periodic Work Summary</h1>
+    <h1>Tour Planner Datewise Summary</h1>
     <nav>
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('reports.reports_work_summary') }}">Reports</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('reports.tour_palnner_datewise_summary') }}">Reports</a></li>
         <li class="breadcrumb-item active">View</li>
       </ol>
     </nav>
@@ -22,7 +22,7 @@
            
             <!-- Header with Button -->
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title">View Periodic Work Summary</h5>
+                <h5 class="card-title">Tour Planner Datewise Summary</h5>
             </div>
 
             <!-- Display Success Message -->
@@ -59,20 +59,20 @@
                 </div>
 
                 <!-- Date Range Picker -->
-                <div class="col-md-4">
+                <div class="col-md-4 mt-2">
                     <label for="dateRangePicker" class="form-label">Select Date Range</label>
                     <input type="text" id="dateRangePicker" class="form-control" placeholder="Select date range"/>
                 </div>
 
                 <!-- Submit Button -->
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-2 mt-2 d-flex align-items-end">
                     <button id="filterButton" class="btn btn-success w-100">
                         <i class="bi bi-filter me-1"></i> Submit
                    </button>
                 </div>
 
                  <!-- Export Button -->
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-2 mt-2 d-flex align-items-end">
                     <button id="exportButton" class="btn btn-info w-100">
                         <i class="bi bi-download me-1"></i> Export
                     </button>
@@ -81,24 +81,25 @@
             <!-- End Filters Row -->
 
             <!-- Summary Data Table -->
-            <table id="periodicWorkSummaryTable" class="table table-striped table-bordered col-lg-12">
-              <thead>
-                <tr>
-                  <th class="text-center">S.No.</th>
-                  <th class="text-center">Executive</th>
-                  <th class="text-center">Total Collections</th>
-                  <th class="text-center">Total Sourcing</th>
-                  {{-- <th class="text-center">Total Both</th> --}}
-                  <th class="text-center">Avg. Collections</th>
-                  <th class="text-center">Avg. Sourcing</th>
-                  {{-- <th class="text-center">Avg. of Both</th> --}}
-                  {{-- <th class="text-center">Total Days</th> --}}
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Initially empty: "No records" will be shown -->
-              </tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="tourPlannerDateWiseSummaryTable" class="table table-striped table-bordered col-lg-12">
+                <thead>
+                    <tr>
+                    <th class="text-center">SI.No.</th>
+                    <th class="text-center">Executive</th>
+                    <th class="text-center">Visit Date</th>
+                    <th class="text-center">TP Type</th>
+                    <th class="text-center">Places</th>
+                    {{-- <th class="text-center">TP Status</th> --}}
+                    <th class="text-center">MGR Status</th>
+                    <th class="text-center">CA Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Initially empty: "No records" will be shown -->
+                </tbody>
+                </table>
+            </div>
             <!-- End Summary Table -->
 
           </div>
@@ -108,6 +109,33 @@
 </section>
 
 @endsection
+
+
+@push('styles')
+<style>
+   .table-responsive {
+        overflow-x: auto;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table td {
+        max-width: 200px; /* Adjust according to your needs */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .table td, .table th {
+        word-wrap: break-word;
+        white-space: normal;
+    }
+  
+    /* Truncate text in Name, Mobile, and Email columns */
+    .table td, .table th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <!-- Include moment.js and daterangepicker.js -->
@@ -172,7 +200,7 @@
         loadCollectingAgents();
 
         // Initialize DataTable with empty data initially
-        var table = $('#periodicWorkSummaryTable').DataTable({
+        var table = $('#tourPlannerDateWiseSummaryTable').DataTable({
             responsive: true,
             processing: true,
             data: [],
@@ -184,15 +212,59 @@
                         return meta.row + 1;
                     }
                 },
-                { data: 'agent_name', className: "text-left" },
-                { data: 'total_collections', className: "text-center" },
-                { data: 'total_sourcing', className: "text-center" },
-             //   { data: 'total_both', className: "text-center" },
-                { data: 'average_collections', className: "text-center" },
-                { data: 'average_sourcing', className: "text-center" },
-             //   { data: 'average_both', className: "text-center" },
-                // { data: 'days_in_range', className: "text-center" }
+                { data: 'collecting_agent_name', className: "text-center" },
+                { data: 'visit_date', className: "text-center" },
+                { 
+                    data: 'tour_plan_type', 
+                    className: "text-center",
+                    render: function(data, type, row) {
+                        if (data == 1) return "Collection";
+                        else if (data == 2) return "Sourcing";
+                        else if (data == 3) return "Both";
+                        else return "";
+                    }
+                },
+                {
+                    data: null,
+                    className: "text-left",
+                    render: function(data, type, row) {
+                        if (row.tour_plan_type == 2) {
+                            // For sourcing type: display sourcing city and state
+                            var city = row.sourcing_city_name || '';
+                            var state = row.sourcing_state_name || '';
+                            return (city + ' (' + state + ')').toUpperCase();
+                        } else {
+                            // For collection (or both): display blood bank name, collection city and collection state
+                            var bank = row.blood_bank_name || '';
+                            var city = row.collection_city_name || '';
+                            var state = row.collection_state_name || '';
+                            return (bank + ' (' + city + ', ' + state + ')').toUpperCase();
+                        }
+                    }
+                },
+                // { 
+                //     data: 'status', 
+                //     className: "text-center", 
+                //     render: function(data, type, row) {
+                //         return data ? data.toUpperCase() : data;
+                //     } 
+                // },
+                { 
+                    data: 'manager_status', 
+                    className: "text-center", 
+                    render: function(data, type, row) {
+                        return data ? data.toUpperCase() : data;
+                    } 
+                },
+                { 
+                    data: 'ca_status', 
+                    className: "text-center", 
+                    render: function(data, type, row) {
+                        return data ? data.toUpperCase() : data;
+                    } 
+                },
             ],
+            order: [[0, 'asc']], // Sort by the first column (ID) in descending order
             pageLength: 10,
             lengthMenu: [5, 10, 25, 50, 100],
             language: {
@@ -202,10 +274,12 @@
             buttons: [
                 {
                     extend: 'excelHtml5',
-                    title: 'Periodic Work Summary'
+                    title: 'User Wise Collection Summary'
                 }
             ]
         });
+
+      
 
         // On Filter button click, perform the AJAX request to fetch summary data
         $('#filterButton').click(function() {
@@ -228,7 +302,7 @@
             };
 
             $.ajax({
-                url: "{{ route('reports.getPeriodicWorkSummary') }}",
+                url: "{{ route('reports.getTourPlannerDateWiseSummary') }}",
                 type: 'POST',
                 data: postData,
                 success: function(json) {

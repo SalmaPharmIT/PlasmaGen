@@ -835,6 +835,16 @@ h6 {
   background: #ffecdf;
 }
 
+.dashboard .planned-plasma-card .card-icon {
+  color: #8C2AA7;
+  background: #DFC5E6;
+}
+
+.dashboard .collected-plasma-card .card-icon {
+  color: #D62063;
+  background: #F1BED1;
+}
+
 /* Activity */
 .dashboard .activity {
   font-size: 14px;

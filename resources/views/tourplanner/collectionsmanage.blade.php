@@ -77,6 +77,7 @@
             <table id="collectionRequestTable" class="table table-striped table-bordered col-lg-12">
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>Agent</th>
                   <th>Blood Bank</th>
                   <th>Visit Date</th>
@@ -364,6 +365,7 @@
                     }
                 },
                 columns: [
+                    { data: 'id' },
                     { 
                         data: 'extendedProps.collecting_agent_name',
                         title: 'Agent',
@@ -458,6 +460,7 @@
                         searchable: false
                     }
                 ],
+                order: [[0, 'desc']], // Sort by the first column (ID) in descending order
                 pageLength: 10,
                 lengthMenu: [5, 10, 25, 50, 100],
                 language: {

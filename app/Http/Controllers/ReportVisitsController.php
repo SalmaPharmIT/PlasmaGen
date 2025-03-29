@@ -227,6 +227,9 @@ class ReportVisitsController extends Controller
             'pending_documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx|max:2048',
             'user_latitude' => 'nullable|numeric',
             'user_longitude' => 'nullable|numeric',
+            'collectionUpdatePartAPrice'     => 'nullable|numeric|min:0',
+            'collectionUpdatePartBPrice'     => 'nullable|numeric|min:0',
+            'collectionUpdatePartCPrice'     => 'nullable|numeric|min:0',
         ]);
 
 
@@ -256,10 +259,18 @@ class ReportVisitsController extends Controller
             'user_longitude'        => $request->input('user_longitude'),
             'created_by'            => Auth::id(), // Assuming you want to capture the authenticated user
             'modified_by'           => Auth::id(),
+            'collectionUpdatePartAPrice'        => $request->input('collectionUpdatePartAPrice'),
+            'collectionUpdatePartBPrice'        => $request->input('collectionUpdatePartBPrice'),
+            'collectionUpdatePartCPrice'        => $request->input('collectionUpdatePartCPrice'),
+            'collection_total_plasma_price'      => $request->input('total_collection_price'),
+            'include_collection_gst'      => $request->has('include_collection_gst') ? 1 : 0,
+            'collection_gst_rate'         => $request->input('collection_gst_rate'),
         ];
         
         // Handle multiple documents certificate_of_quality
         if ($request->hasFile('certificate_of_quality')) {
+            $files = $request->file('certificate_of_quality');
+            Log::info('Number of files certificate_of_quality uploaded:', ['count' => count($files)]);
             $postData['certificate_of_quality'] = []; // Initialize as an array
             foreach ($request->file('certificate_of_quality') as $document) {
                 $documentContent = file_get_contents($document->getRealPath());
@@ -270,6 +281,8 @@ class ReportVisitsController extends Controller
 
         // Handle multiple documents donor_report
         if ($request->hasFile('donor_report')) {
+            $files2 = $request->file('donor_report');
+            Log::info('Number of files donor_report uploaded:', ['count' => count($files2)]);
             $postData['donor_report'] = []; // Initialize as an array
             foreach ($request->file('donor_report') as $document) {
                 $documentContent = file_get_contents($document->getRealPath());
@@ -281,6 +294,8 @@ class ReportVisitsController extends Controller
 
         // Handle multiple documents invoice_copy
         if ($request->hasFile('invoice_copy')) {
+            $files3 = $request->file('invoice_copy');
+            Log::info('Number of files invoice_copy uploaded:', ['count' => count($files3)]);
             $postData['invoice_copy'] = []; // Initialize as an array
             foreach ($request->file('invoice_copy') as $document) {
                 $documentContent = file_get_contents($document->getRealPath());
@@ -289,13 +304,51 @@ class ReportVisitsController extends Controller
             }
         }
 
-        // Handle multiple documents invoice_copy
+        // Handle multiple documents pending_documents
         if ($request->hasFile('pending_documents')) {
+            $files4 = $request->file('pending_documents');
+            Log::info('Number of files pending_documents uploaded:', ['count' => count($files4)]);
             $postData['pending_documents'] = []; // Initialize as an array
             foreach ($request->file('pending_documents') as $document) {
                 $documentContent = file_get_contents($document->getRealPath());
                 $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
                 $postData['pending_documents'][] = $documentBase64;
+            }
+        }
+
+        // Handle multiple documents collectionPartAInvoice_copy
+        if ($request->hasFile('collectionPartAInvoice_copy')) {
+            $files5 = $request->file('collectionPartAInvoice_copy');
+            Log::info('Number of files collectionPartAInvoice_copy uploaded:', ['count' => count($files5)]);
+            $postData['collectionPartAInvoice_copy'] = []; // Initialize as an array
+            foreach ($request->file('collectionPartAInvoice_copy') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['collectionPartAInvoice_copy'][] = $documentBase64;
+            }
+        }
+
+        // Handle multiple documents collectionPartBInvoice_copy
+        if ($request->hasFile('collectionPartBInvoice_copy')) {
+            $files6 = $request->file('collectionPartBInvoice_copy');
+            Log::info('Number of files collectionPartBInvoice_copy uploaded:', ['count' => count($files6)]);
+            $postData['collectionPartBInvoice_copy'] = []; // Initialize as an array
+            foreach ($request->file('collectionPartBInvoice_copy') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['collectionPartBInvoice_copy'][] = $documentBase64;
+            }
+        }
+
+         // Handle multiple documents collectionPartCInvoice_copy
+         if ($request->hasFile('collectionPartCInvoice_copy')) {
+            $files7 = $request->file('collectionPartCInvoice_copy');
+            Log::info('Number of files collectionPartCInvoice_copy uploaded:', ['count' => count($files7)]);
+            $postData['collectionPartCInvoice_copy'] = []; // Initialize as an array
+            foreach ($request->file('collectionPartCInvoice_copy') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['collectionPartCInvoice_copy'][] = $documentBase64;
             }
         }
         

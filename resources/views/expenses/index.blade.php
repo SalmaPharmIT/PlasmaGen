@@ -1,15 +1,15 @@
 @extends('include.dashboardLayout')
 
-@section('title', 'DCR Approvals')
+@section('title', 'Expenses')
 
 @section('content')
 
 <div class="pagetitle">
-    <h1>DCR Approvals</h1>
+    <h1>Expenses</h1>
     <nav>
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('tourplanner.manage') }}">Manage Tour Plan</a></li>
-        <li class="breadcrumb-item active">DCR Approvals</li>
+        <li class="breadcrumb-item"><a href="{{ route('expenses.index') }}">Expenses</a></li>
+        <li class="breadcrumb-item active">Views</li>
       </ol>
     </nav>
 </div><!-- End Page Title -->
@@ -23,15 +23,7 @@
 
             <!-- Filters Row -->
             <div class="row mb-4 mt-2 align-items-end">
-                <!-- Collecting Agent Dropdown -->
-                <div class="col-md-4">
-                    <label for="collectingAgentDropdown" class="form-label">Collecting/Sourcing Executives</label>
-                    <select id="collectingAgentDropdown" class="form-select select2">
-                        <option value="">Choose Collecting/Sourcing Executives</option>
-                        <!-- Options will be populated via AJAX -->
-                    </select>
-                </div>
-
+              
                 <!-- Month Picker -->
                 <div class="col-md-4">
                     <label for="monthPicker" class="form-label">Select Month</label>
@@ -61,11 +53,11 @@
                         <thead>
                             <tr>
                                 <th>SI. No.</th>
-                                <th>Employee</th>
+                                <th>TP Type</th>
                                 <th>Visit Date</th>
+                                <th>Blood Bank</th>
                                 <th>TP Status</th>
-                                <th>Mgr Status</th>
-                                <th>CA Status</th>
+                                <th>DCR Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -126,29 +118,22 @@
        $(document).ready(function() {
 
             // Define route URLs with placeholders
-            var dcrDetailsRoute = "{{ route('tourplanner.dcr-details', ['id' => ':id']) }}";
-            var bloodBankRegisterRoute = "{{ route('bloodbank.register') }}"; // Ensure this route exists
-            var dcrVisitDetailsRoute = "{{ route('tourplanner.dcrVisit-details', ['id' => ':id']) }}";
+            var expenseVisitDetailsRoute = "{{ route('expenses.view') }}"; // Use base route without placeholders
 
-            // Initialize DataTable
+
+            initializeFilters();
+            // Initialize DataTable with updated column definitions:
             var table = $('#dcrApprovalsTable').DataTable({
                 "columns": [
-                    { 
-                        "data": null, 
-                        "orderable": true, 
-                        "searchable": false,
-                        "render": function (data, type, row, meta) {
-                            return meta.row + 1;
-                        }
-                    },
-                    { "data": "employee_name" },
+                    { "data": null, "orderable": false, "searchable": false },
+                    { "data": "tp_type" },
                     { "data": "visit_date" },
-                    { "data": "visit_status" },
-                    { "data": "manager_status" },
-                    { "data": "ca_status" },
+                    { "data": "bank" },
+                    { "data": "tp_status" },
+                    { "data": "tp_dcr_status" },
                     { "data": "actions", "orderable": false, "searchable": false }
                 ],
-                order: [[0, 'asc']],
+                "order": [[2, "desc"]], // Order by Visit Date descending
                 "responsive": true,
                 "drawCallback": function(settings) {
                     // Update the SI. No. column after each draw
@@ -159,42 +144,14 @@
                 }
             });
 
-            // Function to populate Collecting Agents Dropdown
-            function loadCollectingAgents(callback) {
-                $.ajax({
-                    url: "{{ route('tourplanner.getCollectingAgents') }}",
-                    type: 'GET',
-                    success: function(response) {
-                        if(response.success) {
-                            var agents = response.data;
-                            var dropdown = $('#collectingAgentDropdown');
-                            dropdown.empty().append('<option value="">Choose Collecting Executives</option>');
-                            $.each(agents, function(index, agent) {
-                                //var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
-                                var option = '<option value="' + agent.id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
-                                dropdown.append(option);
-                            });
-                            // Trigger Select2 to reinitialize with new options
-                            dropdown.trigger('change');
-                            if (callback) callback();
-                        } else {
-                            Swal.fire('Error', response.message, 'error');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error fetching collecting agents:", error);
-                        Swal.fire('Error', 'An error occurred while fetching collecting agents.', 'error');
-                    }
-                });
-            }
+        
 
             // Function to load DCR Approvals based on filters
-            function loadDCRApprovals(agentId, selectedMonth) {
+            function loadUpdatedVisitsLists(selectedMonth) {
                 $.ajax({
-                    url: "{{ route('tourplanner.getFinalDCRApprovals') }}",
+                    url: "{{ route('expenses.getUpdatedVisits') }}",
                     type: 'GET',
                     data: {
-                        agent_id: agentId,
                         month: selectedMonth
                     },
                     beforeSend: function() {
@@ -210,30 +167,56 @@
                             var events = response.events;
                             table.clear();
                             $.each(events, function(index, event) {
-                               
-                                var visitDate = event.visit_date ? event.visit_date : '-';
-                                var tp_status = event.visit_status ? capitalizeFirstLetter(event.visit_status.replace('_', ' ')) : '-';
-                                var mgr_status = event.manager_status ? capitalizeFirstLetter(event.manager_status.replace('_', ' ')) : '-';
-                                var ca_status = event.ca_status ? capitalizeFirstLetter(event.ca_status.replace('_', ' ')) : '-';
+                                // Format visit_date or use '-' if not available
+                                var visitDate = event.tp_visit_date ? event.tp_visit_date : '-';
+                                var tpStatus = event.tp_status ? event.tp_status : '-';
+                                var tpDCRStatus = event.tp_dcr_status ? event.tp_dcr_status : '-';
+                                
 
-                                var viewInfoUrl = dcrVisitDetailsRoute.replace(':id', event.id);
-                                // Append visit_date and emp_id as query parameters (using encodeURIComponent to handle special characters)
-                                viewInfoUrl += '?visit_date=' + encodeURIComponent(event.visit_date) + '&emp_id=' + encodeURIComponent(event.emp_id);
+                                // Determine the TP Type label based on tp_tour_plan_type
+                                var typeLabel = '';
+                                if (event.tp_tour_plan_type == 1) {
+                                    typeLabel = 'Collection';
+                                } else if (event.tp_tour_plan_type == 2) {
+                                    typeLabel = 'Sourcing';
+                                } else if (event.tp_tour_plan_type == 3) {
+                                    typeLabel = 'Both';
+                                } else {
+                                    typeLabel = 'Other';
+                                }
 
-                                var actions = `<a href="${viewInfoUrl}" class="btn btn-sm btn-primary mb-1">View Info</a>`;
+                                // Determine the blood bank name to display.
+                                // For Collection (type 1), use the top-level field provided by the API.
+                                // For Sourcing (type 2), loop through visits and take the visit_sourcing_blood_bank_name.
+                                var bankNameDisplay = '-';
+                                if (event.tp_tour_plan_type == 1) {
+                                    bankNameDisplay = event.visit_collection_blood_bank_name ? event.visit_collection_blood_bank_name : '-';
+                                } else {
+                                    var bankNames = [];
+                                    if (event.visits && event.visits.length > 0) {
+                                        $.each(event.visits, function(i, visit) {
+                                            if (visit.visit_sourcing_blood_bank_name) {
+                                                bankNames.push(visit.visit_sourcing_blood_bank_name);
+                                            }
+                                        });
+                                    }
+                                    bankNameDisplay = bankNames.length > 0 ? bankNames.join(', ') : '-';
+                                }
+                                console.log('bankNameDisplay', bankNameDisplay);
 
-                                // if (event.extendedProps.tour_plan_type === 2 && 
-                                //     event.extendedProps.manager_status.toLowerCase() === 'accepted') {
-                                //     var registerUrl = bloodBankRegisterRoute + '?id=' + event.id;
-                                //     actions += `<a href="${registerUrl}" class="btn btn-sm btn-success">Register</a>`;
-                                // }
+                               // Dynamically build the URL with query parameters
+                                var viewInfoUrl = expenseVisitDetailsRoute + '?date=' + encodeURIComponent(event.tp_visit_date) + '&tp_id=' + encodeURIComponent(event.tp_id);
 
+                                // Create the "View Info" button
+                                var actions = `<a href="${viewInfoUrl}" class="btn btn-sm btn-primary mb-1">Add Expense</a>`;
+
+                                // Add the row to the DataTable.
                                 table.row.add({
-                                    "employee_name": event.employee_name,
+                                    "tp_type": typeLabel,  // TP Type column
                                     "visit_date": visitDate,
-                                    "visit_status": tp_status,
-                                    "manager_status": mgr_status,
-                                    "ca_status": ca_status,
+                                    "bank": bankNameDisplay, // Display the blood bank name
+                                    "tp_status": capitalizeFirstLetter(tpStatus),
+                                    "tp_dcr_status": capitalizeFirstLetter(tpDCRStatus),
                                     "actions": actions
                                 });
                             });
@@ -243,6 +226,7 @@
                             Swal.fire('Error', response.message, 'error');
                         }
                     },
+
                     error: function(xhr, status, error) {
                         console.error("Error fetching DCR Approvals:", error);
                         Swal.fire('Error', 'An error occurred while fetching DCR Approvals.', 'error');
@@ -252,7 +236,6 @@
 
             // Function to initialize the page with saved filters or defaults
             function initializeFilters() {
-                var savedAgentId = sessionStorage.getItem('dcrFilterAgentId');
                 var savedMonth = sessionStorage.getItem('dcrFilterMonth');
 
                 // If no saved month, default to current month (from the monthPicker input)
@@ -262,16 +245,11 @@
                     $('#monthPicker').val(savedMonth);
                 }
 
-                if (savedAgentId) {
-                    $('#collectingAgentDropdown').val(savedAgentId).trigger('change');
-                }
-
                 // Load DCR Approvals with the filters (or defaults)
-                loadDCRApprovals(savedAgentId, savedMonth);
+                loadUpdatedVisitsLists(savedMonth);
             }
 
-            // Load Collecting Agents on page load and initialize filters in the callback
-            loadCollectingAgents(initializeFilters);
+          
 
             // Function to format time (HH:MM:SS to HH:MM AM/PM)
             function formatTime(timeStr) {
@@ -287,7 +265,6 @@
 
             // Handle Filter Button Click
             $('#filterButton').on('click', function() {
-                var agentId = $('#collectingAgentDropdown').val();
                 var selectedMonth = $('#monthPicker').val();
 
                 if (!selectedMonth) {
@@ -295,11 +272,7 @@
                     return;
                 }
 
-                // Save filters to sessionStorage
-                sessionStorage.setItem('dcrFilterAgentId', agentId);
-                sessionStorage.setItem('dcrFilterMonth', selectedMonth);
-
-                loadDCRApprovals(agentId, selectedMonth);
+                loadUpdatedVisitsLists(selectedMonth);
             });
 
             // Handle Reset Button Click
@@ -319,5 +292,9 @@
             });
             });
 
+              // Helper function to capitalize the first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
     </script>
 @endpush

@@ -130,11 +130,53 @@
         @if (in_array(Auth::user()->role_id, [1, 2]))
           <li class="nav-item">
             <a class="nav-link collapsed" href="{{ route('reports.reports_work_summary') }}" >
-              <i class="bi bi-geo-alt"></i>
+              <i class="bi bi-graph-up"></i>
               <span>Periodic Work Summary</span>
             </a>
           </li>
         @endif
+
+        <!-- Blood Bank Reports - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2]))
+         <li class="nav-item">
+           <a class="nav-link collapsed" href="{{ route('reports.blood_banks_summary') }}" >
+             <i class="bi bi-droplet-half"></i>
+             <span>Blood Banks</span>
+           </a>
+         </li>
+        @endif
+
+
+        <!-- Blood Bank Reports - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2]))
+         <li class="nav-item">
+           <a class="nav-link collapsed" href="{{ route('reports.user_wise_collection_summary') }}" >
+             <i class="bi bi-person-circle"></i>
+             <span>User Collections</span>
+           </a>
+         </li>
+        @endif
+
+        <!-- Blood Bank Wise Colletion Reports - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2]))
+          <li class="nav-item">
+           <a class="nav-link collapsed" href="{{ route('reports.bloodbank_wise_collection_summary') }}" >
+             <i class="bi bi-geo-alt"></i>
+             <span>Blood Bank / City Collections</span>
+           </a>
+          </li>
+        @endif
+
+        <!-- Tour Planner Datewise Reports - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.tour_palnner_datewise_summary') }}" >
+            <i class="bi bi-reception-4"></i>
+            <span>Tour Planner Datewise</span>
+          </a>
+         </li>
+       @endif
+
       @endif
     @endif
 
@@ -204,6 +246,21 @@
          </a>
        </li>
      @endif
+
+
+    <!-- Role ID 9, 8, 68 Collecting/Sourcing Agents, Managers-->
+    @if (Auth::user()->role_id == 9 || Auth::user()->role_id == 6 || Auth::user()->role_id == 8)
+      <!-- Add Expenses -->
+      <li class="nav-heading">Expenses</li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ route('expenses.index') }}" >
+          <i class="bi bi-currency-rupee"></i>
+          <span>Add Expenses</span>
+        </a>
+      </li>
+      <!-- End Add Expenses -->
+    @endif
  
 
    <!-- Add more sidebar items as needed -->

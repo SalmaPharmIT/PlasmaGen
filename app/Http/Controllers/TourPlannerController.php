@@ -1192,6 +1192,7 @@ class TourPlannerController extends Controller
         // 1. Validate the incoming request
         $validatedData = $request->validate([
             'status' => 'required|in:approved,rejected,accepted',
+            'remarks' => 'nullable|string', // Validate the remarks
         ]);
 
          // 2. Retrieve the token from the session
@@ -1220,6 +1221,7 @@ class TourPlannerController extends Controller
           $payload = [
             'id' => $id,
             'status' => $validatedData['status'],
+            'remarks' => $validatedData['remarks'],  // Add remarks to the payload
             'updated_by' => Auth::id(), // Assuming the authenticated user is performing the update
         ];
 

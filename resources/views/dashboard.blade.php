@@ -27,7 +27,7 @@
             <div class="card info-card sales-card">
 
               <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                {{-- <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a> --}}
                 {{-- <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li class="dropdown-header text-start">
                     <h6>Filter</h6>
@@ -62,7 +62,7 @@
             <div class="card info-card revenue-card">
 
               <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                {{-- <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a> --}}
                 {{-- <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li class="dropdown-header text-start">
                     <h6>Filter</h6>
@@ -98,7 +98,7 @@
             <div class="card info-card customers-card">
 
               <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                {{-- <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a> --}}
                 {{-- <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li class="dropdown-header text-start">
                     <h6>Filter</h6>
@@ -127,7 +127,56 @@
               </div>
             </div>
 
-          </div><!-- End Customers Card -->
+          </div>
+          <!-- End Customers Card -->
+
+           <!-- Total Planned Plasma Qty Card -->
+           <div class="col-xxl-4 col-xl-12">
+
+            <div class="card info-card planned-plasma-card">
+
+              <div class="card-body">
+                <h5 class="card-title">Planned Plasma </h5>
+
+                <div class="d-flex align-items-center">
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                    <i class="bi bi-droplet"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6>0</h6>
+                  
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+          <!-- End Total Planned Plasma Qty Card -->
+
+          <!-- Total Collected Plasma Qty Card -->
+          <div class="col-xxl-4 col-xl-12">
+
+          <div class="card info-card collected-plasma-card">
+
+            <div class="card-body">
+              <h5 class="card-title">Collected Plasma </h5>
+
+              <div class="d-flex align-items-center">
+                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                  <i class="bi bi-droplet-fill"></i>
+                </div>
+                <div class="ps-3">
+                  <h6>0</h6>
+                
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          </div>
+          <!-- End Total Collected Plasma Qty Card -->
 
  
           <div class="col-12">
@@ -368,8 +417,30 @@
       <!-- Right side columns -->
       <div class="col-lg-4">
 
+      <!-- Top Performing Blood Banks Card -->
+      <div class="card info-card top-performance-bloodbanks-card">
+        <div class="card-body">
+          <h5 class="card-title">Top Performing Blood Banks</h5>
+          <div class="activity" id="topPerformanceBloodbanks">
+            Loading...
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Performing Areas Card -->
+      <div class="card info-card top-performance-areas-card">
+        <div class="card-body">
+          <h5 class="card-title">Top Performing Areas</h5>
+          <div class="activity" id="topPerformanceAreas">
+            Loading...
+          </div>
+        </div>
+      </div>
+
+
+
         <!-- Recent Activity -->
-        <div class="card">
+        {{-- <div class="card">
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -394,7 +465,7 @@
                 <div class="activity-content">
                   <a href="#" class="fw-bold text-dark">DCR</a> submitted
                 </div>
-              </div><!-- End activity item-->
+              </div>
 
               <div class="activity-item d-flex">
                 <div class="activite-label">56 min</div>
@@ -402,7 +473,7 @@
                 <div class="activity-content">
                    Visit updated
                 </div>
-              </div><!-- End activity item-->
+              </div>
 
               <div class="activity-item d-flex">
                 <div class="activite-label">2 hrs</div>
@@ -410,36 +481,15 @@
                 <div class="activity-content">
                   <a href="#" class="fw-bold text-dark">Tour Plan</a> created.
                 </div>
-              </div><!-- End activity item-->
+              </div>
 
-              {{-- <div class="activity-item d-flex">
-                <div class="activite-label">1 day</div>
-                <i class='bi bi-circle-fill activity-badge text-info align-self-start'></i>
-                <div class="activity-content">
-                  Tempore autem saepe <a href="#" class="fw-bold text-dark">occaecati voluptatem</a> tempore
-                </div>
-              </div><!-- End activity item-->
-
-              <div class="activity-item d-flex">
-                <div class="activite-label">2 days</div>
-                <i class='bi bi-circle-fill activity-badge text-warning align-self-start'></i>
-                <div class="activity-content">
-                  Est sit eum reiciendis exercitationem
-                </div>
-              </div><!-- End activity item-->
-
-              <div class="activity-item d-flex">
-                <div class="activite-label">4 weeks</div>
-                <i class='bi bi-circle-fill activity-badge text-muted align-self-start'></i>
-                <div class="activity-content">
-                  Dicta dolorem harum nulla eius. Ut quidem quidem sit quas
-                </div> --}}
-              </div><!-- End activity item-->
+             
+              </div>
 
             </div>
 
           </div>
-        </div>
+        </div> --}}
         <!-- End Recent Activity -->
 
         <!-- Budget Report -->
@@ -681,6 +731,52 @@
 
                            // Update Users Count
                            $(".customers-card .card-body h6").text(data.user_count);
+
+                          // Update Planned Plasma Count
+                          $(".planned-plasma-card .card-body h6").text(data.tour_plan_total_quantity);
+
+                          // Update Collected Plasma Count
+                          $(".collected-plasma-card .card-body h6").text(data.tour_plan_total_available_quantity);
+
+                         // Update Top Performing Blood Banks
+                        if(data.top_performance_bloodbanks && data.top_performance_bloodbanks.length > 0) {
+                          let bloodbanksHtml = "";
+                          // Define an array of color classes for blood banks
+                          const bloodColors = ["text-success", "text-info", "text-warning", "text-primary", "text-danger"];
+                          data.top_performance_bloodbanks.forEach((name, index) => {
+                            // Cycle through colors based on index
+                            let colorClass = bloodColors[index % bloodColors.length];
+                            bloodbanksHtml += `<div class="activity-item d-flex">
+                              <div class="activite-label">Top ${index + 1}</div>
+                              <i class="bi bi-circle-fill activity-badge ${colorClass} align-self-start"></i>
+                              <div class="activity-content">${name}</div>
+                            </div>`;
+                          });
+                          $("#topPerformanceBloodbanks").html(bloodbanksHtml);
+                        } else {
+                          $("#topPerformanceBloodbanks").html("No data available.");
+                        }
+
+                        // Update Top Performing Areas
+                        if(data.top_performance_areas && data.top_performance_areas.length > 0) {
+                          let areasHtml = "";
+                          // Define an array of color classes for areas (or reuse the same)
+                          const areaColors = ["text-primary", "text-secondary", "text-success", "text-warning", "text-danger"];
+                          data.top_performance_areas.forEach((area, index) => {
+                            let colorClass = areaColors[index % areaColors.length];
+                            areasHtml += `<div class="activity-item d-flex">
+                              <div class="activite-label">Top ${index + 1}</div>
+                              <i class="bi bi-circle-fill activity-badge ${colorClass} align-self-start"></i>
+                              <div class="activity-content">${area}</div>
+                            </div>`;
+                          });
+                          $("#topPerformanceAreas").html(areasHtml);
+                        } else {
+                          $("#topPerformanceAreas").html("No data available.");
+                        }
+
+
+
                         } else {
                             Swal.fire('Error', response.message, 'error');
                         }

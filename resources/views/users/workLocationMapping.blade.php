@@ -134,6 +134,16 @@
                   Please select at least one city.
                 </div>
               </div>
+              <!-- Blood bank Dropdown (Multi-select) -->
+              {{-- <div class="col-md-12">
+                <label for="bloodbank_id" class="form-label">Blood Bank <span class="text-danger">*</span></label>
+                <select id="bloodbank_id" name="bloodbank_id[]" class="form-select select2" multiple required>
+                    <option value="">Choose Blood Banks</option>
+                </select>
+                <div class="invalid-feedback">
+                    Please select at least one blood bank.
+                </div>
+               </div> --}}
               <!-- Submit and Cancel Buttons -->
               <div class="col-12 text-center">
                 <button type="submit" class="btn btn-primary">Submit</button>
@@ -242,7 +252,8 @@
     $(document).ready(function() {
 
         var urlGetStatesByIdTemplate = "{{ route('api.states', ['countryId' => '__COUNTRY_ID__']) }}";
-        var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
+        var urlcityByStateIdTemplate = "{{ route('api.citiesById', ['stateId' => '__STATE_ID__']) }}";
+        var urlBloodbanksByCityTemplate = "{{ url('users/workLocationMapping/bloodbanks') }}/__CITY_ID__";
 
         // Initialize DataTable for raw mapping data
         var mappingTable = $('#mappingTable').DataTable({
@@ -318,6 +329,7 @@
                     searchable: false
                 }
             ],
+            order: [[0, 'desc']], // Sort by the first column (ID) in descending order
             pageLength: 10,
             lengthMenu: [5, 10, 25, 50, 100]
         });
@@ -709,8 +721,38 @@
             });
         });
 
-       
-
+    
+       /* // When City dropdown changes, update Blood Bank dropdown
+        $('#city_id').on('change', function() {
+            var selectedCities = $(this).val();
+            var bloodbankDropdown = $('#bloodbank_id');
+            bloodbankDropdown.empty().append('<option value="">Choose Blood Bank</option>');
+            
+            // Assuming you want to load blood banks for the first selected city
+                var cityIds = selectedCities.join(',');
+                var bloodbankUrl = urlBloodbanksByCityTemplate.replace('__CITY_ID__', cityIds);
+                console.log('cityIds', cityIds);
+                
+                $.ajax({
+                    url: bloodbankUrl,
+                    type: 'GET',
+                    success: function(data) {
+                        if (data.success) {
+                            $.each(data.data, function(index, bloodbank) {
+                                bloodbankDropdown.append('<option value="'+ bloodbank.id +'">'+ bloodbank.name +'</option>');
+                            });
+                        } else {
+                            alert(data.message || 'No blood banks available for the selected city.');
+                        }
+                    },
+                    error: function(error) {
+                        console.error("Error fetching blood banks:", error);
+                        alert('Failed to fetch blood banks. Please try again.');
+                    }
+                });
+      
+        });
+        */
 
     });
 </script>

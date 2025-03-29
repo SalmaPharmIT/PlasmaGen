@@ -44,6 +44,40 @@
                   </div>
               </div>
               <div class="row mb-3">
+                <!-- Part-A Invoice Price -->
+                <div class="col-md-4">
+                    <strong>Part-A Invoice Price:</strong>
+                    <p>{{ $dcr['extendedProps']['part_a_invoice_price'] ?? '0' }}</p>
+                </div>
+                <!-- Part-B Invoice Price -->
+                <div class="col-md-4">
+                    <strong>Part-B Invoice Price:</strong>
+                    <p>{{ $dcr['extendedProps']['part_b_invoice_price'] ?? '0' }}</p>
+                </div>
+                <!-- Part-C Invoice Price -->
+                <div class="col-md-4">
+                    <strong>Part-C Invoice Price:</strong>
+                    <p>{{ isset($dcr['extendedProps']['part_c_invoice_price']) ? number_format($dcr['extendedProps']['part_c_invoice_price'], 2) : '0' }}</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <!-- Is GST Included? -->
+                <div class="col-md-4">
+                    <strong>Is GST Included?:</strong>
+                    <p>{{ $dcr['extendedProps']['include_gst'] == 1 ? 'Yes' : 'No' }}</p>
+                </div>
+                <!-- GST Rate (%) -->
+                <div class="col-md-4">
+                    <strong>GST Rate (%):</strong>
+                    <p>{{ $dcr['extendedProps']['gst_rate'] ?? '0' }}</p>
+                </div>
+                <!-- Total Invoce Price -->
+                <div class="col-md-4">
+                    <strong>Total Invoice Price:</strong>
+                    <p>{{ isset($dcr['extendedProps']['collection_total_plasma_price']) ? number_format($dcr['extendedProps']['collection_total_plasma_price'], 2) : '0' }}</p>
+                </div>
+            </div>
+              <div class="row mb-3">
                   <!-- Remarks -->
                   <div class="col-md-4">
                       <strong>Remarks:</strong>
@@ -198,8 +232,140 @@
                       @endif
                   </div>
               </div>
+
+                <!-- Part-A Price Invoice Copy -->
+                <div class="mb-4">
+                    <h6><strong>5. Part-A Invoices</strong></h6>
+                    <div class="d-flex flex-wrap">
+                        @if(isset($dcr['extendedProps']['dcr_attachments']) && count($dcr['extendedProps']['dcr_attachments']) > 0)
+                            @foreach($dcr['extendedProps']['dcr_attachments'] as $attachment)
+                                @if($attachment['attachment_type'] == 5)
+                                    <a href="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" target="_blank">
+                                        <img src="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" alt="Invoice Copy" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; margin-bottom: 10px;">
+                                    </a>
+                                @endif
+                            @endforeach
+                        @else
+                            <p>No Part-A Invoice Copies available.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Part-B Price Invoice Copy -->
+                <div class="mb-4">
+                    <h6><strong>6. Part-B Invoices</strong></h6>
+                    <div class="d-flex flex-wrap">
+                        @if(isset($dcr['extendedProps']['dcr_attachments']) && count($dcr['extendedProps']['dcr_attachments']) > 0)
+                            @foreach($dcr['extendedProps']['dcr_attachments'] as $attachment)
+                                @if($attachment['attachment_type'] == 6)
+                                    <a href="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" target="_blank">
+                                        <img src="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" alt="Invoice Copy" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; margin-bottom: 10px;">
+                                    </a>
+                                @endif
+                            @endforeach
+                        @else
+                            <p>No Part-A Invoice Copies available.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Part-C Price Invoice Copy -->
+                <div class="mb-4">
+                    <h6><strong>7. Part-C Invoices</strong></h6>
+                    <div class="d-flex flex-wrap">
+                        @if(isset($dcr['extendedProps']['dcr_attachments']) && count($dcr['extendedProps']['dcr_attachments']) > 0)
+                            @foreach($dcr['extendedProps']['dcr_attachments'] as $attachment)
+                                @if($attachment['attachment_type'] == 7)
+                                    <a href="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" target="_blank">
+                                        <img src="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" alt="Invoice Copy" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; margin-bottom: 10px;">
+                                    </a>
+                                @endif
+                            @endforeach
+                        @else
+                            <p>No Part-A Invoice Copies available.</p>
+                        @endif
+                    </div>
+                </div>
+  
+
+
           </div>
       </div>
+
+
+       <!-- Expenses Information Card -->
+       @if(isset($dcr['extendedProps']['expenses']) && count($dcr['extendedProps']['expenses']) > 0)
+       <div class="card mb-4 mt-4">
+           <div class="card-header text-black">
+               <h5 class="mb-0"><strong>Expenses Information</strong></h5>
+           </div>
+           <div class="card-body">
+               @foreach($dcr['extendedProps']['expenses'] as $expense)
+               <div class="row mb-3 mt-2">
+                   <!-- Description -->
+                   <div class="col-md-12">
+                       <strong>Description:</strong>
+                       <p>{{ $expense['description'] ?? 'N/A' }}</p>
+                   </div>
+                   <!-- Food -->
+                   <div class="col-md-4">
+                       <strong>Food:</strong>
+                       <p>{{ number_format($expense['food'], 2) }}</p>
+                   </div>
+                    <!-- Convention -->
+                    <div class="col-md-4">
+                        <strong>Convention:</strong>
+                        <p>{{ number_format($expense['convention'], 2) }}</p>
+                    </div>
+                    <!-- Tel/Fax -->
+                    <div class="col-md-4">
+                        <strong>Tel/Fax:</strong>
+                        <p>{{ number_format($expense['tel_fax'], 2) }}</p>
+                    </div>
+                    <!-- Lodging/Boarding -->
+                    <div class="col-md-4">
+                        <strong>Lodging/Boarding:</strong>
+                        <p>{{ number_format($expense['lodging'], 2) }}</p>
+                    </div>
+                    <!-- Sundry -->
+                    <div class="col-md-4">
+                        <strong>Sundry:</strong>
+                        <p>{{ number_format($expense['sundry'], 2) }}</p>
+                    </div>
+                    
+                   <!-- Total Price -->
+                   <div class="col-md-4">
+                       <strong>Total Price:</strong>
+                       <p>{{ number_format($expense['total_price'], 2) }}</p>
+                   </div>
+               </div>
+               <div class="row mb-3">
+                   <!-- Attachments -->
+                   <div class="col-md-12">
+                       <strong>Attachments:</strong>
+                       <div class="d-flex flex-wrap">
+                           @foreach($expense['attachments'] as $attachment)
+                               <a href="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" target="_blank">
+                                   <img src="{{ config('auth_api.base_image_url') . $attachment['attachment'] }}" alt="Expense Attachment" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; margin-bottom: 10px;">
+                               </a>
+                           @endforeach
+                       </div>
+                   </div>
+               </div>
+               @endforeach
+           </div>
+       </div>
+       @else
+       <div class="card mb-4 mt-4">
+           <div class="card-header text-black">
+               <h5 class="mb-0"><strong>No Expenses Available</strong></h5>
+           </div>
+           <div class="card-body">
+               <p>No expenses have been recorded for this DCR.</p>
+           </div>
+       </div>
+       @endif
+
 
     </div>
   </div>

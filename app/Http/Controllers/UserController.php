@@ -613,7 +613,7 @@ class UserController extends Controller
 
         // Replace {stateId} placeholder with the actual value
         $apiUrl = str_replace('{id}', $stateId, $apiUrl);
-       // Log::info('Cities API from external API.', ['api_url' => $apiUrl]);
+      //  Log::info('Cities API from external API.', ['api_url' => $apiUrl]);
        
     
         try {
@@ -1371,5 +1371,126 @@ class UserController extends Controller
         }
     }
 
+
+     /**
+     * API Endpoint to Fetch All BlooodBanks based on cityIds.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getBloodbanksByCity($cityIds)
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Get the API URL for blood banks (ensure this is set in your config, e.g., config('auth_api.bloodbanks_by_city_url'))
+        $apiUrl = config('auth_api.bloodbanks_by_city_url');
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Blood banks API URL not configured.'
+            ], 500);
+        }
+
+        // Replace the {cityIds} placeholder with the provided comma-separated city IDs
+        $apiUrl = str_replace('{cityIds}', $cityIds, $apiUrl);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('bloodbanks_by_city apiUrl.', ['apiUrl' => $apiUrl]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                Log::info('bloodbanks_by_city apiResponse.', ['apiResponse' => $apiResponse]);
+
+                return response()->json([
+                    'success' => true,
+                    'data'    => $apiResponse['data'] ?? []
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch blood banks.'
+            ], $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getCitiesByMultipleStateId($stateId)
+    {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Authentication token missing. Please log in again.'
+             ], 401);
+         }
+
+        $apiUrl = config('auth_api.cities_by_multiple_stateIds_url');
+       
+
+        if (!$apiUrl) {
+            Log::error('Cities API URL not configured.');
+            return back()->withErrors(['api_error' => 'Cities API URL is not configured.']);
+        }
+
+        // Replace {stateId} placeholder with the actual value
+     
+        $apiUrl = str_replace('{id}', $stateId, $apiUrl);
+        // Log::info('Cities API Multiple STate Ids.', ['api_url' => $apiUrl]);
+       
+    
+        try {
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response for Cities', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+    
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+               // Log::info('Fetching cities for state ID', ['apiResponse' => $apiResponse]);
+                return response()->json([
+                    'success' => true,
+                    'data' => $apiResponse['data'] ?? []
+                ]);
+            }
+    
+            Log::error('Failed to fetch cities', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Failed to fetch cities.'], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching cities', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'An error occurred.'], 500);
+        }
+    }
 
 }

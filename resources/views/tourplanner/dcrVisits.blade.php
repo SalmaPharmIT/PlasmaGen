@@ -20,6 +20,7 @@
         <div id="statusDisplay" class="ms-4">
             <span id="mgrStatusDisplay" class="bg-warning p-2 rounded text-white fw-bold me-2"></span>
             <span id="caStatusDisplay" class="bg-info p-2 rounded text-white fw-bold"></span>
+            <p class="mt-2" id="remarksDisplay">Remarks</p>
         </div>
     </div>
     <!-- Status Display next to the action buttons -->
@@ -39,6 +40,7 @@
                     <button type="submit" name="status" value="accepted" id="acceptBtn" class="btn btn-primary me-3">Accept</button>
                 @endif
                 <button type="submit" name="status" value="rejected" id="rejectBtn" class="btn btn-danger">Reject</button>
+            
             </form>
         </div>
     </div>
@@ -263,13 +265,36 @@
                                 var dcr = response.data[0];
                                 $('#mgrStatusDisplay').text("Manager Status: " + capitalizeFirstLetter(dcr.manager_status));
                                 $('#caStatusDisplay').text("CA Status: " + capitalizeFirstLetter(dcr.ca_status));
+                                $('#remarksDisplay').text(function() {
+                                    // Initialize the display text
+                                    var remarksText = "";
+
+                                    // Check if manager status remarks are available
+                                    if (dcr.manager_status_remarks && dcr.manager_status_remarks.trim() !== "") {
+                                        remarksText += "Mgr Remarks: " + capitalizeFirstLetter(dcr.manager_status_remarks);
+                                    }
+
+                                    // Check if CA status remarks are available
+                                    if (dcr.ca_status_remarks && dcr.ca_status_remarks.trim() !== "") {
+                                        // If there's already text, add a separator
+                                        if (remarksText) {
+                                            remarksText += " | ";
+                                        }
+                                        remarksText += "CA Remarks: " + capitalizeFirstLetter(dcr.ca_status_remarks);
+                                    }
+
+                                    // Display the final remarks text (if any)
+                                    return remarksText || ""; // Default message if no remarks
+                                });
                             } else {
                                 $('#mgrStatusDisplay').text("Manager Status: N/A");
                                 $('#caStatusDisplay').text("CA Status: N/A");
+                                $('#remarksDisplay').text("");
                             }
                         } else {
                             $('#mgrStatusDisplay').text("Manager Status: N/A");
                             $('#caStatusDisplay').text("CA Status: N/A");
+                            $('#remarksDisplay').text("");
                         }
                     },
                     error: function(xhr, status, error) {
@@ -284,6 +309,7 @@
             // Update Approve, Reject Status
             const approveBtn = $('#approveBtn');
             const rejectBtn = $('#rejectBtn');
+            const acceptBtn = $('#acceptBtn');
             const statusForm = $('#statusForm');
 
             approveBtn.on('click', function (e) {
@@ -291,14 +317,30 @@
 
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: "Do you really want to approve this DCR?",
+                    //text: "Do you really want to approve this DCR?",
+                    html: `<p>Do you really want to approve this DCR?</p><textarea class="form-control" id="remarks" class="swal2-input" placeholder="Enter your remarks here..." rows="3"></textarea>`,     
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#28a745', // Green color for approve
                     cancelButtonColor: '#6c757d', // Gray color for cancel
-                    confirmButtonText: 'Yes, approve it!'
+                    confirmButtonText: 'Yes, approve it!',
+                    preConfirm: () => {
+                        const remarks = document.getElementById('remarks').value;
+                        // if (!remarks) {
+                        //     Swal.showValidationMessage('Remarks cannot be empty');
+                        //     return false;
+                        // }
+                        return remarks; // Return remarks to be included in the form submission
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                         // Add remarks to the form and submit
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'remarks',
+                            value: result.value
+                        }).appendTo(statusForm);
+
                         // Set the status value and submit the form
                         $('<input>').attr({
                             type: 'hidden',
@@ -315,19 +357,75 @@
 
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: "Do you really want to reject this DCR?",
+                   // text: "Do you really want to reject this DCR?",
+                    html: `<p>Do you really want to reject this DCR?</p><textarea class="form-control"  id="remarks" class="swal2-input" placeholder="Enter your remarks here..." rows="3"></textarea>`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545', // Red color for reject
                     cancelButtonColor: '#6c757d', // Gray color for cancel
-                    confirmButtonText: 'Yes, reject it!'
+                    confirmButtonText: 'Yes, reject it!',
+                    preConfirm: () => {
+                        const remarks = document.getElementById('remarks').value;
+                        if (!remarks) {
+                            Swal.showValidationMessage('Remarks cannot be empty');
+                            return false;
+                        }
+                        return remarks; // Return remarks to be included in the form submission
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Add remarks to the form and submit
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'remarks',
+                            value: result.value
+                        }).appendTo(statusForm);
+
                         // Set the status value and submit the form
                         $('<input>').attr({
                             type: 'hidden',
                             name: 'status',
                             value: 'rejected'
+                        }).appendTo(statusForm);
+                        statusForm.submit();
+                    }
+                });
+            });
+
+            acceptBtn.on('click', function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    // text: "Do you really want to accept this DCR?",
+                    html: `<p>Do you really want to approve this DCR?</p><textarea class="form-control" id="remarks" class="swal2-input" placeholder="Enter your remarks here..." rows="3"></textarea>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745', // Green color for approve
+                    cancelButtonColor: '#6c757d', // Gray color for cancel
+                    confirmButtonText: 'Yes, accept it!',
+                    preConfirm: () => {
+                        const remarks = document.getElementById('remarks').value;
+                        // if (!remarks) {
+                        //     Swal.showValidationMessage('Remarks cannot be empty');
+                        //     return false;
+                        // }
+                        return remarks; // Return remarks to be included in the form submission
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Add remarks to the form and submit
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'remarks',
+                            value: result.value
+                        }).appendTo(statusForm);
+
+                        // Set the status value and submit the form
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'status',
+                            value: 'accepted'
                         }).appendTo(statusForm);
                         statusForm.submit();
                     }

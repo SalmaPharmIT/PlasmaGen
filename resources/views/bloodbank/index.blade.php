@@ -55,29 +55,30 @@
                 @endif
     
 
-            
-            <!-- Entities DataTable -->
-            <table id="entitiesTable" class="table table-striped table-bordered col-lg-12">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Entity Type</th>
-                  <th>Mobile No</th>
-                  <th>Email</th>
-                  <th>Country</th>
-                  <th>State</th>
-                  <th>City</th>
-                  {{-- <th>Logo</th> --}}
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{-- Data will be populated by DataTables via AJAX --}}
-              </tbody>
-            </table>
-            <!-- End Entities DataTable -->
+            <div class="table-responsive">
+                <!-- Entities DataTable -->
+                <table id="entitiesTable" class="table table-striped table-bordered col-lg-12">
+                <thead>
+                    <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Entity Type</th>
+                    <th>Mobile No</th>
+                    <th>Email</th>
+                    <th>Country</th>
+                    <th>State</th>
+                    <th>City</th>
+                    {{-- <th>Logo</th> --}}
+                    <th>Status</th>
+                    <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Data will be populated by DataTables via AJAX --}}
+                </tbody>
+                </table>
+                <!-- End Entities DataTable -->
+            </div>
 
           </div>
         </div>
@@ -88,6 +89,47 @@
   </section>
 
 @endsection
+
+
+@push('styles')
+<style>
+   .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table td {
+        max-width: 200px; /* Adjust according to your needs */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .table td, .table th {
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    /* Name column - Make it bigger */
+    .table td.name, .table th.name {
+        max-width: 250px; /* Adjust width as needed */
+        word-wrap: break-word;
+    }
+
+    /* Mobile column - Make it smaller */
+    .table td.mobile_no, .table th.mobile_no {
+        max-width: 120px; /* Adjust width as needed */
+    }
+
+    /* Email column - Make it smaller */
+    .table td.email, .table th.email {
+        max-width: 150px; /* Adjust width as needed */
+    }
+
+    /* Truncate text in Name, Mobile, and Email columns */
+    .table td, .table th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+@endpush
 
 @push('scripts')
     <script>
@@ -116,15 +158,20 @@
                 },
                 columns: [
                     { data: 'id' },
-                    { data: 'name' },
+                    { data: 'name', 
+                        className: 'name',  // Add class to the Name column
+                        render: function(data, type, row) {
+                            return data;
+                        }
+                    },
                     { 
                         data: 'entityType',
                         render: function(data, type, row) {
                             return data?.entity_name || 'N/A';
                         }
                     },
-                    { data: 'mobile_no', defaultContent: 'N/A' },
-                    { data: 'email', defaultContent: 'N/A' },
+                    { data: 'mobile_no', className: 'mobile_no', defaultContent: 'N/A' },
+                    { data: 'email', className: 'email', defaultContent: 'N/A' },
                     { 
                         data: 'country',
                         render: function(data, type, row) {
@@ -156,25 +203,35 @@
                     //     searchable: false
                     // },
                     { data: 'account_status', defaultContent: 'N/A' },
-                    { 
+                    // { 
+                    //     data: null,
+                    //     render: function(data, type, row) {
+                    //         return `
+                    //             <div class="dropdown">
+                    //                 <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="actionMenu${row.id}" data-bs-toggle="dropdown" aria-expanded="false">
+                    //                     <i class="bi bi-gear"></i>
+                    //                 </button>
+                    //                 <ul class="dropdown-menu" aria-labelledby="actionMenu${row.id}">
+                    //                     <li><a class="dropdown-item" href="{{ route('bloodbank.edit', '') }}/${row.id}">Edit</a></li>
+                                       
+                    //                 </ul>
+                    //             </div>
+                    //         `;
+                    //     },
+                    {
                         data: null,
                         render: function(data, type, row) {
                             return `
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="actionMenu${row.id}" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-gear"></i>
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="actionMenu${row.id}">
-                                        <li><a class="dropdown-item" href="{{ route('bloodbank.edit', '') }}/${row.id}">Edit</a></li>
-                                       
-                                    </ul>
-                                </div>
+                                <a href="{{ route('bloodbank.edit', '') }}/${row.id}" class="btn btn-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i> <!-- Pencil icon for edit -->
+                                </a>
                             `;
                         },
                         orderable: false,
                         searchable: false
                     }
                 ],
+                order: [[0, 'desc']], // Sort by the first column (ID) in descending order
                 pageLength: 10,
                 lengthMenu: [5, 10, 25, 50, 100],
                 language: {

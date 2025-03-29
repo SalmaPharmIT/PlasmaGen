@@ -40,6 +40,7 @@
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Visits List</h5>
+            <h6>Note: Collections require Transportation Details to appear below.</h6>
             <div id="visitsList">
                 <!-- Visits will be loaded here via AJAX -->
                 <div class="text-center my-5">
@@ -213,6 +214,72 @@
               <!-- Previews will appear here -->
             </div>
           </div>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="collectionUpdatePartAPrice" class="form-label">Part-A Price</label>
+                <input type="number" class="form-control" id="collectionUpdatePartAPrice" name="collectionUpdatePartAPrice" min="0">
+            </div>
+
+            <div class="col-md-4">
+                <label for="collectionUpdatePartBPrice" class="form-label">Part-B Price</label>
+                <input type="number" class="form-control" id="collectionUpdatePartBPrice" name="collectionUpdatePartBPrice" min="0">
+            </div>
+
+            <div class="col-md-4">
+                <label for="collectionUpdatePartCPrice" class="form-label">Part-C Price</label>
+                <input type="number" class="form-control" id="collectionUpdatePartCPrice" name="collectionUpdatePartCPrice" min="0">
+            </div>
+          </div>
+
+          <!-- New Row for GST Inclusion and Total Collection Price -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="includeCollectionGST" name="include_collection_gst">
+                    <label class="form-check-label" for="includeCollectionGST">Include GST</label>
+                </div>
+            </div>
+            <div class="col-md-4" id="collectionGSTSection" style="display: none;">
+                <label for="collectionGSTRate" class="form-label">GST Rate (%)</label>
+                <select class="form-select" id="collectionGSTRate" name="collection_gst_rate">
+                    <option value="">-- Select GST Rate --</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="totalCollectionPrice" class="form-label">Total Collection Price</label>
+                <input type="text" class="form-control" id="totalCollectionPrice" name="total_collection_price" readonly>
+            </div>
+        </div>
+
+            <!-- Part-A Invoice Copy -->
+            <div class="mb-3">
+                <label for="collectionPartAInvoice_copy" class="form-label">Part-A Invoice Copy</label>
+                <input type="file" class="form-control" id="collectionPartAInvoice_copy" name="collectionPartAInvoice_copy[]" multiple accept="image/*,application/pdf">
+                <div class="mt-2 d-flex flex-nowrap overflow-auto" id="collectionPartAInvoice_copyPreview" >
+                    <!-- Previews will appear here -->
+                </div>
+            </div>
+
+             <!-- Part-B Invoice Copy -->
+             <div class="mb-3">
+                <label for="collectionPartBInvoice_copy" class="form-label">Part-B Invoice Copy</label>
+                <input type="file" class="form-control" id="collectionPartBInvoice_copy" name="collectionPartBInvoice_copy[]" multiple accept="image/*,application/pdf">
+                <div class="mt-2 d-flex flex-nowrap overflow-auto" id="collectionPartBInvoice_copyPreview" >
+                    <!-- Previews will appear here -->
+                </div>
+            </div>
+
+             <!-- Part-C Invoice Copy -->
+             <div class="mb-3">
+                <label for="collectionPartCInvoice_copy" class="form-label">Part-C Invoice Copy</label>
+                <input type="file" class="form-control" id="collectionPartCInvoice_copy" name="collectionPartCInvoice_copy[]" multiple accept="image/*,application/pdf">
+                <div class="mt-2 d-flex flex-nowrap overflow-auto" id="collectionPartCInvoice_copyPreview" >
+                    <!-- Previews will appear here -->
+                </div>
+            </div>
+
+            
         
             </div>
             <div class="modal-footer">
@@ -401,6 +468,40 @@
                             </div>
                         </div>
                         <div class="row mb-3">
+                            <!-- Part-A Invoice Price -->
+                            <div class="col-md-4">
+                                <strong>Part-A Invoice Price:</strong>
+                                <p id="view_partAInvocePriceDisplay">N/A</p>
+                            </div>
+                            <!-- Part-B Invoice Price -->
+                            <div class="col-md-4">
+                                <strong>Part-B Invoice Price:</strong>
+                                <p id="view_partBInvocePriceDisplay">N/A</p>
+                            </div>
+                            <!-- Part-C Invoice Price -->
+                            <div class="col-md-4">
+                                <strong>Part-C Invoice Price:</strong>
+                                <p id="view_partCInvocePriceDisplay">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Is GST Included -->
+                            <div class="col-md-4">
+                                <strong>Is GST Included?:</strong>
+                                <p id="view_isGSTIncludeDisplay">N/A</p>
+                            </div>
+                            <!-- GST Rate -->
+                            <div class="col-md-4">
+                                <strong>GST Rate (%):</strong>
+                                <p id="view_gstRateDisplay">N/A</p>
+                            </div>
+                            <!-- Total Invoce Price -->
+                            <div class="col-md-4">
+                                <strong>Total Invoce Price:</strong>
+                                <p id="view_totalInvoicePriceDisplay">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
                             <!-- Remarks -->
                             <div class="col-md-4">
                                 <strong>Remarks:</strong>
@@ -461,7 +562,7 @@
                     </div>
                     <div class="card-body">
                         <!-- Certificate of Quality -->
-                        <div class="mb-4">
+                        <div class="mb-4 mt-2">
                             <h6><strong>1. Certificate of Quality</strong></h6>
                             <div class="d-flex flex-wrap" id="view_certificateOfQualityAttachments">
                                 <!-- Attachments will be loaded here -->
@@ -491,6 +592,31 @@
                                 <!-- Attachments will be loaded here -->
                             </div>
                         </div>
+
+                        <!-- Part-A Invoice Documents -->
+                        <div class="mb-4">
+                            <h6><strong>5. Part-A Invoices</strong></h6>
+                            <div class="d-flex flex-wrap" id="view_partAInvoiceAttachments">
+                                <!-- Attachments will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Part-B Invoice Documents -->
+                        <div class="mb-4">
+                            <h6><strong>5. Part-B Invoices</strong></h6>
+                            <div class="d-flex flex-wrap" id="view_partBInvoiceAttachments">
+                                <!-- Attachments will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Part-C Invoice Documents -->
+                        <div class="mb-4">
+                            <h6><strong>5. Part-C Invoices</strong></h6>
+                            <div class="d-flex flex-wrap" id="view_partCInvoiceAttachments">
+                                <!-- Attachments will be loaded here -->
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -961,6 +1087,9 @@
         initializeFilePreview('donor_report', 'donor_reportPreview');
         initializeFilePreview('invoice_copy', 'invoice_copyPreview');
         initializeFilePreview('pending_documents', 'pending_documentsPreview');
+        initializeFilePreview('collectionPartAInvoice_copy', 'collectionPartAInvoice_copyPreview');
+        initializeFilePreview('collectionPartBInvoice_copy', 'collectionPartBInvoice_copyPreview');
+        initializeFilePreview('collectionPartCInvoice_copy', 'collectionPartCInvoice_copyPreview');
 
     });
 </script>
@@ -1504,7 +1633,7 @@
             $('#updateVisitForm')[0].reset();
 
             // Reset preview containers
-            ['certificate_of_qualityPreview', 'donor_reportPreview', 'invoice_copyPreview', 'pending_documentsPreview'].forEach(function(previewId) {
+            ['certificate_of_qualityPreview', 'donor_reportPreview', 'invoice_copyPreview', 'pending_documentsPreview', 'collectionPartAInvoice_copyPreview', 'collectionPartBInvoice_copyPreview', 'collectionPartCInvoice_copyPreview'].forEach(function(previewId) {
                 $('#' + previewId).empty();
             });
 
@@ -1611,51 +1740,92 @@
         $('#updateVisitForm').on('submit', function(e) {
             e.preventDefault();
 
-               // Check if location is enabled
-               if(entityFeatures.location_enabled.toLowerCase() === 'yes') {
-                if(!userLocation) {
+            //    // Check if location is enabled
+            //    if(entityFeatures.location_enabled.toLowerCase() === 'yes') {
+            //     if(!userLocation) {
+            //         Swal.fire('Location Required', 'Please allow location access to proceed.', 'warning');
+            //         return;
+            //     }
+
+            //     const bloodBankLat = $('#blood_bank_latitude').val();
+            //     const bloodBankLon = $('#blood_bank_longitude').val();
+
+            //     console.log('Blood Bank Latitude:', bloodBankLat);
+            //     console.log('Blood Bank Longitude:', bloodBankLon);
+
+            //     console.log('User Latitude:', userLocation.latitude);
+            //     console.log('User Longitude:',  userLocation.longitude);
+
+            //     if(isNaN(bloodBankLat) || isNaN(bloodBankLon)) {
+            //         Swal.fire('Error', 'Blood Bank location data is missing.', 'error');
+            //         return;
+            //     }
+
+            //     // Calculate distance
+            //     const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bloodBankLat, bloodBankLon);
+            //     console.log('Distance to Blood Bank:', distance, 'km');
+
+            //     const kmBound = parseFloat(entityFeatures.km_bound);
+
+            //     if(distance > kmBound) {
+            //         Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the Blood Bank.`, 'error');
+            //         return;
+            //     }
+            // }
+
+             // If location is enabled, show a loading modal while fetching/calculating location data
+            if (entityFeatures.location_enabled.toLowerCase() === 'yes') {
+                Swal.fire({
+                    title: 'Fetching Location...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Check if user's location is available
+                if (!userLocation) {
                     Swal.fire('Location Required', 'Please allow location access to proceed.', 'warning');
-                    return;
+                    return; // Exit form submission if location data is missing
                 }
 
-                // Get blood bank location from extendedProps (assumed to be part of visitData)
-                // Since visitData is not directly accessible here, retrieve it from the hidden input or a data attribute
-                // To simplify, store blood bank latitude and longitude as data attributes on the form
-
-                // Fetch blood bank coordinates
-                // const bloodBankLat = parseFloat($('#bloodBankDisplay').data('latitude'));
-                // const bloodBankLon = parseFloat($('#bloodBankDisplay').data('longitude'));
+                // Get blood bank coordinates from hidden inputs
                 const bloodBankLat = $('#blood_bank_latitude').val();
                 const bloodBankLon = $('#blood_bank_longitude').val();
 
                 console.log('Blood Bank Latitude:', bloodBankLat);
                 console.log('Blood Bank Longitude:', bloodBankLon);
-
                 console.log('User Latitude:', userLocation.latitude);
-                console.log('User Longitude:',  userLocation.longitude);
+                console.log('User Longitude:', userLocation.longitude);
 
-                if(isNaN(bloodBankLat) || isNaN(bloodBankLon)) {
+                if (isNaN(bloodBankLat) || isNaN(bloodBankLon)) {
                     Swal.fire('Error', 'Blood Bank location data is missing.', 'error');
                     return;
                 }
 
-                // Calculate distance
+                // Calculate distance using your calculateDistance() helper function
                 const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bloodBankLat, bloodBankLon);
                 console.log('Distance to Blood Bank:', distance, 'km');
 
                 const kmBound = parseFloat(entityFeatures.km_bound);
-
-                if(distance > kmBound) {
+                if (distance > kmBound) {
                     Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the Blood Bank.`, 'error');
                     return;
                 }
+
+                // Close the loading modal once location data has been processed
+                Swal.close();
+            }
+            else {
+                console.log('Location check not required. Skipping.');
             }
 
+
             const formData = new FormData(this);
-            // Log each key and value in the FormData
-            for (let [key, value] of formData.entries()) {
-                console.log(key + ':', value);
-            }
+            // // Log each key and value in the FormData
+            // for (let [key, value] of formData.entries()) {
+            //     console.log(key + ':', value);
+            // }
             // Get the visit ID from the hidden input
             const visitId = $('#visitId').val();
 
@@ -1759,7 +1929,15 @@
             $('#view_plannedQuantityDisplay').text(extendedProps.quantity || '0');
             $('#view_availableQuantityDisplay').text(extendedProps.available_quantity || '0');
             $('#view_remainingQuantityDisplay').text(extendedProps.remaining_quantity || '0');
-            $('#view_priceDisplay').text(extendedProps.price !== null ? escapeHtml(extendedProps.price) : 'N/A');
+            $('#view_priceDisplay').text(extendedProps.price !== null ? extendedProps.price : 'N/A');
+
+            $('#view_partAInvocePriceDisplay').text(extendedProps.part_a_invoice_price !== null ? extendedProps.part_a_invoice_price : 'N/A');
+            $('#view_partBInvocePriceDisplay').text(extendedProps.part_b_invoice_price !== null ? extendedProps.part_b_invoice_price : 'N/A');
+            $('#view_partCInvocePriceDisplay').text(extendedProps.part_c_invoice_price !== null ? extendedProps.part_c_invoice_price : 'N/A');
+            $('#view_isGSTIncludeDisplay').text(extendedProps.include_gst == 1 ? 'Yes' : 'No');
+            $('#view_gstRateDisplay').text(extendedProps.gst_rate !== null ? extendedProps.gst_rate : 'N/A');
+            $('#view_totalInvoicePriceDisplay').text(extendedProps.collection_total_plasma_price !== null ? extendedProps.collection_total_plasma_price : 'N/A');
+           
             $('#view_timeDisplay').text(formatTime(visit.time) || 'N/A');
             $('#view_tpRemarksDisplay').text(escapeHtml(extendedProps.remarks) || 'N/A');
             $('#view_pendingDocumentsDisplay').text(visit.pending_document_names && visit.pending_document_names.length > 0 ? escapeHtml(visit.pending_document_names.join(', ')) : 'None');
@@ -1783,13 +1961,19 @@
             $('#view_donorReportAttachments').empty();
             $('#view_invoiceCopyAttachments').empty();
             $('#view_pendingDocumentsAttachments').empty();
+            $('#view_partAInvoiceAttachments').empty();
+            $('#view_partBInvoiceAttachments').empty();
+            $('#view_partCInvoiceAttachments').empty();
 
             // Map attachment_type to their respective sections
             const attachmentMap = {
                 1: '#view_certificateOfQualityAttachments',
                 2: '#view_donorReportAttachments',
                 3: '#view_invoiceCopyAttachments',
-                4: '#view_pendingDocumentsAttachments'
+                4: '#view_pendingDocumentsAttachments',
+                5: '#view_partAInvoiceAttachments',
+                6: '#view_partBInvoiceAttachments',
+                7: '#view_partCInvoiceAttachments'
             };
 
             // Iterate over dcr_attachments and append them to respective sections
@@ -2251,10 +2435,56 @@
         fetchGSTRates().done(function(response) {
             if(response.success){
                 populateGSTRates(response.data);
+                populateCollectionGSTRates(response.data);
             }
         });
 
+        // Function to populate the collection GST dropdown dynamically
+        function populateCollectionGSTRates(gstRates) {
+            // Clear any existing options except the placeholder
+            $('#collectionGSTRate').find('option:not(:first)').remove();
+            $.each(gstRates, function(index, rate) {
+                $('#collectionGSTRate').append(
+                    $('<option>', {
+                        value: rate.gst, // assuming 'gst' holds the percentage value (e.g. 5, 12, etc.)
+                        text: rate.gst + '%'
+                    })
+                );
+            });
+        }
 
+        function calculateTotalCollectionPrice(){
+            // Get Part Prices or default to 0
+            var partA = parseFloat($('#collectionUpdatePartAPrice').val()) || 0;
+            var partB = parseFloat($('#collectionUpdatePartBPrice').val()) || 0;
+            var partC = parseFloat($('#collectionUpdatePartCPrice').val()) || 0;
+            var sum = partA + partB + partC;
+            
+            // If GST is included, calculate GST amount
+            if($('#includeCollectionGST').is(':checked')){
+                var gstRate = parseFloat($('#collectionGSTRate').val()) || 0;
+                var gstAmount = sum * (gstRate / 100);
+                sum += gstAmount;
+            }
+            
+            // Set the readonly total field (fixed to 2 decimals)
+            $('#totalCollectionPrice').val(sum.toFixed(2));
+        }
+
+        // Attach event listeners to recalc when any input changes
+        $('#collectionUpdatePartAPrice, #collectionUpdatePartBPrice, #collectionUpdatePartCPrice').on('input', calculateTotalCollectionPrice);
+
+        $('#includeCollectionGST').on('change', function(){
+        if($(this).is(':checked')){
+                $('#collectionGSTSection').show();
+        } else {
+                $('#collectionGSTSection').hide();
+                $('#collectionGSTRate').val(''); // Clear GST dropdown if unchecked
+        }
+        calculateTotalCollectionPrice();
+        });
+
+        $('#collectionGSTRate').on('change', calculateTotalCollectionPrice);
 
     });
 </script>
