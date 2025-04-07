@@ -101,7 +101,7 @@
                     </div>
 
                     <div class="col-md-2">
-                      <label for="conventionPrice" class="form-label">Convention</label>
+                      <label for="conventionPrice" class="form-label">Conveyance</label>
                       <input type="number" class="form-control" id="conventionPrice" name="conventionPrice" step="0.01" value="0">
                     </div>
 
@@ -230,7 +230,7 @@
                         <th>Date</th>
                         <th>Description</th>
                         <th>Food</th>
-                        <th>Convention</th>
+                        <th>Conveyance</th>
                         <th>Tel/Fax</th>
                         <th>Lodging</th>
                         <th>Sundry</th>

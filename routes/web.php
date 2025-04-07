@@ -178,6 +178,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/visits/getEmployeesTPStatus', [ReportVisitsController::class, 'getEmployeesTPStatus'])->name('visits.getEmployeesTPStatus');
     Route::get('/visits/getCoreSourcingBloodBanks', [ReportVisitsController::class, 'getCoreSourcingBloodBanks'])->name('visits.getCoreSourcingBloodBanks');
     Route::get('/visits/getSourcingGSTRates', [ReportVisitsController::class, 'getSourcingGSTRates'])->name('visits.getSourcingGSTRates');
+    Route::post('/visits/collection_edit_submit', [ReportVisitsController::class, 'collectionEditSubmit'])->name('visits.collection_edit_submit');
+    Route::post('/visits/sourcing_edit_submit', [ReportVisitsController::class, 'sourcingEditSubmit'])->name('visits.sourcing_edit_submit');
     /* *********************  Report Visits Ends ********************************* */
 
 
@@ -192,6 +194,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/reports/getBloodBankWiseColllectionSummary', [ReportsMasterController::class, 'getBloodBankWiseColllectionSummaryData'])->name('reports.getBloodBankWiseColllectionSummary');
     Route::get('/reports/tourPlanDateWiseSummary', [ReportsMasterController::class, 'tourPlanDateWiseSummaryIndex'])->name('reports.tour_palnner_datewise_summary');
     Route::post('/reports/getTourPlannerDateWiseSummary', [ReportsMasterController::class, 'getTourPlannerDateWiseSummaryData'])->name('reports.getTourPlannerDateWiseSummary');
+    Route::get('/reports/userExpensesSummary', [ReportsMasterController::class, 'userExpensesSummaryIndex'])->name('reports.user_expenses_summary');
+    Route::post('/reports/getUserExpensesSummary', [ReportsMasterController::class, 'getUserExpensesSummaryData'])->name('reports.getUserExpensesSummary');
     /* *********************  Report Visits Ends ********************************* */
 
 

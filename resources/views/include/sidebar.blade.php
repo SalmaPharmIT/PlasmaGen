@@ -177,6 +177,16 @@
          </li>
        @endif
 
+        <!-- User Expenses Reports - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.user_expenses_summary') }}" >
+            <i class="bi bi-currency-rupee"></i>
+            <span>Uses Expenses</span>
+          </a>
+         </li>
+       @endif
+
       @endif
     @endif
 

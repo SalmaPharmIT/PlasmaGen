@@ -5,10 +5,10 @@
 @section('content')
 
 <div class="pagetitle">
-    <h1>Periodic Work Summary</h1>
+    <h1>User Expenses Summary</h1>
     <nav>
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('reports.reports_work_summary') }}">Reports</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('reports.user_expenses_summary') }}">Reports</a></li>
         <li class="breadcrumb-item active">View</li>
       </ol>
     </nav>
@@ -22,7 +22,7 @@
            
             <!-- Header with Button -->
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title">View Periodic Work Summary</h5>
+                <h5 class="card-title">View Expenses</h5>
             </div>
 
             <!-- Display Success Message -->
@@ -59,20 +59,20 @@
                 </div>
 
                 <!-- Date Range Picker -->
-                <div class="col-md-4">
+                <div class="col-md-4 mt-2">
                     <label for="dateRangePicker" class="form-label">Select Date Range</label>
                     <input type="text" id="dateRangePicker" class="form-control" placeholder="Select date range"/>
                 </div>
 
                 <!-- Submit Button -->
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-2 mt-2 d-flex align-items-end">
                     <button id="filterButton" class="btn btn-success w-100">
                         <i class="bi bi-filter me-1"></i> Submit
                    </button>
                 </div>
 
                  <!-- Export Button -->
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-2 mt-2 d-flex align-items-end">
                     <button id="exportButton" class="btn btn-info w-100">
                         <i class="bi bi-download me-1"></i> Export
                     </button>
@@ -81,24 +81,28 @@
             <!-- End Filters Row -->
 
             <!-- Summary Data Table -->
-            <table id="periodicWorkSummaryTable" class="table table-striped table-bordered col-lg-12">
-              <thead>
-                <tr>
-                  <th class="text-center">S.No.</th>
-                  <th class="text-center">Executive</th>
-                  <th class="text-center">Total Collections</th>
-                  <th class="text-center">Total Sourcing</th>
-                  {{-- <th class="text-center">Total Both</th> --}}
-                  <th class="text-center">Avg. Collections</th>
-                  <th class="text-center">Avg. Sourcing</th>
-                  {{-- <th class="text-center">Avg. of Both</th> --}}
-                  {{-- <th class="text-center">Total Days</th> --}}
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Initially empty: "No records" will be shown -->
-              </tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="userWiseCollectionSummaryTable" class="table table-striped table-bordered col-lg-12">
+                <thead>
+                    <tr>
+                    <th class="text-center">SI.No.</th>
+                    <th class="text-center">Executive</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">Description</th>
+                    <th class="text-center">Food</th>
+                    <th class="text-center">Conveyance</th>
+                    <th class="text-center">Tel/Fax</th>
+                    <th class="text-center">Lodging</th>
+                    <th class="text-center">Sundry</th>
+                    <th class="text-center">Total Price</th>
+                    <th class="text-center">Attachments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Initially empty: "No records" will be shown -->
+                </tbody>
+                </table>
+            </div>
             <!-- End Summary Table -->
 
           </div>
@@ -108,6 +112,33 @@
 </section>
 
 @endsection
+
+
+@push('styles')
+<style>
+   .table-responsive {
+        overflow-x: auto;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table td {
+        max-width: 200px; /* Adjust according to your needs */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .table td, .table th {
+        word-wrap: break-word;
+        white-space: normal;
+    }
+  
+    /* Truncate text in Name, Mobile, and Email columns */
+    .table td, .table th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <!-- Include moment.js and daterangepicker.js -->
@@ -153,9 +184,8 @@
                         var dropdown = $('#collectingAgentDropdown');
                         dropdown.empty().append('<option value="">Choose Collecting Agent</option>');
                         $.each(agents, function(index, agent) {
-                           // var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                          //  var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
                             var option = '<option value="' + agent.id + '" data-role-id="' + agent.role_id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
-                            dropdown.append(option);
                             dropdown.append(option);
                         });
                         dropdown.trigger('change');
@@ -174,7 +204,7 @@
         loadCollectingAgents();
 
         // Initialize DataTable with empty data initially
-        var table = $('#periodicWorkSummaryTable').DataTable({
+        var table = $('#userWiseCollectionSummaryTable').DataTable({
             responsive: true,
             processing: true,
             data: [],
@@ -186,28 +216,64 @@
                         return meta.row + 1;
                     }
                 },
-                { data: 'agent_name', className: "text-left" },
-                { data: 'total_collections', className: "text-center" },
-                { data: 'total_sourcing', className: "text-center" },
-             //   { data: 'total_both', className: "text-center" },
-                { data: 'average_collections', className: "text-center" },
-                { data: 'average_sourcing', className: "text-center" },
-             //   { data: 'average_both', className: "text-center" },
-                // { data: 'days_in_range', className: "text-center" }
+                { data: 'collecting_agent_name', className: "text-center" },
+                { data: 'date', className: "text-center" },
+                { data: 'description', className: "text-center" },
+                { data: 'food', className: "text-center" },
+                { data: 'convention', className: "text-center" },
+                { data: 'tel_fax', className: "text-center" },
+                { data: 'lodging', className: "text-center" },
+                { data: 'sundry', className: "text-center" },
+                { data: 'total_price', className: "text-center" },
+                // Updated Attachments column with image preview rendering
+                {
+                    data: 'documents',
+                    className: "text-center",
+                    render: function(data, type, row, meta) {
+                        let html = '';
+                        if (data && data.length > 0) {
+                            data.forEach(function(doc) {
+                                const docUrl = "{{ config('auth_api.base_image_url') }}" + doc.attachments;
+                                if (doc.attachments.match(/\.(jpg|jpeg|png|gif|svg)$/i)) {
+                                    html += `
+                                        <div class="preview-item d-inline-block me-1">
+                                            <a href="${docUrl}" target="_blank">
+                                                <img src="${docUrl}" alt="Document Preview" class="img-thumbnail" style="width: 50px; height: 50px;">
+                                            </a>
+                                        </div>
+                                    `;
+                                } else {
+                                    html += `
+                                        <div class="preview-item d-inline-block me-1">
+                                            <a href="${docUrl}" target="_blank">
+                                                <i class="bi bi-file-earmark-text-fill" style="font-size: 2rem;"></i>
+                                            </a>
+                                        </div>
+                                    `;
+                                }
+                            });
+                        } else {
+                            html = 'No attachments';
+                        }
+                        return html;
+                    }
+                },
             ],
+            order: [[0, 'asc']],
             pageLength: 10,
             lengthMenu: [5, 10, 25, 50, 100],
             language: {
                 emptyTable: "No records"
             },
-           // dom: 'Bfrtip', // Define the control elements to appear on the page
             buttons: [
                 {
                     extend: 'excelHtml5',
-                    title: 'Periodic Work Summary'
+                    title: 'User Expenses Summary'
                 }
             ]
         });
+
+      
 
         // On Filter button click, perform the AJAX request to fetch summary data
         $('#filterButton').click(function() {
@@ -230,7 +296,7 @@
             };
 
             $.ajax({
-                url: "{{ route('reports.getPeriodicWorkSummary') }}",
+                url: "{{ route('reports.getUserExpensesSummary') }}",
                 type: 'POST',
                 data: postData,
                 success: function(json) {

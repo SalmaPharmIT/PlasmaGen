@@ -230,6 +230,9 @@ class ReportVisitsController extends Controller
             'collectionUpdatePartAPrice'     => 'nullable|numeric|min:0',
             'collectionUpdatePartBPrice'     => 'nullable|numeric|min:0',
             'collectionUpdatePartCPrice'     => 'nullable|numeric|min:0',
+            'boxes_collected' => 'required|integer|min:0',
+            'units_collected' => 'required|integer|min:0',
+            'litres_collected' => 'required|integer|min:0',
         ]);
 
 
@@ -265,6 +268,9 @@ class ReportVisitsController extends Controller
             'collection_total_plasma_price'      => $request->input('total_collection_price'),
             'include_collection_gst'      => $request->has('include_collection_gst') ? 1 : 0,
             'collection_gst_rate'         => $request->input('collection_gst_rate'),
+            'boxes_collected'    => $request->input('boxes_collected'),  
+            'units_collected'    => $request->input('units_collected'),  
+            'litres_collected'    => $request->input('litres_collected'),  
         ];
         
         // Handle multiple documents certificate_of_quality
@@ -460,7 +466,7 @@ class ReportVisitsController extends Controller
             ]);
   
             // Convert the 'include_gst' field to 1 or 0
-            $includeGST = $request->has('include_gst') && $request->input('include_gst') === 'on' ? 1 : 0;
+           // $includeGST = $request->has('include_gst') && $request->input('include_gst') === 'on' ? 1 : 0;
 
   
           // Log the data being sent
@@ -501,7 +507,7 @@ class ReportVisitsController extends Controller
                 'part_a_price'            => $validatedData['part_a_price'] ?? 0,
                 'part_b_price'            => $validatedData['part_b_price'] ?? 0,
                 'part_c_price'            => $validatedData['part_c_price'] ?? 0,
-                'include_gst'             => $includeGST,
+                'include_gst'             => $request->has('include_gst') ? 1 : 0,
                 'gst_rate'                => $validatedData['gst_rate'] ?? 0,
                 'total_plasma_price'      => $validatedData['total_plasma_price'] ?? 0,
             ];
@@ -920,4 +926,386 @@ class ReportVisitsController extends Controller
          }
      }
 
+
+    // Edit Colllection Visits  details
+    public function collectionEditSubmit(Request $request)
+    {
+       // Optional: Validate that the visit_id from the request matches the {id} parameter
+        if (!$request->input('visit_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid Visit ID.'
+            ], 400);
+        }
+
+         // Validate the form data with conditional rules
+         $validatedData = $request->validate([
+            'quantity_collected' => 'required|integer|min:0',
+            'quantity_remaining' => 'required|integer|min:0',
+            'editPrice'     => 'nullable|numeric|min:0',
+            'certificate_of_quality' => 'nullable|array',
+            'certificate_of_quality.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx|max:2048',
+            'donor_report' => 'nullable|array',
+            'donor_report.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx|max:2048',
+            'invoice_copy' => 'nullable|array',
+            'invoice_copy.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx|max:2048',
+            'pending_documents' => 'nullable|array',
+            'pending_documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx|max:2048',
+            'edit_part_a_price'     => 'nullable|numeric|min:0',
+            'edit_part_b_price'     => 'nullable|numeric|min:0',
+            'edit_part_c_price'     => 'nullable|numeric|min:0',
+            'edit_boxes_collected' => 'required|integer|min:0',
+            'edit_units_collected' => 'required|integer|min:0',
+            'edit_litres_collected' => 'required|integer|min:0',
+        ]);
+
+
+        // Log the data being sent
+        Log::info('Update Collection DCR API validatedData', [
+            'validatedData' => $validatedData,
+        ]);
+      
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+         // Prepare the data to send to the external API
+         $postData = [
+            'visit_id' => $request->input('visit_id'),
+            'quantity_collected' => $request->input('quantity_collected'),
+            'remaining_quantity' => $request->input('quantity_remaining'),
+            'quantity_price' => $request->input('editPrice'),
+            'created_by' => Auth::id(),
+            'modified_by' => Auth::id(),
+            'collectionUpdatePartAPrice' => $request->input('edit_part_a_price'),
+            'collectionUpdatePartBPrice' => $request->input('edit_part_b_price'),
+            'collectionUpdatePartCPrice' => $request->input('edit_part_c_price'),
+            'collection_total_plasma_price' => $request->input('edit_total_price'),
+            'include_collection_gst' => $request->has('edit_collection_include_gst') ? 1 : 0,
+            'collection_gst_rate' => $request->input('edit_collection_gst_rate'),
+            'boxes_collected' => $request->input('edit_boxes_collected'),
+            'units_collected' => $request->input('edit_units_collected'),
+            'litres_collected' => $request->input('edit_litres_collected'),
+            'existing_attachments' => $request->input('existing_attachments', '[]'),
+        ];
+        
+          // Retrieve existing attachments (if any)
+   
+
+        // Handle multiple Retrieve existing attachments (if any)
+        $existingAttachmentsJson = $request->input('existing_attachments', '[]');
+        $existingAttachments = json_decode($existingAttachmentsJson, true);
+        Log::info('Number of existing attachments:', ['count' => count($existingAttachments)]);
+
+
+        // Handle multiple documents certificate_of_quality
+        if ($request->hasFile('certificate_of_quality')) {
+            $files = $request->file('certificate_of_quality');
+            Log::info('Number of files certificate_of_quality uploaded:', ['count' => count($files)]);
+            $postData['certificate_of_quality'] = []; // Initialize as an array
+            foreach ($request->file('certificate_of_quality') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['certificate_of_quality'][] = $documentBase64;
+            }
+        }
+
+        // Handle multiple documents donor_report
+        if ($request->hasFile('donor_report')) {
+            $files2 = $request->file('donor_report');
+            Log::info('Number of files donor_report uploaded:', ['count' => count($files2)]);
+            $postData['donor_report'] = []; // Initialize as an array
+            foreach ($request->file('donor_report') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['donor_report'][] = $documentBase64;
+            }
+        }
+
+
+        // Handle multiple documents invoice_copy
+        if ($request->hasFile('invoice_copy')) {
+            $files3 = $request->file('invoice_copy');
+            Log::info('Number of files invoice_copy uploaded:', ['count' => count($files3)]);
+            $postData['invoice_copy'] = []; // Initialize as an array
+            foreach ($request->file('invoice_copy') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['invoice_copy'][] = $documentBase64;
+            }
+        }
+
+        // Handle multiple documents pending_documents
+        if ($request->hasFile('pending_documents')) {
+            $files4 = $request->file('pending_documents');
+            Log::info('Number of files pending_documents uploaded:', ['count' => count($files4)]);
+            $postData['pending_documents'] = []; // Initialize as an array
+            foreach ($request->file('pending_documents') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['pending_documents'][] = $documentBase64;
+            }
+        }
+
+        // Handle multiple documents collectionPartAInvoice_copy
+        if ($request->hasFile('collectionPartAInvoice_copy')) {
+            $files5 = $request->file('collectionPartAInvoice_copy');
+            Log::info('Number of files collectionPartAInvoice_copy uploaded:', ['count' => count($files5)]);
+            $postData['collectionPartAInvoice_copy'] = []; // Initialize as an array
+            foreach ($request->file('collectionPartAInvoice_copy') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['collectionPartAInvoice_copy'][] = $documentBase64;
+            }
+        }
+
+        // Handle multiple documents collectionPartBInvoice_copy
+        if ($request->hasFile('collectionPartBInvoice_copy')) {
+            $files6 = $request->file('collectionPartBInvoice_copy');
+            Log::info('Number of files collectionPartBInvoice_copy uploaded:', ['count' => count($files6)]);
+            $postData['collectionPartBInvoice_copy'] = []; // Initialize as an array
+            foreach ($request->file('collectionPartBInvoice_copy') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['collectionPartBInvoice_copy'][] = $documentBase64;
+            }
+        }
+
+         // Handle multiple documents collectionPartCInvoice_copy
+         if ($request->hasFile('collectionPartCInvoice_copy')) {
+            $files7 = $request->file('collectionPartCInvoice_copy');
+            Log::info('Number of files collectionPartCInvoice_copy uploaded:', ['count' => count($files7)]);
+            $postData['collectionPartCInvoice_copy'] = []; // Initialize as an array
+            foreach ($request->file('collectionPartCInvoice_copy') as $document) {
+                $documentContent = file_get_contents($document->getRealPath());
+                $documentBase64 = 'data:' . $document->getMimeType() . ';base64,' . base64_encode($documentContent);
+                $postData['collectionPartCInvoice_copy'][] = $documentBase64;
+            }
+        }
+        
+
+        // Define the external API URL for saving the tour plan
+        $apiUrl = config('auth_api.dcr_collections_edit_submit_url'); // Ensure this is set in your config
+
+        if (!$apiUrl) {
+            Log::error('DCR Collections Submit URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'DCR Collections Submit URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Log the data being sent
+            Log::info('Sending data to Edit collection submit API', [
+                'data' => $postData,
+            ]);
+
+           
+            // Make the API request with the Bearer token
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            // Log the API response
+            Log::info('Edit collection submit API Response', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if ($apiResponse['success']) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $apiResponse['message'],
+                        'data'    => $apiResponse['data'], // Optional: include data if needed
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $apiResponse['message'] ?? 'Unknown error from API.'
+                    ], 400);
+                }
+            } else {
+                // Log the HTTP status code and response body
+                Log::error('Edit collection submit API failed', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+    
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to connect to the update server.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            // Log the exception message
+            Log::error('Edit collection submit exception', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while edit submitting the visit: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    
+      // Edit sourcing Update Visit Submit 
+      public function sourcingEditSubmit(Request $request)
+      {
+         // Optional: Validate that the visit_id from the request matches the {id} parameter
+          if (!$request->input('sourcing_visit_id')) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Invalid Sourcing Visit ID.'
+              ], 400);
+          }
+  
+            // Validate the form data with appropriate rules
+            $validatedData = $request->validate([
+                'blood_bank_name'           => 'required|string|max:255',
+                'contact_person_name'       => 'required|string|max:255',
+                'mobile_no'                 => 'required|digits_between:10,20',
+                'email'                     => 'nullable|email|max:255',
+                'address'                   => 'nullable|string|max:500',
+                'FFPProcurementCompany'     => 'nullable|string|max:255',
+                'currentPlasmaPrice'        => 'nullable|numeric|min:0',
+                'potentialPerMonth'         => 'nullable|string|max:255',
+                'paymentTerms'              => 'nullable|string|max:255',
+                'remarks'                   => 'nullable|string|max:1000',
+                 // New extra fields
+                'part_a_price'              => 'nullable|numeric|min:0',
+                'part_b_price'              => 'nullable|numeric|min:0',
+                'part_c_price'              => 'nullable|numeric|min:0',
+                'include_gst'               => 'sometimes|accepted', // if checkbox is ticked, its value should be "on" or "1"
+                'gst_rate'                  => 'nullable|numeric',
+                'total_plasma_price'        => 'nullable|numeric|min:0'
+            ]);
+  
+          // Log the data being sent
+          Log::info('Sourcing Edit Submit API validatedData', [
+              'validatedData' => $validatedData,
+          ]);
+        
+          // Retrieve the token from the session
+          $token = session()->get('api_token');
+  
+          if (!$token) {
+              Log::warning('API token missing in session.');
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Authentication token missing. Please log in again.'
+              ], 401);
+          }
+
+  
+            // Prepare the data to send to the external API
+            $postData = [
+                'sourcing_visit_id'     => $request->input('sourcing_visit_id'),
+                'blood_bank_name'       => $validatedData['blood_bank_name'],
+                'contact_person_name'   => $validatedData['contact_person_name'],
+                'mobile_no'             => $validatedData['mobile_no'],
+                'email'                 => $validatedData['email'],
+                'address'               => $validatedData['address'] ?? '',
+                'FFP_procurement_company' => $validatedData['FFPProcurementCompany'],
+                'current_plasma_price'  => $validatedData['currentPlasmaPrice'],
+                'potential_per_month'   => $validatedData['potentialPerMonth'],
+                'payment_terms'         => $validatedData['paymentTerms'],
+                'remarks'               => $validatedData['remarks'] ?? '',
+                'created_by'            => Auth::id(), // Assuming you want to capture the authenticated user
+                'modified_by'           => Auth::id(),
+                 // Extra fields
+                'part_a_price'            => $validatedData['part_a_price'] ?? 0,
+                'part_b_price'            => $validatedData['part_b_price'] ?? 0,
+                'part_c_price'            => $validatedData['part_c_price'] ?? 0,
+                'include_gst'             => $request->has('include_gst') ? 1 : 0,
+                'gst_rate'                => $validatedData['gst_rate'] ?? 0,
+                'total_plasma_price'      => $validatedData['total_plasma_price'] ?? 0,
+            ];
+
+             // Log the data being sent
+            Log::info('Sourcing Edit Submit PostData API validatedData', [
+                'validatedData' => $validatedData,
+            ]);
+
+  
+          // Define the external API URL for saving the tour plan
+          $apiUrl = config('auth_api.drc_sourcing_edit_submit_url'); // Ensure this is set in your config
+  
+          if (!$apiUrl) {
+                Log::error('Sourcing Edit Submit URL not configured.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sourcing Edit Submit URL is not configured.'
+                ], 500);
+          }
+  
+          try {
+              // Log the data being sent
+              Log::info('Sending data to Sourcing Edit Submit API', [
+                    'api_url' => $apiUrl,
+                    'data'    => $postData,
+              ]);
+  
+             
+              // Make the API request with the Bearer token
+              $response = Http::withHeaders([
+                  'Authorization' => 'Bearer ' . $token,
+                  'Content-Type' => 'application/json',
+              ])->post($apiUrl, $postData);
+  
+                // Log the API response
+                Log::info('DCR Sourcing Submit API Response', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+  
+  
+              if ($response->successful()) {
+                  $apiResponse = $response->json();
+  
+                  if ($apiResponse['success']) {
+                      return response()->json([
+                          'success' => true,
+                          'message' => $apiResponse['message'],
+                          'data'    => $apiResponse['data'] ?? null, // Optional: include data if needed
+                      ]);
+                  } else {
+                      return response()->json([
+                          'success' => false,
+                          'message' => $apiResponse['message'] ?? 'Unknown error from API.'
+                      ], 400);
+                  }
+              } else {
+                  // Log the HTTP status code and response body
+                  Log::error('Sourcing Edit Submit API failed', [
+                      'status' => $response->status(),
+                      'body'   => $response->body(),
+                  ]);
+      
+                  return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to connect to the Sourcing Edit Submit server.'
+                ], $response->status());
+              }
+          } catch (\Exception $e) {
+              // Log the exception message
+              Log::error('Sourcing Edit Submit exception', ['error' => $e->getMessage()]);
+              return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while submitting the sourcing edit submit: ' . $e->getMessage()
+            ], 500);
+          }
+      }
 }

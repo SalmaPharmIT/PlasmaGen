@@ -181,7 +181,8 @@
                         var dropdown = $('#collectingAgentDropdown');
                         dropdown.empty().append('<option value="">Choose Collecting Agent</option>');
                         $.each(agents, function(index, agent) {
-                            var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                           // var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                            var option = '<option value="' + agent.id + '" data-role-id="' + agent.role_id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
                             dropdown.append(option);
                         });
                         dropdown.trigger('change');

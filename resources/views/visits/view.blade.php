@@ -279,6 +279,23 @@
                 </div>
             </div>
 
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="numBoxesCollected" class="form-label">Number of Boxes <span style="color:red">*</span></label>
+                    <input type="number" class="form-control" id="numBoxesCollected" name="boxes_collected" min="0" required>
+                 </div>
+
+                <div class="col-md-4">
+                    <label for="numUnitsCollected" class="form-label">Number of Units <span style="color:red">*</span></label>
+                    <input type="number" class="form-control" id="numUnitsCollected" name="units_collected" min="0" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="numLitresCollected" class="form-label">Number of Litres <span style="color:red">*</span></label>
+                    <input type="number" class="form-control" id="numLitresCollected" name="litres_collected" min="0" required>
+                </div>
+            </div>
             
         
             </div>
@@ -622,6 +639,8 @@
 
             </div>
             <div class="modal-footer">
+                <!-- Edit button: This button will trigger the edit modal -->
+                <button type="button" class="btn btn-warning edit-collection-visit-btn d-none" id="viewCollectionEditBtn" data-bs-dismiss="modal">Edit</button>
                 <!-- Close Button -->
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
@@ -716,7 +735,7 @@
                             <label for="FFPProcurementCompany" class="form-label">Past/Current FFP Procurement Company <span style="color:red">*</span></label>
                             <input type="text" class="form-control" id="FFPProcurementCompany" name="FFPProcurementCompany" required>
                         </div>
-                        <div class="mb-3" style="display: none;">
+                        <div class="mb-3">
                             <label for="currentPlasmaPrice" class="form-label">Current Plasma Price/Ltr</label>
                             <input type="text" class="form-control" id="currentPlasmaPrice" name="currentPlasmaPrice">
                         </div>
@@ -822,6 +841,263 @@
         </div>
     </div>
 </div>
+
+
+<!-- Edit Collection Visit Modal -->
+<div class="modal fade" id="editCollectionVisitModal" tabindex="-1" aria-labelledby="editCollectionVisitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <form id="editVisitForm" method="POST" action="{{ route('visits.collection_edit_submit') }}" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editCollectionVisitModalLabel">Edit Collection Visit</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Hidden field for visit ID -->
+            <input type="hidden" id="editVisitId" name="visit_id">
+             <!-- Hidden input to hold existing attachment data -->
+            <input type="hidden" id="editRemainingAttachments" name="existing_attachments">
+  
+            <!-- Basic Visit Information -->
+            <div class="row mb-3">
+                <input type="hidden" class="form-control" id="editPlannedQuantity" name="quantity_planned" required>
+                <div class="col-md-4">
+                    <label for="editQuantityCollected" class="form-label">Quantity Collected</label>
+                    <input type="number" class="form-control" id="editQuantityCollected" name="quantity_collected" required>
+                  </div>
+              <div class="col-md-4">
+                <label for="editRemainingQuantity" class="form-label">Remaining Quantity</label>
+                <input type="number" class="form-control" id="editRemainingQuantity" name="quantity_remaining" required readonly>
+              </div>
+              <div class="col-md-4">
+                <label for="editPrice" class="form-label">Price</label>
+                <input type="number" class="form-control" id="editPrice" name="editPrice">
+              </div>
+            </div>
+                          
+            <!-- GST and Pricing Details -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="editPartAPrice" class="form-label">Part-A Invoice Price</label>
+                    <input type="text" class="form-control" id="editPartAPrice" name="edit_part_a_price">
+                </div>
+                  <div class="col-md-4">
+                    <label for="editPartBPrice" class="form-label">Part-B Invoice Price</label>
+                    <input type="text" class="form-control" id="editPartBPrice" name="edit_part_b_price">
+                </div>
+                  <div class="col-md-4">
+                    <label for="editPartCPrice" class="form-label">Part-C Invoice Price</label>
+                    <input type="text" class="form-control" id="editPartCPrice" name="edit_part_c_price" >
+                </div>
+              <div class="col-md-4 mt-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="editIncludeGST" name="edit_collection_include_gst">
+                  <label class="form-check-label" for="editIncludeGST">Include GST</label>
+                </div>
+              </div>
+              <div class="col-md-4 mt-2" id="editGSTRateSection" style="display: none;">
+                <label for="editGSTRateSelect" class="form-label">GST Rate (%)</label>
+                <select class="form-select" id="editGSTRateSelect" name="edit_collection_gst_rate">
+                  <option value="">-- Select GST Rate --</option>
+                  <!-- Options to be populated dynamically -->
+                </select>
+              </div>
+              <div class="col-md-4 mt-2">
+                <label for="editTotalPrice" class="form-label">Total Price</label>
+                <input type="text" class="form-control" id="editTotalPrice" name="edit_total_price" readonly>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="editNumBoxes" class="form-label">Number of boxes</label>
+                    <input type="text" class="form-control" id="editNumBoxes" name="edit_boxes_collected">
+                </div>
+                  <div class="col-md-4">
+                    <label for="editNumUnits" class="form-label">Number of Units</label>
+                    <input type="text" class="form-control" id="editNumUnits" name="edit_units_collected">
+                </div>
+                  <div class="col-md-4">
+                    <label for="editNumLitres" class="form-label">Number of Litres</label>
+                    <input type="text" class="form-control" id="editNumLitres" name="edit_litres_collected" >
+                </div>
+            </div>
+  
+            <!-- Attachments Section -->
+            <h5 class="mb-3">Attachments</h5>
+            <!-- Certificate of Quality -->
+            <div class="mb-3">
+              <label for="edit_certificate_of_quality" class="form-label">Certificate of Quality</label>
+              <input type="file" class="form-control" id="edit_certificate_of_quality" name="certificate_of_quality[]" multiple accept="image/*,application/pdf">
+              <div class="mt-2 d-flex flex-wrap" id="edit_certificate_of_qualityPreview">
+                <!-- Existing Certificate of Quality attachments will be appended here -->
+              </div>
+            </div>
+            <!-- Donor Report -->
+            <div class="mb-3">
+              <label for="edit_donor_report" class="form-label">Donor Report</label>
+              <input type="file" class="form-control" id="edit_donor_report" name="donor_report[]" multiple accept="image/*,application/pdf">
+              <div class="mt-2 d-flex flex-wrap" id="edit_donor_reportPreview">
+                <!-- Existing Donor Report attachments -->
+              </div>
+            </div>
+            <!-- Invoice Copy -->
+            <div class="mb-3">
+              <label for="edit_invoice_copy" class="form-label">Invoice Copy</label>
+              <input type="file" class="form-control" id="edit_invoice_copy" name="invoice_copy[]" multiple accept="image/*,application/pdf">
+              <div class="mt-2 d-flex flex-wrap" id="edit_invoice_copyPreview">
+                <!-- Existing Invoice Copy attachments -->
+              </div>
+            </div>
+            <!-- Pending Documents -->
+            <div class="mb-3">
+              <label for="edit_pending_documents" class="form-label">Pending Documents</label>
+              <input type="file" class="form-control" id="edit_pending_documents" name="pending_documents[]" multiple accept="image/*,application/pdf">
+              <div class="mt-2 d-flex flex-wrap" id="edit_pending_documentsPreview">
+                <!-- Existing Pending Documents attachments -->
+              </div>
+            </div>
+            <!-- Part-A, Part-B, Part-C Invoice Copies -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label for="edit_part_a_invoice" class="form-label">Part-A Invoice Copy</label>
+                <input type="file" class="form-control" id="edit_part_a_invoice" name="collectionPartAInvoice_copy[]" multiple accept="image/*,application/pdf">
+                <div class="mt-2 d-flex flex-wrap" id="edit_part_a_invoicePreview">
+                  <!-- Existing Part-A Invoice Copy attachments -->
+                </div>
+              </div>
+              <div class="col-md-12">
+                <label for="edit_part_b_invoice" class="form-label">Part-B Invoice Copy</label>
+                <input type="file" class="form-control" id="edit_part_b_invoice" name="collectionPartBInvoice_copy[]" multiple accept="image/*,application/pdf">
+                <div class="mt-2 d-flex flex-wrap" id="edit_part_b_invoicePreview">
+                  <!-- Existing Part-B Invoice Copy attachments -->
+                </div>
+              </div>
+              <div class="col-md-12">
+                <label for="edit_part_c_invoice" class="form-label">Part-C Invoice Copy</label>
+                <input type="file" class="form-control" id="edit_part_c_invoice" name="collectionPartCInvoice_copy[]" multiple accept="image/*,application/pdf">
+                <div class="mt-2 d-flex flex-wrap" id="edit_part_c_invoicePreview">
+                  <!-- Existing Part-C Invoice Copy attachments -->
+                </div>
+              </div>
+            </div>
+            <!-- Hidden input for attachments marked for deletion -->
+            <input type="hidden" id="editDeletedAttachments" name="deleted_attachments">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Submit Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+</div>
+
+<!-- Edit Sourcing Visit Modal -->
+<div class="modal fade" id="editSourcingVisitModal" tabindex="-1" aria-labelledby="editSourcingVisitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <form id="editSourcingVisitForm">
+        @csrf
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editSourcingVisitModalLabel">Edit Sourcing Visit</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Hidden field for sourcing visit id -->
+            <input type="hidden" id="editSourcingVisitId" name="sourcing_visit_id">
+            
+            <!-- Basic Information -->
+            <div class="mb-3">
+              <label for="editBloodBankName" class="form-label">Blood Bank Name</label>
+              <input type="text" class="form-control" id="editBloodBankName" name="blood_bank_name" required>
+            </div>
+            <div class="mb-3">
+              <label for="editContactPerson" class="form-label">Contact Person</label>
+              <input type="text" class="form-control" id="editContactPerson" name="contact_person_name" required>
+            </div>
+            <div class="mb-3">
+              <label for="editMobileNo" class="form-label">Mobile No</label>
+              <input type="text" class="form-control" id="editMobileNo" name="mobile_no" required>
+            </div>
+            <div class="mb-3">
+              <label for="editEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="editEmail" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label for="editAddress" class="form-label">Address</label>
+              <textarea class="form-control" id="editAddress" name="address" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editFFPCompany" class="form-label">FFP Procurement Company</label>
+              <input type="text" class="form-control" id="editFFPCompany" name="FFPProcurementCompany">
+            </div>
+            
+            <!-- New Fields -->
+            <div class="mb-3">
+              <label for="editPlasmaPrice" class="form-label">Plasma Price/Ltr</label>
+              <input type="number" step="0.01" class="form-control" id="editPlasmaPrice" name="currentPlasmaPrice">
+            </div>
+            <div class="mb-3">
+              <label for="editPotentialPerMonth" class="form-label">Potential Per Month</label>
+              <input type="text" class="form-control" id="editPotentialPerMonth" name="potentialPerMonth" required>
+            </div>
+            <div class="mb-3">
+              <label for="editPaymentTerms" class="form-label">Payment Terms</label>
+              <input type="text" class="form-control" id="editPaymentTerms" name="paymentTerms" required>
+            </div>
+            <div class="mb-3">
+              <label for="editRemarks" class="form-label">Remarks</label>
+              <textarea class="form-control" id="editRemarks" name="remarks" rows="2"></textarea>
+            </div>
+            
+            <!-- Part Prices and GST Section -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="editSourcingPartAPrice" class="form-label">Part-A Price</label>
+                <input type="number" step="0.01" class="form-control" id="editSourcingPartAPrice" name="part_a_price" value="0">
+              </div>
+              <div class="col-md-4">
+                <label for="editSourcingPartBPrice" class="form-label">Part-B Price</label>
+                <input type="number" step="0.01" class="form-control" id="editSourcingPartBPrice" name="part_b_price" value="0">
+              </div>
+              <div class="col-md-4">
+                <label for="editSourcingPartCPrice" class="form-label">Part-C Price</label>
+                <input type="number" step="0.01" class="form-control" id="editSourcingPartCPrice" name="part_c_price" value="0">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="editSourcingIncludeGST" name="include_gst">
+                  <label class="form-check-label" for="editSourcingIncludeGST">Include GST</label>
+                </div>
+              </div>
+              <div class="col-md-4" id="editSourcingGSTRateSection" style="display: none;">
+                <label for="editSourcingGSTRateSelect" class="form-label">GST Rate (%)</label>
+                <select class="form-select" id="editSourcingGSTRateSelect" name="gst_rate">
+                  <option value="">-- Select GST Rate --</option>
+                  <!-- GST rate options will be populated dynamically -->
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="editTotalPlasmaPrice" class="form-label">Total Plasma Price</label>
+                <input type="text" class="form-control" id="editTotalPlasmaPrice" name="total_plasma_price" readonly>
+              </div>
+            </div>
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+</div>
+  
+  
 
 
 @endsection
@@ -1082,6 +1358,151 @@
             }
         }
 
+
+        // Function to initialize file input previews
+        function initializeFilePreviewEdit(inputId, previewId) {
+            const inputElement = document.getElementById(inputId);
+            const previewContainer = document.getElementById(previewId);
+            
+            // Initialize a DataTransfer object to manage files
+            const dt = new DataTransfer();
+
+            inputElement.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+
+                // Add new files to the DataTransfer object
+                files.forEach(file => {
+                    dt.items.add(file);
+                });
+
+                // Update the input's files to the DataTransfer's files
+                inputElement.files = dt.files;
+
+                // Clear existing previews
+             //   previewContainer.innerHTML = '';
+
+                // Display previews for each file
+                Array.from(dt.files).forEach((file, index) => {
+                    const fileReader = new FileReader();
+
+                    fileReader.onload = function(e) {
+                        const fileURL = e.target.result;
+                        const fileType = file.type;
+
+                        const previewItem = document.createElement('div');
+                        previewItem.classList.add('preview-item');
+
+                        // Create delete button
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.classList.add('delete-btn');
+                        deleteBtn.innerHTML = '&times;';
+                        deleteBtn.title = 'Remove this file';
+
+                        // Event listener for delete button
+                        deleteBtn.addEventListener('click', function() {
+                            // Remove the file from DataTransfer
+                            dt.items.remove(index);
+                            // Update the input's files
+                            inputElement.files = dt.files;
+                            // Remove the preview
+                            previewContainer.removeChild(previewItem);
+                            // Re-render the remaining previews to update indices
+                            renderPreviews();
+                        });
+
+                        // Append delete button
+                        previewItem.appendChild(deleteBtn);
+
+                        if (fileType.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = fileURL;
+                            img.alt = file.name;
+                            previewItem.appendChild(img);
+                        } else if (fileType === 'application/pdf') {
+                            const embed = document.createElement('embed');
+                            embed.src = fileURL;
+                            embed.type = 'application/pdf';
+                            embed.style.width = '100px';
+                            embed.style.height = '100px';
+                            previewItem.appendChild(embed);
+                        } else {
+                            // For other file types, display file name
+                            const fileName = document.createElement('p');
+                            fileName.textContent = file.name;
+                            previewItem.appendChild(fileName);
+                        }
+
+                        previewContainer.appendChild(previewItem);
+                    }
+
+                    fileReader.readAsDataURL(file);
+                });
+            });
+
+            // Function to re-render previews (useful after deletion to update indices)
+            function renderPreviews() {
+                // Clear existing previews
+                previewContainer.innerHTML = '';
+
+                // Display previews for each file
+                Array.from(dt.files).forEach((file, index) => {
+                    const fileReader = new FileReader();
+
+                    fileReader.onload = function(e) {
+                        const fileURL = e.target.result;
+                        const fileType = file.type;
+
+                        const previewItem = document.createElement('div');
+                        previewItem.classList.add('preview-item');
+
+                        // Create delete button
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.classList.add('delete-btn');
+                        deleteBtn.innerHTML = '&times;';
+                        deleteBtn.title = 'Remove this file';
+
+                        // Event listener for delete button
+                        deleteBtn.addEventListener('click', function() {
+                            // Remove the file from DataTransfer
+                            dt.items.remove(index);
+                            // Update the input's files
+                            inputElement.files = dt.files;
+                            // Remove the preview
+                            previewContainer.removeChild(previewItem);
+                            // Re-render the remaining previews
+                            renderPreviews();
+                        });
+
+                        // Append delete button
+                        previewItem.appendChild(deleteBtn);
+
+                        if (fileType.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = fileURL;
+                            img.alt = file.name;
+                            previewItem.appendChild(img);
+                        } else if (fileType === 'application/pdf') {
+                            const embed = document.createElement('embed');
+                            embed.src = fileURL;
+                            embed.type = 'application/pdf';
+                            embed.style.width = '100px';
+                            embed.style.height = '100px';
+                            previewItem.appendChild(embed);
+                        } else {
+                            // For other file types, display file name
+                            const fileName = document.createElement('p');
+                            fileName.textContent = file.name;
+                            previewItem.appendChild(fileName);
+                        }
+
+                        previewContainer.appendChild(previewItem);
+                    }
+
+                    fileReader.readAsDataURL(file);
+                });
+            }
+        }
+
         // Initialize previews for all attachment categories
         initializeFilePreview('certificate_of_quality', 'certificate_of_qualityPreview');
         initializeFilePreview('donor_report', 'donor_reportPreview');
@@ -1090,6 +1511,14 @@
         initializeFilePreview('collectionPartAInvoice_copy', 'collectionPartAInvoice_copyPreview');
         initializeFilePreview('collectionPartBInvoice_copy', 'collectionPartBInvoice_copyPreview');
         initializeFilePreview('collectionPartCInvoice_copy', 'collectionPartCInvoice_copyPreview');
+        
+        initializeFilePreviewEdit('edit_certificate_of_quality', 'edit_certificate_of_qualityPreview');
+        initializeFilePreviewEdit('edit_donor_report', 'edit_donor_reportPreview');
+        initializeFilePreviewEdit('edit_invoice_copy', 'edit_invoice_copyPreview');
+        initializeFilePreviewEdit('edit_pending_documents', 'edit_pending_documentsPreview');
+        initializeFilePreviewEdit('edit_part_a_invoice', 'edit_part_a_invoicePreview');
+        initializeFilePreviewEdit('edit_part_b_invoice', 'edit_part_b_invoicePreview');
+        initializeFilePreviewEdit('edit_part_c_invoice', 'edit_part_c_invoicePreview');
 
     });
 </script>
@@ -1150,10 +1579,10 @@
                             const tourPlanType = Number(visit.extendedProps.tour_plan_type);
                             // For tour_plan_type 1, status should be "updated"
                             // For tour_plan_type 2, status should be "initiated"
-                            if (tourPlanType === 1 && status === "updated" && visit.extendedProps.tp_status == 'accepted') {
+                            if (tourPlanType === 1 && (status === "updated" || status === "dcr_submitted" || status === "rejected") && visit.extendedProps.tp_status == 'accepted') {
                                 return true;
                             }
-                            if (tourPlanType === 2 && (status === "updated" || status === "dcr_submitted")  && visit.extendedProps.tp_status == 'accepted') {
+                            if (tourPlanType === 2 && (status === "updated" || status === "dcr_submitted" || status === "rejected")  && visit.extendedProps.tp_status == 'accepted') {
                                 return true;
                             }
                             return false;
@@ -1740,6 +2169,16 @@
         $('#updateVisitForm').on('submit', function(e) {
             e.preventDefault();
 
+              // Show loading alert
+                Swal.fire({
+                    title: 'Submitting...',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
             //    // Check if location is enabled
             //    if(entityFeatures.location_enabled.toLowerCase() === 'yes') {
             //     if(!userLocation) {
@@ -1775,16 +2214,17 @@
 
              // If location is enabled, show a loading modal while fetching/calculating location data
             if (entityFeatures.location_enabled.toLowerCase() === 'yes') {
-                Swal.fire({
-                    title: 'Fetching Location...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+                // Swal.fire({
+                //     title: 'Fetching Location...',
+                //     allowOutsideClick: false,
+                //     didOpen: () => {
+                //         Swal.showLoading();
+                //     }
+                // });
 
                 // Check if user's location is available
                 if (!userLocation) {
+                    Swal.close(); // Close loading alert
                     Swal.fire('Location Required', 'Please allow location access to proceed.', 'warning');
                     return; // Exit form submission if location data is missing
                 }
@@ -1799,6 +2239,7 @@
                 console.log('User Longitude:', userLocation.longitude);
 
                 if (isNaN(bloodBankLat) || isNaN(bloodBankLon)) {
+                    Swal.close(); // Close loading alert
                     Swal.fire('Error', 'Blood Bank location data is missing.', 'error');
                     return;
                 }
@@ -1809,12 +2250,13 @@
 
                 const kmBound = parseFloat(entityFeatures.km_bound);
                 if (distance > kmBound) {
+                    Swal.close(); // Close loading alert
                     Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the Blood Bank.`, 'error');
                     return;
                 }
 
                 // Close the loading modal once location data has been processed
-                Swal.close();
+               // Swal.close();
             }
             else {
                 console.log('Location check not required. Skipping.');
@@ -1830,6 +2272,7 @@
             const visitId = $('#visitId').val();
 
             if(!visitId) {
+                Swal.close(); // close the loading alert
                 Swal.fire('Error', 'Visit ID is missing.', 'error');
                 return;
             }
@@ -1844,6 +2287,8 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
+                    // Close loading alert
+                    Swal.close();
                     if(response.success) {
                         Swal.fire('Success', response.message, 'success');
                         $('#updateVisitModal').modal('hide');
@@ -1853,6 +2298,8 @@
                     }
                 },
                 error: function(xhr, status, error) {
+                    // Close loading alert
+                    Swal.close();
                     console.error("Error updating visit:", error);
                     Swal.fire('Error', 'An error occurred while updating the visit.', 'error');
                 }
@@ -1921,6 +2368,19 @@
         function populateViewDCRModal(visit) {
             console.log("populateViewDCRModal");
             console.log(visit);
+
+            // Check if the visit's status meets the condition.
+            if (visit.extendedProps && visit.extendedProps.status) {
+                const status = visit.extendedProps.status.toLowerCase();
+                if (status === 'updated' || status === 'dcr_submitted' || status === 'rejected') {
+                    $('#viewCollectionEditBtn').removeClass('d-none');
+                } else {
+                    $('#viewCollectionEditBtn').addClass('d-none');
+                }
+            } else {
+                $('#viewCollectionEditBtn').addClass('d-none');
+            }
+
             // Safely access 'extendedProps'
             const extendedProps = visit.extendedProps || {};
 
@@ -2008,6 +2468,8 @@
                 // If no attachments, you can choose to display a message or leave it empty
                 $('#view_dcrAttachmentsSection').hide();
             }
+
+            $("#viewDCRVisitModal").data("visit", visit);
         }
 
         // Function to populate the View Sourcing DCR Details Modal
@@ -2034,7 +2496,12 @@
             html += `
                 <div class="card mb-3 dynamic-sourcing-sections">
                 <div class="card-header text-white bg-secondary">
-                    <strong>Sourcing Visit #${index+1} : ${escapeHtml(sv.blood_bank_name) || '-'}</strong>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>Sourcing Visit #${index+1} : ${escapeHtml(sv.blood_bank_name) || '-'}</strong>
+                        ${ (extendedProps.status && (extendedProps.status.toLowerCase() === 'updated' || extendedProps.status.toLowerCase() === 'dcr_submitted' || extendedProps.status.toLowerCase() === 'rejected'))
+                            ? `<button class="btn btn-light btn-sm edit-sourcing-visit-btn" data-sv='${JSON.stringify(sv)}'>Edit</button>`
+                            : '' }
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
@@ -2157,6 +2624,12 @@
         // Function to populate the Update Sourcing Visit Modal
         function populateUpdateSourcingModal(visit) {
             console.log("populateUpdateSourcingModal called with visit:", visit); // Debugging
+
+            // Clear all fields within the form (this will reset inputs, selects, and textareas)
+            $('#updateSourcingVisitForm')[0].reset();
+            $('#masterBloodBankSelect').val('').trigger('change');
+            $('#gstRateSelect').val('').trigger('change');
+
             const extendedProps = visit.extendedProps || {};
 
             // Populate Existing Sourcing Details
@@ -2435,9 +2908,40 @@
         fetchGSTRates().done(function(response) {
             if(response.success){
                 populateGSTRates(response.data);
-                populateCollectionGSTRates(response.data);
+                populateCollectionGSTRates(response.data); 
+                populateEditCollectionGSTRates(response.data);
+                populateEditSourcingGSTRates(response.data);
             }
         });
+
+        // Function to populate the collection GST dropdown dynamically
+        function populateEditSourcingGSTRates(gstRates) {
+            // Clear any existing options except the placeholder
+            $('#editSourcingGSTRateSelect').find('option:not(:first)').remove();
+            $.each(gstRates, function(index, rate) {
+                $('#editSourcingGSTRateSelect').append(
+                    $('<option>', {
+                        value: rate.gst, // assuming 'gst' holds the percentage value (e.g. 5, 12, etc.)
+                        text: rate.gst + '%'
+                    })
+                );
+            });
+        }
+
+        // Function to populate the collection GST dropdown dynamically
+        function populateEditCollectionGSTRates(gstRates) {
+            // Clear any existing options except the placeholder
+            $('#editGSTRateSelect').find('option:not(:first)').remove();
+            $.each(gstRates, function(index, rate) {
+                $('#editGSTRateSelect').append(
+                    $('<option>', {
+                        value: rate.gst, // assuming 'gst' holds the percentage value (e.g. 5, 12, etc.)
+                        text: rate.gst + '%'
+                    })
+                );
+            });
+        }
+
 
         // Function to populate the collection GST dropdown dynamically
         function populateCollectionGSTRates(gstRates) {
@@ -2485,6 +2989,425 @@
         });
 
         $('#collectionGSTRate').on('change', calculateTotalCollectionPrice);
+
+
+
+        // Edit Collection Update Visit section ***************************************************
+
+        // Global variable to store the list of remaining existing attachments.
+        var existingAttachments = [];
+
+        // Function to update the hidden input field with the current list of remaining attachments.
+        function updateRemainingAttachmentsField() {
+            // You can send the data as JSON (or as a comma-separated string if you prefer)
+            $('#editRemainingAttachments').val(JSON.stringify(existingAttachments));
+        }
+
+        // Define the function in the global scope so that inline onclick can call it
+        window.deleteExistingAttachment = function(button) {
+            var previewItem = $(button).closest('.preview-item');
+            var attachmentId = previewItem.data('attachment-id');
+            
+            // Remove this attachment from the global array
+            existingAttachments = existingAttachments.filter(function(item) {
+                return item !== attachmentId;
+            });
+            
+            // Update the hidden input field with the final list
+            updateRemainingAttachmentsField();
+            
+            // Remove the preview from the UI
+            previewItem.remove();
+        };
+
+
+        // This function is called when the user clicks the "Edit" button in your view modal.
+        $(document).on('click', '.edit-collection-visit-btn', function() {
+        // Retrieve the visit data stored on the view modal.
+        var visit = $('#viewDCRVisitModal').data('visit');
+        if (!visit) {
+            console.error("No visit data found!");
+            return;
+        }
+        var extended = visit.extendedProps || {};
+
+     
+        // Fetch GST Rates Details
+        var modal = $('#editCollectionVisitModal');
+        fetchGSTRates(modal);
+
+        // Populate basic fields.
+        $('#editVisitId').val(visit.id || '');
+        $('#editBloodBankName').val(extended.blood_bank_name || '');
+        $('#editPlannedQuantity').val(extended.quantity || '');
+        $('#editTime').val(visit.time ? formatTime(visit.time) : '');
+        $('#editPrice').val(extended.price || '');
+        $('#editRemarks').val(extended.remarks || '');
+        $('#editQuantityCollected').val(extended.available_quantity || '');
+        $('#editRemainingQuantity').val(extended.remaining_quantity || '');
+        
+
+        // Populate GST section (example):
+        if (extended.include_gst == 1) {
+            $('#editIncludeGST').prop('checked', true);
+            $('#editGSTRateSection').show();
+            $('#editGSTRateSelect').val(extended.gst_rate || '');
+        } else {
+            $('#editIncludeGST').prop('checked', false);
+            $('#editGSTRateSection').hide();
+            $('#editGSTRateSelect').val('');
+        }
+        $('#editPartAPrice').val(extended.part_a_invoice_price || '');
+        $('#editPartBPrice').val(extended.part_b_invoice_price || '');
+        $('#editPartCPrice').val(extended.part_c_invoice_price || '');
+        $('#editTotalPrice').val(extended.collection_total_plasma_price || '');
+        $('#editNumBoxes').val(extended.num_boxes || '');
+        $('#editNumUnits').val(extended.num_units || '');
+        $('#editNumLitres').val(extended.num_litres || '');
+        
+        
+        // (You can also compute and set total price if needed.)
+
+        // Clear existing previews in all attachment preview containers.
+        $('#edit_certificate_of_qualityPreview, #edit_donor_reportPreview, #edit_invoice_copyPreview, #edit_pending_documentsPreview, #edit_part_a_invoicePreview, #edit_part_b_invoicePreview, #edit_part_c_invoicePreview').empty();
+        
+        // Reset the global array.
+        existingAttachments = [];
+
+        // Base URL for attachments.
+        var baseImageUrl = "{{ config('auth_api.base_image_url') }}";
+
+        // A helper function to create a preview element for an existing attachment.
+        function createPreviewElement(att) {
+            var attachmentURL = baseImageUrl + att.attachment;
+            var fileExt = att.attachment.split('.').pop().toLowerCase();
+            var previewElement = '';
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileExt)) {
+                previewElement = `
+                    <div class="preview-item" data-attachment-id="${att.attachment}">
+                        <button class="delete-btn" onclick="deleteExistingAttachment(this)">×</button>
+                        <img src="${attachmentURL}" alt="Attachment">
+                    </div>`;
+            } else if (fileExt === 'pdf') {
+                previewElement = `
+                    <div class="preview-item" data-attachment-id="${att.attachment}">
+                        <button class="delete-btn" onclick="deleteExistingAttachment(this)">×</button>
+                        <embed src="${attachmentURL}" type="application/pdf" style="width:100px; height:100px;">
+                    </div>`;
+            } else {
+                previewElement = `
+                    <div class="preview-item" data-attachment-id="${att.attachment}">
+                        <button class="delete-btn" onclick="deleteExistingAttachment(this)">×</button>
+                        <span>${att.attachment}</span>
+                    </div>`;
+            }
+            return previewElement;
+        }
+    
+            // Loop through existing attachments and render them
+            if (extended.dcr_attachments && extended.dcr_attachments.length > 0) {
+                extended.dcr_attachments.forEach(function(att) {
+                    existingAttachments.push(att.attachment);
+                    var previewHtml = createPreviewElement(att);
+                    // Append to the correct container based on attachment type
+                    switch (att.attachment_type) {
+                        case 1:
+                            $('#edit_certificate_of_qualityPreview').append(previewHtml);
+                            break;
+                        case 2:
+                            $('#edit_donor_reportPreview').append(previewHtml);
+                            break;
+                        case 3:
+                            $('#edit_invoice_copyPreview').append(previewHtml);
+                            break;
+                        case 4:
+                            $('#edit_pending_documentsPreview').append(previewHtml);
+                            break;
+                        case 5:
+                            $('#edit_part_a_invoicePreview').append(previewHtml);
+                            break;
+                        case 6:
+                            $('#edit_part_b_invoicePreview').append(previewHtml);
+                            break;
+                        case 7:
+                            $('#edit_part_c_invoicePreview').append(previewHtml);
+                            break;
+                    }
+                });
+            } else {
+                $('#edit_certificate_of_qualityPreview').html('<p>No attachments found.</p>');
+            }
+    
+            // Update the hidden field with the initial list of attachments
+            updateRemainingAttachmentsField();
+
+            // Finally, show the edit modal.
+            $('#editCollectionVisitModal').modal('show');
+
+        });
+
+        // Helper function to format time (if needed).
+        function formatTime(timeStr) {
+        if (!timeStr) return '';
+        var parts = timeStr.split(':');
+        return parts[0] + ':' + parts[1];
+        }
+
+        // This function runs when the user clicks the delete button on an existing attachment.
+        function deleteExistingAttachment(button) {
+            var previewItem = $(button).closest('.preview-item');
+            var attachmentId = previewItem.data('attachment-id');
+            
+            // Remove the attachmentId from the existingAttachments array.
+            existingAttachments = existingAttachments.filter(function(item) {
+                return item !== attachmentId;
+            });
+            // Update the hidden field with the new list.
+            updateRemainingAttachmentsField();
+            // Remove the preview from the UI.
+            previewItem.remove();
+        }
+
+
+
+        $('#editVisitForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Show loading alert
+            Swal.fire({
+                title: 'Updating...',
+                text: 'Please wait...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+          
+            // Create FormData from the form
+            var formData = new FormData(this);
+
+            // (Optional) You can log the hidden field value:
+            console.log('Existing attachments:', $('#editRemainingAttachments').val());
+
+            // Continue with your AJAX submission...
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.close();   // Close loading alert
+                    if(response.success) {
+                        Swal.fire('Success', response.message, 'success');
+                        $('#editCollectionVisitModal').modal('hide');
+                        fetchVisits(); // Refresh the visits list
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.close();   // Close loading alert
+                    console.error("Error updating visit:", error);
+                    Swal.fire('Error', 'An error occurred while updating the visit.', 'error');
+                }
+            });
+            });
+
+            function calculateEditTotalPrice() {
+                // Get the Part-A, Part-B, and Part-C invoice prices
+                var partA = parseFloat($('#editPartAPrice').val()) || 0;
+                var partB = parseFloat($('#editPartBPrice').val()) || 0;
+                var partC = parseFloat($('#editPartCPrice').val()) || 0;
+                var total = partA + partB + partC;
+                
+                // If GST is included, add GST to the total
+                if ($('#editIncludeGST').is(':checked')) {
+                    var gstRate = parseFloat($('#editGSTRateSelect').val()) || 0;
+                    total += total * (gstRate / 100);
+                }
+                
+                // Update the total price field with the calculated value (2 decimal places)
+                $('#editTotalPrice').val(total.toFixed(2));
+            }
+
+            // Listen for changes on Part-A, Part-B, and Part-C inputs
+            $('#editPartAPrice, #editPartBPrice, #editPartCPrice').on('input', calculateEditTotalPrice);
+
+            // Listen for changes on the "Include GST" checkbox
+            $('#editIncludeGST').on('change', function() {
+            if ($(this).is(':checked')) {
+                // Show GST dropdown if checked
+                $('#editGSTRateSection').show();
+            } else {
+                // Hide GST dropdown if unchecked and clear its value
+                $('#editGSTRateSection').hide();
+                $('#editGSTRateSelect').val('');
+            }
+            calculateEditTotalPrice();
+            });
+
+            // Listen for changes on the GST rate dropdown
+            $('#editGSTRateSelect').on('change', calculateEditTotalPrice);
+
+            $(document).on('click', '.preview-item .delete-btn', function() {
+                var previewItem = $(this).closest('.preview-item');
+                var attachmentId = previewItem.data('attachment-id');
+                existingAttachments = existingAttachments.filter(function(item) {
+                    return item !== attachmentId;
+                });
+                updateRemainingAttachmentsField();
+                previewItem.remove();
+            });
+
+
+            $('#editQuantityCollected').on('input', function () {
+                // Get the planned quantity (which is in a hidden input)
+                const planned = parseFloat($('#editPlannedQuantity').val()) || 0;
+                // Get the current quantity collected from the edit field
+                const collected = parseFloat($(this).val()) || 0;
+                // Calculate the remaining quantity
+                const remaining = planned - collected;
+                // Set the value of the editRemainingQuantity field, ensuring it does not go negative.
+                $('#editRemainingQuantity').val(remaining >= 0 ? remaining : 0);
+            });
+
+        // End Edit Collection Update Visit section *******************
+
+
+        // ************************** Edit Sourcing Update Visit section ***************************************************
+
+        $(document).on('click', '.edit-sourcing-visit-btn', function(){
+            // Retrieve the sourcing visit data from the button’s data attribute
+            var svData = $(this).data('sv');
+
+            console.log('svData', svData);
+
+            // Finally, show the edit modal.
+            $('#viewSourcingDCRVisitModal').modal('hide');
+
+              // Fetch GST Rates Details
+            var modal = $('#editSourcingVisitModal');
+            fetchGSTRates(modal);
+            
+            // Basic Fields
+            $('#editSourcingVisitId').val(svData.id || '');
+            $('#editBloodBankName').val(svData.blood_bank_name || '');
+            $('#editContactPerson').val(svData.sourcing_contact_person || '');
+            $('#editMobileNo').val(svData.sourcing_mobile_number || '');
+            $('#editEmail').val(svData.sourcing_email || '');
+            $('#editAddress').val(svData.sourcing_address || '');
+            $('#editFFPCompany').val(svData.sourcing_ffp_company || '');
+            
+            // Additional auto-filled fields
+            $('#editPlasmaPrice').val(svData.sourcing_plasma_price || '');
+            $('#editPotentialPerMonth').val(svData.sourcing_potential_per_month || '');
+            $('#editPaymentTerms').val(svData.sourcing_payment_terms || '');
+            $('#editRemarks').val(svData.sourcing_remarks || '');
+            $('#editSourcingPartAPrice').val(svData.sourcing_part_a_price || 0);
+            $('#editSourcingPartBPrice').val(svData.sourcing_part_b_price || 0);
+            $('#editSourcingPartCPrice').val(svData.sourcing_part_c_price || 0);
+            
+           
+            // Populate GST section (example):
+            if (svData.include_gst == 1) {
+                $('#editSourcingIncludeGST').prop('checked', true);
+                $('#editSourcingGSTRateSection').show();
+                $('#editSourcingGSTRateSelect').val(svData.gst_rate || '');
+            } else {
+                $('#editSourcingIncludeGST').prop('checked', false);
+                $('#editSourcingGSTRateSection').hide();
+                $('#editSourcingGSTRateSelect').val('');
+            }
+            $('#editSourcingGSTRateSelect').val(svData.gst_rate || '');
+            
+            // Set the Total Plasma Price (should be readonly)
+            $('#editTotalPlasmaPrice').val(svData.sourcing_total_plasma_price || '');
+            
+            // Finally, show the modal.
+            $('#editSourcingVisitModal').modal('show');
+        });
+
+        // Function to calculate total plasma price in the edit modal
+        function calculateEditTotalPlasmaPrice() {
+        // Parse Part prices or default to 0
+        var partA = parseFloat($('#editSourcingPartAPrice').val()) || 0;
+        var partB = parseFloat($('#editSourcingPartBPrice').val()) || 0;
+        var partC = parseFloat($('#editSourcingPartCPrice').val()) || 0;
+        var total = partA + partB + partC;
+        
+        // If GST is included, add GST percentage to total
+        if ($('#editSourcingIncludeGST').is(':checked')) {
+            var gstRate = parseFloat($('#editSourcingGSTRateSelect').val()) || 0;
+            total += total * (gstRate / 100);
+        }
+        
+        // Set the Total Plasma Price field to the calculated value (fixed to 2 decimals)
+        $('#editTotalPlasmaPrice').val(total.toFixed(2));
+        }
+
+        // Event listeners for recalculation
+        $('#editSourcingPartAPrice, #editSourcingPartBPrice, #editSourcingPartCPrice').on('input', calculateEditTotalPlasmaPrice);
+
+        // Listen for changes on the "Include GST" checkbox
+        $('#editSourcingIncludeGST').on('change', function() {
+            if ($(this).is(':checked')) {
+                // Show GST dropdown if checked
+                $('#editSourcingGSTRateSection').show();
+            } else {
+                // Hide GST dropdown if unchecked and clear its value
+                $('#editSourcingGSTRateSection').hide();
+                $('#editSourcingGSTRateSelect').val('');
+            }
+            calculateEditTotalPlasmaPrice();
+        });
+
+        // Listen for changes on the GST rate dropdown
+        $('#editSourcingGSTRateSelect').on('change', calculateEditTotalPlasmaPrice);
+    
+        $('#editSourcingVisitForm').on('submit', function(e){
+            e.preventDefault();
+
+            // Show loading alert
+            Swal.fire({
+                title: 'Updating...',
+                text: 'Please wait...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            var formData = new FormData(this);
+            
+            $.ajax({
+                url: "{{ route('visits.sourcing_edit_submit') }}", // change to your route
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                success: function(response) {
+                    if(response.success){
+                        Swal.close();   // Close loading alert
+                        Swal.fire('Success', response.message, 'success');
+                        $('#editSourcingVisitModal').modal('hide');
+                        fetchVisits(); // Refresh the visits list
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.close();   // Close loading alert
+                    Swal.fire('Error', 'An error occurred while updating the sourcing visit.', 'error');
+                }
+            });
+        });
+
+        // ************************** End Edit Sourcing Update Visit section ***************************************************
 
     });
 </script>

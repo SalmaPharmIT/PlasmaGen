@@ -339,7 +339,7 @@
                    </div>
                     <!-- Convention -->
                     <div class="col-md-4">
-                        <strong>Convention:</strong>
+                        <strong>Conveyance:</strong>
                         <p>{{ number_format($expense['convention'], 2) }}</p>
                     </div>
                     <!-- Tel/Fax -->

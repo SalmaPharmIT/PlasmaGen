@@ -111,4 +111,7 @@ return [
     'cities_by_multiple_stateIds_url' => $base_url . 'cities_by_multiple_stateIds.php?ids={id}',
     'reports_blood_bank_wise_collection_summary_url' =>  $base_url . 'reports_blood_bank_wise_collection_summary.php',
     'reports_tour_palnner_datewise_summary_url' =>  $base_url . 'reports_tour_palnner_datewise_summary.php',
+    'dcr_collections_edit_submit_url' =>  $base_url . 'dcr_collections_edit_submit.php',
+    'drc_sourcing_edit_submit_url' =>  $base_url . 'drc_sourcing_edit_submit.php',
+    'reports_user_expenses_summary_url' =>  $base_url . 'reports_user_expenses_summary.php',
 ];
