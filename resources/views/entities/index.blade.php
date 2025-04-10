@@ -89,6 +89,48 @@
 
 @endsection
 
+
+
+@push('styles')
+<style>
+   .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table td {
+        max-width: 200px; /* Adjust according to your needs */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .table td, .table th {
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    /* Name column - Make it bigger */
+    .table td.name, .table th.name {
+        max-width: 250px; /* Adjust width as needed */
+        word-wrap: break-word;
+    }
+
+    /* Mobile column - Make it smaller */
+    .table td.mobile_no, .table th.mobile_no {
+        max-width: 120px; /* Adjust width as needed */
+    }
+
+    /* Email column - Make it smaller */
+    .table td.email, .table th.email {
+        max-width: 150px; /* Adjust width as needed */
+    }
+
+    /* Truncate text in Name, Mobile, and Email columns */
+    .table td, .table th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+@endpush
+
 @push('scripts')
     <script>
         $(document).ready(function() {

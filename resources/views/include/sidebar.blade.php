@@ -66,6 +66,24 @@
      </li><!-- End Components Nav -->
      @endif
 
+
+       <!-- Registration Menu - Visible Only to Factory Admin (role_id == 12) -->
+       @if (Auth::check() && Auth::user()->role_id == 12)
+       <li class="nav-item">
+         <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+           <i class="bi bi-card-list"></i><span>Onboard</span><i class="bi bi-chevron-down ms-auto"></i>
+         </a>
+         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{{ route('users.index') }}">
+              <i class="bi bi-circle"></i><span>Users</span>
+            </a>
+          </li>
+          
+         </ul>
+       </li><!-- End Components Nav -->
+       @endif
+
     <!-- Tour Planner - Visible to Company Admin (role_id == 2) and Role ID 6 RBE-->
     @if (Auth::check() && in_array(Auth::user()->role_id, [2, 6]))
      <li class="nav-item">

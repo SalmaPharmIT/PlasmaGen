@@ -77,6 +77,23 @@
                     <p>{{ isset($dcr['extendedProps']['collection_total_plasma_price']) ? number_format($dcr['extendedProps']['collection_total_plasma_price'], 2) : '0' }}</p>
                 </div>
             </div>
+            <div class="row mb-3">
+                <!-- No. of Boxes -->
+                <div class="col-md-4">
+                    <strong>No. of Boxes:</strong>
+                    <p>{{ $dcr['extendedProps']['num_boxes'] ?? '-' }}</p>
+                </div>
+                <!-- No. of Units -->
+                <div class="col-md-4">
+                    <strong>No. of Units:</strong>
+                    <p>{{ $dcr['extendedProps']['num_units'] ?? '-' }}</p>
+                </div>
+                <!-- No. of Litres -->
+                <div class="col-md-4">
+                    <strong>No. of Litres:</strong>
+                    <p>{{ $dcr['extendedProps']['num_litres'] ?? '-' }}</p>
+                </div>
+            </div>
               <div class="row mb-3">
                   <!-- Remarks -->
                   <div class="col-md-4">

@@ -166,6 +166,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::get('/dashboard/getDashboardData', [DashboardController::class, 'getDashboardData'])->name('dashboard.getDashboardData');
     Route::get('/dashboard/getDashboardGraphData', [DashboardController::class, 'getDashboardGraphData'])->name('dashboard.getDashboardGraphData');
+    Route::get('/dashboard/getDashboardBloodBanksMapData', [DashboardController::class, 'getDashboardBloodBanksMapData'])->name('dashboard.getDashboardBloodBanksMapData');
 
     /* *********************  Report Visits Starts ********************************* */
     Route::get('/visits', [ReportVisitsController::class, 'index'])->name('visits.index');
