@@ -139,6 +139,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/collectionIncomingRequests', [TourPlannerController::class, 'showCollectionIncomingRequests'])->name('tourplanner.collectionIncomingRequests');
     Route::get('/tourplanner/tpCollectionRequests', [TourPlannerController::class, 'getTPCollectionIncomingRequests'])->name('tourplanner.tpCollectionRequests');
     Route::get('/tourplanner/markTPAdded', [TourPlannerController::class, 'markTPAdded'])->name('tourplanner.markTPAdded');
+    Route::get('/tourplanner/getAllActiveWarehouses', [TourPlannerController::class, 'getAllActiveWarehouses'])->name('tourplanner.getAllActiveWarehouses');  // Get All Acive Warehouses
+    Route::get('/tourplanner/getAllActiveTransportPartners', [TourPlannerController::class, 'getAllActiveTransportPartners'])->name('tourplanner.getAllActiveTransportPartners'); 
     /* *********************  Tour Planner Ends ********************************* */
 
     /* *********************  Manage Tour Planner Starts ********************************* */
@@ -161,6 +163,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/collections/vehicle-details', [TourPlannerController::class, 'submitVehicleDetails'])->name('collections.submitVehicleDetails');
     Route::get('/collections/manage', [TourPlannerController::class, 'collectionsManage'])->name('collections.manage');
     Route::get('/collections/submitted', [TourPlannerController::class, 'getCollectionSubmitted'])->name('collections.submitted');
+    Route::post('/collections/vehicle-updateVehicleDetails', [TourPlannerController::class, 'updateVehicleDetails'])->name('collections.updateVehicleDetails');
     /* *********************  Collections Ends ********************************* */
 
 

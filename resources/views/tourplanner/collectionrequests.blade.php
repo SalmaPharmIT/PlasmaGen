@@ -58,7 +58,7 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Agent</th>
+                  <th>Executive</th>
                   <th>Blood Bank</th>
                   <th>Visit Date</th>
                   <th>Visit Time</th>
@@ -94,22 +94,46 @@
         <div class="modal-body">
           <!-- Hidden Field for Collection Request ID -->
           <input type="hidden" id="collectionRequestId" name="collection_request_id" value="">
+
+          <!--Warehouse Dropdown -->
+          <div class="mb-3">
+            <label for="warehouse" class="form-label">Warehouse <span style="color:red">*</span></label>
+            <select id="warehouse" class="form-select select2" name="warehouse_id" required>
+              <option value="">Choose Warehouse</option>
+              <!-- Options will be populated via AJAX -->
+            </select>
+            <div class="invalid-feedback">
+              Please select warehouse.
+            </div>
+          </div>
+
+          <!--Transport Partners Dropdown -->
+          <div class="mb-3">
+            <label for="transportPartner" class="form-label">Transport Partner <span style="color:red">*</span></label>
+            <select id="transportPartner" class="form-select select2" name="transport_partner_id" required>
+              <option value="">Choose Transport Partner</option>
+              <!-- Options will be populated via AJAX -->
+            </select>
+            <div class="invalid-feedback">
+              Please select Transport Partner.
+            </div>
+          </div>
           
           <!-- Vehicle Number -->
           <div class="mb-3">
-            <label for="vehicleNumber" class="form-label">Vehicle Number</label>
+            <label for="vehicleNumber" class="form-label">Vehicle Number <span style="color:red">*</span></label>
             <input type="text" class="form-control" id="vehicleNumber" name="vehicle_number" required>
           </div>
           
           <!-- Driver Name -->
           <div class="mb-3">
-            <label for="driverName" class="form-label">Driver Name</label>
+            <label for="driverName" class="form-label">Driver Name <span style="color:red">*</span></label>
             <input type="text" class="form-control" id="driverName" name="driver_name" required>
           </div>
           
           <!-- Contact Number -->
           <div class="mb-3">
-            <label for="contactNumber" class="form-label">Contact Number</label>
+            <label for="contactNumber" class="form-label">Contact Number <span style="color:red">*</span></label>
             <input type="text" class="form-control" id="contactNumber" name="contact_number" required>
           </div>
           
@@ -286,7 +310,7 @@
                     { data: 'id' },
                     { 
                         data: 'extendedProps.collecting_agent_name',
-                        title: 'Agent',
+                        title: 'Executive',
                         render: function(data, type, row) {
                             return data ? data : 'N/A';
                         }
@@ -431,6 +455,79 @@
                     }
                 });
             });
+
+
+            // Function to populate Warehouses Dropdown
+            function loadAllActiveWarehouses() {
+                $.ajax({
+                    url: "{{ route('tourplanner.getAllActiveWarehouses') }}",
+                    type: 'GET',
+                    success: function(response) {
+                        if(response.success) {
+                          var warehouses = response.data;
+                          var modalDropdown = $('#warehouse');
+                          modalDropdown.empty().append('<option value="">Choose Warehouse</option>');
+                          $.each(warehouses, function(index, warehouse) {
+                            var option = '<option value="' + warehouse.id + '">' + warehouse.name + ' (' + warehouse.city.name + ', ' + warehouse.pincode + ')</option>';
+                                modalDropdown.append(option);
+                            });
+                          modalDropdown.trigger('change');
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching active warehouses:", error);
+                        Swal.fire('Error', 'An error occurred while fetching active warehouses.', 'error');
+                    }
+                });
+            }
+
+             // Function to populate TransportPartners Dropdown
+             function loadAllActiveTransportPartners() {
+                $.ajax({
+                    url: "{{ route('tourplanner.getAllActiveTransportPartners') }}",
+                    type: 'GET',
+                    success: function(response) {
+                        if(response.success) {
+                          var transports = response.data;
+                          var dropdown = $('#transportPartner');
+                          dropdown.empty().append('<option value="">Choose Warehouse</option>');
+                          $.each(transports, function(index, transport) {
+                            var option = '<option value="' + transport.id + '">' + transport.name + '</option>';
+                              dropdown.append(option);
+                            });
+                            dropdown.trigger('change');
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching active Transport Partners:", error);
+                        Swal.fire('Error', 'An error occurred while fetching Transport Partners.', 'error');
+                    }
+                });
+            }
+
+            $('#warehouse').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Choose Blood Bank',
+                allowClear: true,
+                dropdownParent: $('#vehicleDetailsModal')
+            });
+
+            $('#transportPartner').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Choose Blood Bank',
+                allowClear: true,
+                dropdownParent: $('#vehicleDetailsModal')
+            });
+
+            // Get Warehosue Lists Active
+            loadAllActiveWarehouses();
+            loadAllActiveTransportPartners();
         });
 
     </script>

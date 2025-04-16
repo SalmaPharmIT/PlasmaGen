@@ -94,7 +94,29 @@
                     <p>{{ $dcr['extendedProps']['num_litres'] ?? '-' }}</p>
                 </div>
             </div>
+            <div class="row mb-3">
+                <!-- Opt Other transport partner -->
+                <div class="col-md-4">
+                    <strong>Other Transport Partner:</strong>
+                    <p>{{ $dcr['extendedProps']['other_transportation'] == 1 ? 'Yes' : 'No' }}</p>
+                </div>
+                <!-- Transport Name -->
+                <div class="col-md-4">
+                    <strong>Transport Name:</strong>
+                    <p>{{ $dcr['extendedProps']['transportation_name'] ?? '-' }}</p>
+                </div>
+                <!-- Transport Contact Person Name -->
+                <div class="col-md-4">
+                    <strong>Transport Contact Person:</strong>
+                    <p>{{ $dcr['extendedProps']['transportation_contact_person'] ?? '-' }}</p>
+                </div>
+            </div>
               <div class="row mb-3">
+                 <!-- Transport Contact Number -->
+                 <div class="col-md-4">
+                    <strong>Transport Contact Number:</strong>
+                    <p>{{ $dcr['extendedProps']['transportation_contact_number'] ?? '-' }}</p>
+                </div>
                   <!-- Remarks -->
                   <div class="col-md-4">
                       <strong>Remarks:</strong>
@@ -111,11 +133,13 @@
                           @endif
                       </p>
                   </div>
-                  <!-- Added By -->
-                  <div class="col-md-4">
-                      <strong>Added By:</strong>
-                      <p>{{ $dcr['extendedProps']['created_by_name'] ?? 'N/A' }}</p>
-                  </div>
+              </div>
+              <div class="row mb-3">
+                 <!-- Added By -->
+                 <div class="col-md-4">
+                    <strong>Added By:</strong>
+                    <p>{{ $dcr['extendedProps']['created_by_name'] ?? 'N/A' }}</p>
+                </div>
               </div>
           </div>
       </div>

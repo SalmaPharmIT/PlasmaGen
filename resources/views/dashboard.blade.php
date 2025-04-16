@@ -5,15 +5,49 @@
 @section('title', 'Dashboard')
 
 @section('content')
-  <div class="pagetitle">
-    <h1>Dashboard</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-        <li class="breadcrumb-item active">Dashboard</li>
-      </ol>
-    </nav>
-  </div><!-- End Page Title -->
+<div class="pagetitle">
+  <h1>Dashboard</h1>
+  <nav class="d-flex justify-content-between align-items-center">
+    <!-- Breadcrumb on the left -->
+    <ol class="breadcrumb m-0">
+      <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+      <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+    
+    <!-- Filter dropdown on the right -->
+    <div class="filter d-flex align-items-center">
+      <!-- Visible label showing the selected filter -->
+      <span id="selectedFilter" class="me-2 fw-bold">This Month</span>
+      <!-- Dropdown toggle icon -->
+      <a class="icon"  data-bs-toggle="dropdown">
+        <i class="bi bi-caret-down-fill"></i>
+      </a>
+      <!-- Dropdown menu -->
+      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+        <li class="dropdown-header text-start">
+          <h6>Filter</h6>
+        </li>
+        <!-- Marking "This Month" as active by default -->
+        <li>
+          <a class="dropdown-item active"  onclick="updateFilter('This Month')">This Month</a>
+        </li>
+        <li>
+          <a class="dropdown-item" onclick="updateFilter('Last 3 Months')">Last 3 Months</a>
+        </li>
+        <li>
+          <a class="dropdown-item"  onclick="updateFilter('Last 6 Months')">Last 6 Months</a>
+        </li>
+        <li>
+          <a class="dropdown-item"  onclick="updateFilter('Last 12 Months')">Last 12 Months</a>
+        </li>
+        <li>
+          <a class="dropdown-item"  onclick="updateFilter('All')">All</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</div>
+<!-- End Page Title -->
 
   <section class="section dashboard">
     <div class="row">
@@ -97,7 +131,7 @@
               <div class="card info-card customers-card">
 
                 <div class="card-body">
-                  <h5 class="card-title">Customers </h5>
+                  <h5 class="card-title">Employees </h5>
 
                   <div class="d-flex align-items-center">
                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
@@ -246,12 +280,78 @@
 
 @push('scripts')
 
+<!-- Global function definitions: these are available to the Maps API callback -->
+<script>
+  // Define the collection map initialization function
+  function initCollectionMap() {
+    var collectionMapContainer = document.getElementById('collectionMap');
+    if (!collectionMapContainer) {
+      console.warn('Collection map container not found.');
+      return;
+    }
+    
+    var latInput = document.getElementById('collectionLatitude');
+    var lngInput = document.getElementById('collectionLongitude');
+    if (!latInput || !lngInput || !latInput.value || !lngInput.value) {
+      console.log("No collection latitude/longitude data available.");
+      return;
+    }
+    
+    var latitude = parseFloat(latInput.value);
+    var longitude = parseFloat(lngInput.value);
+    var title = document.getElementById('collectionMapTitle') ? document.getElementById('collectionMapTitle').value : 'DCR Location';
+    
+    var map = new google.maps.Map(collectionMapContainer, {
+        center: { lat: latitude, lng: longitude },
+        zoom: 15
+    });
+    
+    var marker = new google.maps.Marker({
+        position: { lat: latitude, lng: longitude },
+        map: map,
+        title: title,
+        icon: {
+          url: "{{ asset('assets/img/location.png') }}",
+          scaledSize: new google.maps.Size(50, 50) // Adjust the width and height as needed
+        }
+    });
+    
+    var infoWindow = new google.maps.InfoWindow({
+        content: `<strong>${title}</strong>`
+    });
+    
+    marker.addListener('click', function() {
+        infoWindow.open(map, marker);
+    });
+    
+    infoWindow.open(map, marker);
+  }
+  
+  // Expose initMap globally so that the Maps API callback finds it
+  window.initMap = function() {
+    initCollectionMap();
+  };
+  
+  // Expose updateFilter globally if needed in inline HTML onclick attributes
+  window.updateFilter = function(value) {
+    console.log('updateFilter', value);
+    document.getElementById('selectedFilter').innerText = value;
+    document.querySelectorAll('.dropdown-item').forEach(function(item) {
+      item.classList.remove('active');
+      if (item.innerText.trim() === value) {
+        item.classList.add('active');
+      }
+    });
 
-<!-- Load Google Maps JavaScript API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFwtHIaHQ1J8PKur9RmQy4Z5WsM6kVVPE&callback=initMap" async defer></script>
-
+    // Re-call all dashboard loader functions with the new filter value.
+    window.loadDashboardData(value);
+    window.loadDashboardGraphData(value);
+    window.loadDashboardBloodBankMap(value);
+  };
+</script>
 
     <script>
+
         $(document).ready(function() {
 
             // Initially hide the Blood Banks Map section (second row)
@@ -268,29 +368,31 @@
               $("#bloodBankMapsSection .details-container").hide();
             });
 
-              // Function to populate loadDashboardData
-              function loadDashboardData() {
+               // Define the dashboard loader functions with an optional filter parameter.
+              function loadDashboardData(filter = 'This Month') {
                 $.ajax({
                     url: "{{ route('dashboard.getDashboardData') }}",
                     type: 'GET',
+                    // Pass the filter as a GET parameter.
+                    data: { filter: filter },
                     success: function(response) {
                         if(response.success) {
                           const data = response.data;
 
                           // Update Blood Bank Count
-                          $(".sales-card .card-body h6").text(data.blood_bank_count);
+                          $(".sales-card .card-body h6").text(data.blood_bank_count ?? 0);
 
                           // Update Warehouse Count
-                          $(".revenue-card .card-body h6").text(data.warehouse_count);
+                          $(".revenue-card .card-body h6").text(data.warehouse_count  ?? 0);
 
                            // Update Users Count
-                           $(".customers-card .card-body h6").text(data.user_count);
+                           $(".customers-card .card-body h6").text(data.user_count  ?? 0);
 
                           // Update Planned Plasma Count
-                          $(".planned-plasma-card .card-body h6").text(data.tour_plan_total_quantity);
+                          $(".planned-plasma-card .card-body h6").text(data.tour_plan_total_quantity  ?? 0);
 
                           // Update Collected Plasma Count
-                          $(".collected-plasma-card .card-body h6").text(data.tour_plan_total_available_quantity);
+                          $(".collected-plasma-card .card-body h6").text(data.tour_plan_total_available_quantity  ?? 0);
 
                          // Update Top Performing Blood Banks
                         if(data.top_performance_bloodbanks && data.top_performance_bloodbanks.length > 0) {
@@ -344,10 +446,11 @@
 
 
              // Function to load dashboard graph data and render the Reports chart
-             function loadDashboardGraphData() {
+             function loadDashboardGraphData(filter = 'This Month') {
                 $.ajax({
                     url: "{{ route('dashboard.getDashboardGraphData') }}",
                     type: 'GET',
+                    data: { filter: filter },
                     success: function(response) {
                         if(response.success) {
                             const data = response.data;
@@ -422,10 +525,11 @@
 
 
              // Function to load dashboard blood bank mapview
-             function loadDashboardBloodBankMap() {
+             function loadDashboardBloodBankMap(filter = 'This Month') {
                 $.ajax({
                     url: "{{ route('dashboard.getDashboardBloodBanksMapData') }}",
                     type: 'GET',
+                    data: { filter: filter },
                     success: function(response) {
                         if(response.success) {
                             const data = response.data;
@@ -443,10 +547,17 @@
                 });
             }
 
-           // Load DashboardData on page load
+
+          // Attach loader functions to window object so that updateFilter can call them
+          window.loadDashboardData = loadDashboardData;
+          window.loadDashboardGraphData = loadDashboardGraphData;
+          window.loadDashboardBloodBankMap = loadDashboardBloodBankMap;
+
+          // Initially call the loader functions with default filter "This Month"
            loadDashboardData();
            loadDashboardGraphData();
            loadDashboardBloodBankMap();
+           
          
 
           // Function to initialize the blood bank map using the data from the API
@@ -484,7 +595,11 @@
                   var marker = new google.maps.Marker({
                       position: {lat: bankLat, lng: bankLng},
                       map: map,
-                      title: bank.blood_bank_name
+                      title: bank.blood_bank_name,
+                      icon: {
+                        url: "{{ asset('assets/img/location.png') }}",
+                        scaledSize: new google.maps.Size(50, 50) // Adjust the width and height as needed
+                      }
                   });
 
                   // Extend the bounds to include this marker's location
@@ -524,26 +639,9 @@
                           <p><strong>Email:</strong> ${bank.email ? bank.email : '-'}</p>
                           <p><strong>Mobile:</strong> ${bank.mobile_no ? bank.mobile_no : '-'}</p>
                           <p><strong>Address:</strong> ${fullAddress}</p>
-                          <h5 class="card-title">Collection Details</h5>
+                          <h5 class="card-title">Latest Collection Details</h5>
                           `;
-                      // // Loop through collection_details to list each collection
-                      // if (bank.collection_details && bank.collection_details.length > 0) {
-                      //     bank.collection_details.forEach(function(collection) {
-                      //         detailsContent += `
-                      //             <li>
-                      //                 <strong>Date: ${collection.start}</strong><br>
-                      //                 Executive: ${collection.extendedProps.collecting_agent_name || ''}<br>
-                      //                 Planned: ${collection.extendedProps.quantity || 0}, Collected: ${collection.extendedProps.available_quantity || 0}<br>
-                      //                 Plama Price: ${collection.extendedProps.price || 0}<br>
-                      //                 Part-A: ${collection.extendedProps.part_a_invoice_price || 0},  Part-B: ${collection.extendedProps.part_b_invoice_price || 0},  Part-C: ${collection.extendedProps.part_c_invoice_price || 0}<br>
-                      //                 Total Invoice Price: ${collection.extendedProps.collection_total_plasma_price || 0}<br>
-                      //                 No. of Boxes: ${collection.extendedProps.num_boxes || 0}, Units: ${collection.extendedProps.num_units || 0}, Litres: ${collection.extendedProps.num_litres || 0}<br>
-                      //             </li>`;
-                      //     });
-                      // } else {
-                      //     detailsContent += `<li>No collection details available.</li>`;
-                      // }
-                      // detailsContent += `</ul>`;
+                   
 
                       // Define an array of color classes to style each collection entry
                       const collectionColors = ["text-primary", "text-secondary",  "text-warning", "text-success", "text-danger"];
@@ -562,6 +660,7 @@
                                           <strong>Executive:</strong> ${collection.extendedProps.collecting_agent_name || '-'}<br>
                                           <strong>Planned:</strong> ${collection.extendedProps.quantity || 0}, 
                                           <strong>Collected:</strong> ${collection.extendedProps.available_quantity || 0}<br>
+                                           <strong>Warehouse:</strong> ${collection.extendedProps.transport_details.warehouse_name || '-'}<br>
                                           <strong>Plasma Price:</strong> ${collection.extendedProps.price || 0}<br>
                                           <strong>Part-A:</strong> ${collection.extendedProps.part_a_invoice_price || 0},  
                                           <strong>Part-B:</strong> ${collection.extendedProps.part_b_invoice_price || 0},  
@@ -594,57 +693,14 @@
                   google.maps.event.removeListener(listener);
               });
           }
-
-
-
-          // Initialize Collection Map
-          function initCollectionMap() {
-              var collectionMapContainer = document.getElementById('collectionMap');
-              if (!collectionMapContainer) {
-                  console.warn('Collection map container not found.');
-                  return;
-              }
-              
-              var latInput = document.getElementById('collectionLatitude');
-              var lngInput = document.getElementById('collectionLongitude');
-              if (!latInput || !lngInput || !latInput.value || !lngInput.value) {
-                  console.log("No collection latitude/longitude data available.");
-                  return;
-              }
-              
-              var latitude = parseFloat(latInput.value);
-              var longitude = parseFloat(lngInput.value);
-              var title = document.getElementById('collectionMapTitle') ? document.getElementById('collectionMapTitle').value : 'DCR Location';
-              
-              var map = new google.maps.Map(collectionMapContainer, {
-                  center: { lat: latitude, lng: longitude },
-                  zoom: 15
-              });
-              
-              var marker = new google.maps.Marker({
-                  position: { lat: latitude, lng: longitude },
-                  map: map,
-                  title: title
-              });
-              
-              var infoWindow = new google.maps.InfoWindow({
-                  content: `<strong>${title}</strong>`
-              });
-              
-              marker.addListener('click', function() {
-                  infoWindow.open(map, marker);
-              });
-              
-              infoWindow.open(map, marker);
-          }
-
-          // Global initMap function (called by the Google Maps API callback)
-          function initMap() {
-              // Try to initialize both maps. Only the one(s) present in the DOM will be initialized.
-              initCollectionMap();
-          }
+          
         });
     </script>
+
+
+<!-- Load Google Maps JavaScript API using async & defer -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFwtHIaHQ1J8PKur9RmQy4Z5WsM6kVVPE&callback=initMap" async defer></script>
+
     
 @endpush
 

@@ -24,9 +24,9 @@
             <div class="row mb-4 mt-2 align-items-end">
               <!-- Collecting Agent Dropdown -->
               <div class="col-md-4">
-                  <label for="collectingAgentDropdown" class="form-label">Collecting Agent</label>
+                  <label for="collectingAgentDropdown" class="form-label">Executives</label>
                   <select id="collectingAgentDropdown" class="form-select select2">
-                      <option value="">Choose Collecting Agent</option>
+                      <option value="">Choose Executives</option>
                       <!-- Options will be populated via AJAX -->
                   </select>
               </div>
@@ -209,6 +209,14 @@
             <h5 class="card-title">Transport Details</h5> 
 
             <div class="row mb-3">
+              <div class="col-md-4"><strong>Warehouse:</strong></div>
+              <div class="col-md-8" id="viewWarehouse">N/A</div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4"><strong>Transport Partner:</strong></div>
+              <div class="col-md-8" id="viewTransportPartner">N/A</div>
+            </div>
+            <div class="row mb-3">
               <div class="col-md-4"><strong>Vehicle Number:</strong></div>
               <div class="col-md-8" id="viewVehicleNumber">N/A</div>
             </div>
@@ -242,12 +250,94 @@
           </div>
         </div>
         <div class="modal-footer">
+          <!-- Edit button: initially hidden and shown only if transport details exist -->
+          <button type="button" class="btn btn-warning" id="editTransportDetailsBtn" style="display:none;">Edit</button>
+        
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <!-- Optionally, add more buttons like Edit if needed -->
         </div>
       </div>
     </div>
   </div>
+
+
+<!-- Edit Transport Details Modal -->
+<div class="modal fade" id="editTransportDetailsModal" tabindex="-1" aria-labelledby="editTransportDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editTransportDetailsForm">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title" id="editTransportDetailsModalLabel">Edit Transport Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Hidden Fields -->
+          <input type="hidden" id="editTransportDetailId" name="transport_detail_id" value="">
+          <input type="hidden" id="editCollectionRequestId" name="collection_request_id" value="">
+          
+          <!-- Warehouse Dropdown -->
+          <div class="mb-3">
+            <label for="editWarehouse" class="form-label">Warehouse <span style="color:red">*</span></label>
+            <select id="editWarehouse" class="form-select select2" name="warehouse_id" required>
+              <option value="">Choose Warehouse</option>
+              <!-- Populate via AJAX or pre-fill as needed -->
+            </select>
+          </div>
+
+          <!-- Transport Partner Dropdown -->
+          <div class="mb-3">
+            <label for="editTransportPartner" class="form-label">Transport Partner <span style="color:red">*</span></label>
+            <select id="editTransportPartner" class="form-select select2" name="transport_partner_id" required>
+              <option value="">Choose Transport Partner</option>
+              <!-- Populate via AJAX or pre-fill as needed -->
+            </select>
+          </div>
+
+          <!-- Vehicle Number -->
+          <div class="mb-3">
+            <label for="editVehicleNumber" class="form-label">Vehicle Number <span style="color:red">*</span></label>
+            <input type="text" class="form-control" id="editVehicleNumber" name="vehicle_number" required>
+          </div>
+          
+          <!-- Driver Name -->
+          <div class="mb-3">
+            <label for="editDriverName" class="form-label">Driver Name <span style="color:red">*</span></label>
+            <input type="text" class="form-control" id="editDriverName" name="driver_name" required>
+          </div>
+          
+          <!-- Contact Number -->
+          <div class="mb-3">
+            <label for="editContactNumber" class="form-label">Contact Number <span style="color:red">*</span></label>
+            <input type="text" class="form-control" id="editContactNumber" name="contact_number" required>
+          </div>
+          
+          <!-- Email ID -->
+          <div class="mb-3">
+            <label for="editEmail" class="form-label">Email ID</label>
+            <input type="email" class="form-control" id="editEmail" name="email_id">
+          </div>
+          
+          <!-- Alternate Mobile No -->
+          <div class="mb-3">
+            <label for="editAlternateMobile" class="form-label">Alternate Mobile No</label>
+            <input type="text" class="form-control" id="editAlternateMobile" name="alternate_mobile_no">
+          </div>
+          
+          <!-- Remarks -->
+          <div class="mb-3">
+            <label for="editRemarks" class="form-label">Remarks</label>
+            <textarea class="form-control" id="editRemarks" name="remarks" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 @endsection
 
@@ -304,21 +394,36 @@
                 if(rowData.extendedProps.transport_details) {
                     var transport = rowData.extendedProps.transport_details;
                     $('#viewVehicleNumber').text(transport.vehicle_number || '-');
+                    $('#viewWarehouse').text(transport.warehouse_name || '-');
+                    $('#viewTransportPartner').text(transport.transport_partner_name || '-');
                     $('#viewDriverName').text(transport.driver_name || '-');
                     $('#viewContactNumber').text(transport.contact_number || '-');
                     $('#viewAlternativeContactNumber').text(transport.alternative_contact_number || '-');
                     $('#viewEmail').text(transport.email || '-');
                     $('#viewTransportRemarks').text(transport.remarks || '-');
-                    $('#viewTransportCreatedAt').text(transport.created_at ? new Date(transport.created_at).toLocaleString() : 'N/A');
+                    $('#viewTransportCreatedAt').text(transport.created_at ? new Date(transport.created_at).toLocaleDateString() : 'N/A');
+                    // Show Edit button
+                    $('#editTransportDetailsBtn').show();
+
+                    // Attach click handler for the edit button
+                    $('#editTransportDetailsBtn').off('click').on('click', function() {
+                        openEditTransportDetailsModal(rowData);
+                    });
+
                 } else {
                     // If no transport details, set all transport fields to 'N/A'
                     $('#viewVehicleNumber').text('N/A');
+                    $('#viewWarehouse').text('N/A');
+                    $('#viewTransportPartner').text('N/A');
                     $('#viewDriverName').text('N/A');
                     $('#viewContactNumber').text('N/A');
                     $('#viewAlternativeContactNumber').text('N/A');
                     $('#viewEmail').text('N/A');
                     $('#viewTransportRemarks').text('N/A');
                     $('#viewTransportCreatedAt').text('N/A');
+
+                    // Hide Edit button if no transport details exist
+                    $('#editTransportDetailsBtn').hide();
                 }
 
                 // Show the modal
@@ -328,6 +433,83 @@
                 Swal.fire('Error', 'Unable to retrieve collection request details.', 'error');
             }
         }
+
+          // Helper function to open and populate the Edit Transport Details Modal
+          function openEditTransportDetailsModal(rowData) {
+           
+              // Hide the view modal first
+              var viewModalEl = document.getElementById('viewCollectionRequestModal');
+              var viewModalInstance = bootstrap.Modal.getInstance(viewModalEl);
+              if (viewModalInstance) {
+                  viewModalInstance.hide();
+              }
+              
+              if (!rowData.extendedProps.transport_details) {
+                  Swal.fire('Error', 'No transport details available for editing.', 'error');
+                  return;
+              }
+              var transport = rowData.extendedProps.transport_details;
+              
+              // Set hidden fields
+              $('#editTransportDetailId').val(transport.transport_detail_id);
+              $('#editCollectionRequestId').val(rowData.id);
+              
+              // Auto-fill form fields with existing transport details
+              $('#editWarehouse').val(transport.warehouse_id).trigger('change');
+              $('#editTransportPartner').val(transport.transport_partner_id).trigger('change');
+              $('#editVehicleNumber').val(transport.vehicle_number);
+              $('#editDriverName').val(transport.driver_name);
+              $('#editContactNumber').val(transport.contact_number);
+              $('#editAlternateMobile').val(transport.alternative_contact_number);
+              $('#editEmail').val(transport.email);
+              $('#editRemarks').val(transport.remarks);
+              
+              // Show the Edit Transport Details Modal
+              var editModal = new bootstrap.Modal(document.getElementById('editTransportDetailsModal'));
+              editModal.show();
+          }
+
+
+        // Handle submission of the Edit Transport Details Form
+        $('#editTransportDetailsForm').on('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
+            var formData = $(this).serialize();
+            
+            // Optionally, disable the submit button to avoid multiple submissions
+            $('#editTransportDetailsForm button[type="submit"]').prop('disabled', true);
+            
+            $.ajax({
+                url: "{{ route('collections.updateVehicleDetails') }}", // Change the route name as needed
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if(response.success){
+                        Swal.fire('Success', response.message, 'success');
+                        // Hide the Edit modal
+                        var editModalEl = document.getElementById('editTransportDetailsModal');
+                        var editModal = bootstrap.Modal.getInstance(editModalEl);
+                        editModal.hide();
+                        // Optionally reload the DataTable or update the view modal fields
+                        table.ajax.reload();
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error updating transport details:", error);
+                    var errorMessage = 'An error occurred while updating transport details.';
+                    if(xhr.responseJSON && xhr.responseJSON.message){
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    Swal.fire('Error', errorMessage, 'error');
+                },
+                complete: function() {
+                    // Re-enable submit button
+                    $('#editTransportDetailsForm button[type="submit"]').prop('disabled', false);
+                }
+            });
+        });
 
         // Helper function to capitalize the first letter
         function capitalizeFirstLetter(string) {
@@ -451,7 +633,7 @@
                                         <i class="bi bi-gear"></i>
                                     </button>
                                     <ul class="dropdown-menu" aria-labelledby="actionMenu${row.id}">
-                                        <li><a class="dropdown-item" href="#" onclick="viewCollectionRequest(${row.id})">View</a></li>
+                                        <li><a class="dropdown-item" onclick="viewCollectionRequest(${row.id})">View</a></li>
                                     </ul>
                                 </div>
                             `;
@@ -482,7 +664,9 @@
                             dropdown.empty().append('<option value="">Choose Collecting Agent</option>');
                             modalDropdown.empty().append('<option value="">Choose Collecting Agent</option>');
                             $.each(agents, function(index, agent) {
-                                var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                               // var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
+                                var option = '<option value="' + agent.id + '" data-role-id="' + agent.role_id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
+                          
                                 dropdown.append(option);
                                 modalDropdown.append(option);
                             });
@@ -516,6 +700,80 @@
                 // Reload the DataTable without filters
                 table.ajax.reload();
             });
+
+
+             // Function to populate Warehouses Dropdown
+             function loadAllActiveWarehouses() {
+                $.ajax({
+                    url: "{{ route('tourplanner.getAllActiveWarehouses') }}",
+                    type: 'GET',
+                    success: function(response) {
+                        if(response.success) {
+                          var warehouses = response.data;
+                          var modalDropdown = $('#editWarehouse');
+                          modalDropdown.empty().append('<option value="">Choose Warehouse</option>');
+                          $.each(warehouses, function(index, warehouse) {
+                            var option = '<option value="' + warehouse.id + '">' + warehouse.name + ' (' + warehouse.city.name + ', ' + warehouse.pincode + ')</option>';
+                                modalDropdown.append(option);
+                            });
+                          modalDropdown.trigger('change');
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching active warehouses:", error);
+                        Swal.fire('Error', 'An error occurred while fetching active warehouses.', 'error');
+                    }
+                });
+            }
+
+             // Function to populate TransportPartners Dropdown
+             function loadAllActiveTransportPartners() {
+                $.ajax({
+                    url: "{{ route('tourplanner.getAllActiveTransportPartners') }}",
+                    type: 'GET',
+                    success: function(response) {
+                        if(response.success) {
+                          var transports = response.data;
+                          var dropdown = $('#editTransportPartner');
+                          dropdown.empty().append('<option value="">Choose Warehouse</option>');
+                          $.each(transports, function(index, transport) {
+                            var option = '<option value="' + transport.id + '">' + transport.name + ')</option>';
+                              dropdown.append(option);
+                            });
+                            dropdown.trigger('change');
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching active Transport Partners:", error);
+                        Swal.fire('Error', 'An error occurred while fetching Transport Partners.', 'error');
+                    }
+                });
+            }
+
+            $('#warehouse').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Choose Blood Bank',
+                allowClear: true,
+                dropdownParent: $('#editTransportDetailsModal')
+            });
+
+            $('#transportPartner').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Choose Blood Bank',
+                allowClear: true,
+                dropdownParent: $('#editTransportDetailsModal')
+            });
+
+            // Get Warehosue Lists Active
+            loadAllActiveWarehouses();
+            loadAllActiveTransportPartners();
+
         });
 
     </script>

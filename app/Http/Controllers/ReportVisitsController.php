@@ -233,6 +233,10 @@ class ReportVisitsController extends Controller
             'boxes_collected' => 'required|integer|min:0',
             'units_collected' => 'required|integer|min:0',
             'litres_collected' => 'required|integer|min:0',
+            'different_transport_partner' => 'nullable',
+            'transportation_name' => 'nullable|string',
+            'transportation_contact_person' => 'nullable|string',
+            'transportation_contact_number' => 'nullable|string',
         ]);
 
 
@@ -271,6 +275,11 @@ class ReportVisitsController extends Controller
             'boxes_collected'    => $request->input('boxes_collected'),  
             'units_collected'    => $request->input('units_collected'),  
             'litres_collected'    => $request->input('litres_collected'),  
+             // Additional transportation details:
+            'different_transport_partner' => $request->has('different_transport_partner') ? 1 : 0,
+            'transportation_name'         => $request->input('transportation_name'),
+            'transportation_contact_person' => $request->input('transportation_contact_person'),
+            'transportation_contact_number' => $request->input('transportation_contact_number'),
         ];
         
         // Handle multiple documents certificate_of_quality
@@ -380,7 +389,8 @@ class ReportVisitsController extends Controller
 
            
             // Make the API request with the Bearer token
-            $response = Http::withHeaders([
+            $response = Http::timeout(60)->connectTimeout(20)
+            ->withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
             ])->post($apiUrl, $postData);
@@ -994,6 +1004,10 @@ class ReportVisitsController extends Controller
             'units_collected' => $request->input('edit_units_collected'),
             'litres_collected' => $request->input('edit_litres_collected'),
             'existing_attachments' => $request->input('existing_attachments', '[]'),
+            'different_transport_partner' => $request->has('edit_collection_other_transport_partner') ? 1 : 0,
+            'transportation_name' => $request->input('edit_transport_name'),
+            'transportation_contact_person' => $request->input('edit_transport_contact_person'),
+            'transportation_contact_number' => $request->input('edit_transport_contact_number'),
         ];
         
           // Retrieve existing attachments (if any)
@@ -1110,7 +1124,8 @@ class ReportVisitsController extends Controller
 
            
             // Make the API request with the Bearer token
-            $response = Http::withHeaders([
+            $response = Http::timeout(60)->connectTimeout(20)
+            ->withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
             ])->post($apiUrl, $postData);
