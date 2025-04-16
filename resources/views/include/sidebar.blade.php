@@ -79,10 +79,33 @@
               <i class="bi bi-circle"></i><span>Users</span>
             </a>
           </li>
-          
          </ul>
        </li><!-- End Components Nav -->
+
+       <li class="nav-item">
+         <a class="nav-link collapsed" href="{{ route('entities.settings') }}">
+           <i class="bi bi-gear"></i>
+           <span>Entity Settings</span>
+         </a>
+       </li><!-- End Entity Settings Nav -->
        @endif
+
+        <!-- Registration Menu - Visible Only to Factory Admin (role_id == 12) -->
+        @if (Auth::check() && Auth::user()->role_id == 17)
+        <li class="nav-item">
+          <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+            <i class="bi bi-card-list"></i><span>Bag Entry</span><i class="bi bi-chevron-down ms-auto"></i>
+          </a>
+          <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+           <li>
+             <a href="{{ route('newBag.index') }}">
+               <i class="bi bi-circle"></i><span>New</span>
+             </a>
+           </li>
+           
+          </ul>
+        </li><!-- End Components Nav -->
+        @endif
 
     <!-- Tour Planner - Visible to Company Admin (role_id == 2) and Role ID 6 RBE-->
     @if (Auth::check() && in_array(Auth::user()->role_id, [2, 6]))

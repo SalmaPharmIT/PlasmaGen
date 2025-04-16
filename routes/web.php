@@ -12,6 +12,7 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\ReportVisitsController;
 use App\Http\Controllers\ReportsMasterController;
 use App\Http\Controllers\ExpensesController;
+use App\Http\Controllers\BagEntryController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -50,6 +51,15 @@ Route::group(['middleware' => ['auth']], function () {
     // Edit Entity ends ***********
 
     Route::get('/entities/parent-entities', [EntityController::class, 'getParentEntities'])->name('entities.getParentEntities');
+
+    Route::get('/entities/settings', [EntityController::class, 'settings'])->name('entities.settings');
+
+    // Route::post('/entities/update-name', [EntityController::class, 'updateName'])->name('entities.updateName');
+    // Route::post('/entities/update-code', [EntityController::class, 'updateCode'])->name('entities.updateCode');
+    // Route::post('/entities/update-contact-person', [EntityController::class, 'updateContactPerson'])->name('entities.updateContactPerson');
+    // Route::post('/entities/update-contact-number', [EntityController::class, 'updateContactNumber'])->name('entities.updateContactNumber');
+    // Route::post('/entities/update-email', [EntityController::class, 'updateEmail'])->name('entities.updateEmail');
+    // Route::post('/entities/update-address', [EntityController::class, 'updateAddress'])->name('entities.updateAddress');
 
     /* *********************  Entity Ends ********************************* */
 
@@ -210,7 +220,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('/expenses/delete/{id}', [ExpensesController::class, 'deleteExpense'])->name('expenses.delete');
     /* *********************  Report Visits Ends ********************************* */
 
-
+/* *********************  Users Starts ********************************* */
+    // View Entities Page
+    Route::get('/newBagEntry', [BagEntryController::class, 'index'])->name('newBag.index');
+    Route::post('/newBagEntry', [BagEntryController::class, 'store'])->name('newBag.store');
+    
     // Other registration routes...
 });
 

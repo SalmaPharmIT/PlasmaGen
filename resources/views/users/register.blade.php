@@ -94,6 +94,17 @@
                     </select>
                 </div>
 
+                <!-- Test Type (shown only for role ID 16) -->
+                <div class="col-md-6" id="testTypeDiv" style="display: none;">
+                    <label for="test_type" class="form-label">Test Type <span style="color:red">*</span></label>
+                    <select id="test_type" name="test_type" class="form-select select2">
+                        <option value="">Choose Test Type</option>
+                        <option value="1" {{ old('test_type') == '1' ? 'selected' : '' }}>NAT</option>
+                        <option value="2" {{ old('test_type') == '2' ? 'selected' : '' }}>ELISA</option>
+                        <option value="3" {{ old('test_type') == '3' ? 'selected' : '' }}>BOTH</option>
+                    </select>
+                </div>
+
                  <!-- Gender -->
                  <div class="col-md-6">
                     <label for="gender" class="form-label">Gender <span style="color:red">*</span></label>
@@ -262,9 +273,30 @@
             const countryDropdown = $('#country_id');
             const stateDropdown = $('#state_id');
             const cityDropdown = $('#city_id');
+            const roleDropdown = $('#role_id');
+            const testTypeDiv = $('#testTypeDiv');
+            const testTypeSelect = $('#test_type');
             var urlGetStatesByIdTemplate = "{{ route('api.states', ['countryId' => '__COUNTRY_ID__']) }}";
             var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
 
+            // Handle role change to show/hide test type dropdown
+            roleDropdown.on('change', function() {
+                const roleId = $(this).val();
+                if (roleId == 16) {
+                    testTypeDiv.show();
+                    testTypeSelect.prop('required', true);
+                } else {
+                    testTypeDiv.hide();
+                    testTypeSelect.prop('required', false);
+                    testTypeSelect.val('');
+                }
+            });
+
+            // Initialize test type visibility based on current role selection
+            if (roleDropdown.val() == 16) {
+                testTypeDiv.show();
+                testTypeSelect.prop('required', true);
+            }
 
             countryDropdown.on('change', function() {
                 const countryId = $(this).val();

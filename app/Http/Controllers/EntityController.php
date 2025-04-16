@@ -704,4 +704,62 @@ class EntityController extends Controller
         }
     }
     
+    public function settings()
+    {
+        return view('entities.settings');
+    }
+
+    public function updateName(Request $request)
+    {
+        $entity = Auth::user()->entity;
+        $entity->name = $request->name;
+        $entity->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateCode(Request $request)
+    {
+        $entity = Auth::user()->entity;
+        $entity->code = $request->code;
+        $entity->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateContactPerson(Request $request)
+    {
+        $entity = Auth::user()->entity;
+        $entity->contact_person = $request->contact_person;
+        $entity->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateContactNumber(Request $request)
+    {
+        $entity = Auth::user()->entity;
+        $entity->contact_number = $request->contact_number;
+        $entity->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateEmail(Request $request)
+    {
+        $entity = Auth::user()->entity;
+        $entity->email = $request->email;
+        $entity->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateAddress(Request $request)
+    {
+        $entity = Auth::user()->entity;
+        $entity->address = $request->address;
+        $entity->save();
+
+        return response()->json(['success' => true]);
+    }
 }
