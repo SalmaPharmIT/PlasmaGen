@@ -27,7 +27,7 @@ class DashboardController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
     */
-    public function getDashboardData()
+    public function getDashboardData(Request $request)
     {
         // Retrieve the token from the session
         $token = session()->get('api_token');
@@ -39,6 +39,9 @@ class DashboardController extends Controller
                 'message' => 'Authentication token missing. Please log in again.'
             ], 401);
         }
+
+        // Retrieve filter value from GET, defaulting to "This Month"
+        $filter = $request->input('filter', 'This Month');
 
         // Define the external API URL for fetching dashbaord data
         $apiUrl = config('auth_api.dashbaord_web_url');
@@ -55,7 +58,7 @@ class DashboardController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Accept' => 'application/json',
-            ])->get($apiUrl);
+            ])->get($apiUrl, ['filter' => $filter]);
 
             Log::info('External API Response', [
                 'status' => $response->status(),
@@ -96,7 +99,7 @@ class DashboardController extends Controller
         }
     }
 
-    public function getDashboardGraphData()
+    public function getDashboardGraphData(Request $request)
     {
         // Retrieve the token from the session
         $token = session()->get('api_token');
@@ -108,6 +111,9 @@ class DashboardController extends Controller
                 'message' => 'Authentication token missing. Please log in again.'
             ], 401);
         }
+
+        // Retrieve filter value from GET, defaulting to "This Month"
+        $filter = $request->input('filter', 'This Month');
 
         // Define the external API URL for fetching monthly dashboard graph data
         $apiUrl = config('auth_api.dashboard_web_by_month_url'); // Ensure you configure this in config/auth_api.php
@@ -124,7 +130,7 @@ class DashboardController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Accept' => 'application/json',
-            ])->get($apiUrl);
+            ])->get($apiUrl, ['filter' => $filter]);
 
             Log::info('External API Graph Data Response', [
                 'status' => $response->status(),
@@ -166,7 +172,7 @@ class DashboardController extends Controller
     }
 
 
-    public function getDashboardBloodBanksMapData()
+    public function getDashboardBloodBanksMapData(Request $request)
     {
         // Retrieve the token from the session
         $token = session()->get('api_token');
@@ -178,6 +184,9 @@ class DashboardController extends Controller
                 'message' => 'Authentication token missing. Please log in again.'
             ], 401);
         }
+
+        // Retrieve filter value from GET, defaulting to "This Month"
+        $filter = $request->input('filter', 'This Month');
 
         // Define the external API URL for fetching monthly dashboard graph data
         $apiUrl = config('auth_api.dashboard_web_bloodbanks_map_url'); // Ensure you configure this in config/auth_api.php
@@ -194,7 +203,7 @@ class DashboardController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Accept' => 'application/json',
-            ])->get($apiUrl);
+            ])->get($apiUrl, ['filter' => $filter]);
 
             Log::info('External API BloodBank Map Data Response', [
                 'status' => $response->status(),

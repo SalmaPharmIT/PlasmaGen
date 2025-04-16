@@ -714,6 +714,8 @@ class TourPlannerController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'collection_request_id' => 'required|integer|exists:tour_plan,id',
+            'warehouse_id'          => 'required|integer|exists:entities,id',
+            'transport_partner_id'  => 'required|integer|exists:transport_partners,id',
             'vehicle_number' => 'required|string|max:50',
             'driver_name' => 'required|string|max:100',
             'contact_number' => 'required|string|max:15',
@@ -746,6 +748,8 @@ class TourPlannerController extends Controller
          // Step 3: Map form fields to transport_details table fields
          $transportData = [
             'collection_request_id' => $validatedData['collection_request_id'],
+            'warehouse_id'          => $validatedData['warehouse_id'],
+            'transport_partner_id'  => $validatedData['transport_partner_id'],
             'vehicle_number' => $validatedData['vehicle_number'],
             'driver_name' => $validatedData['driver_name'],
             'contact_number' => $validatedData['contact_number'],
@@ -2260,6 +2264,267 @@ class TourPlannerController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while marking TP as added.'
+            ], 500);
+        }
+    }
+
+    /**
+     * API Endpoint to Fetch All Active Warehouses.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllActiveWarehouses()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.warehouse_fetch_all_active_url');
+
+        if (!$apiUrl) {
+            Log::error('Warehouse Active fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Warehouse Active fetch URL is not configured.'
+            ], 500);
+        }
+
+        Log::info('Fetching Active Warehouse from external API.', ['api_url' => $apiUrl]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch Warehouse from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch Active Warehouse from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Active Warehouse from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching Active Warehouse.',
+            ], 500);
+        }
+    }
+
+
+     /**
+     * API Endpoint to Fetch All Active Transport Partners.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllActiveTransportPartners()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.transport_partners_fetch_all_active_url');
+
+        if (!$apiUrl) {
+            Log::error('Transport Partners fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Transport Partners fetch URL is not configured.'
+            ], 500);
+        }
+
+        Log::info('Fetching Transport Partners from external API.', ['api_url' => $apiUrl]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch Transport Partners from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch Transport Partners from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Transport Partners from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching Transport Partners.',
+            ], 500);
+        }
+    }
+
+
+    /**
+     * API Endpoint to Update Vehicle Details
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function updateVehicleDetails(Request $request)
+    {
+        // Validate the incoming data.
+        $validatedData = $request->validate([
+            'transport_detail_id'    => 'required|integer|exists:transport_details,id',
+            'collection_request_id'  => 'required|integer|exists:tour_plan,id',
+            'warehouse_id'           => 'required|integer|exists:entities,id',
+            'transport_partner_id'   => 'required|integer|exists:transport_partners,id',
+            'vehicle_number'         => 'required|string|max:50',
+            'driver_name'            => 'required|string|max:100',
+            'contact_number'         => 'required|string|max:15',
+            'email_id'               => 'required|email|max:255',
+            'alternate_mobile_no'    => 'nullable|string|max:15',
+            'remarks'                => 'nullable|string|max:255',
+        ]);
+
+        // Retrieve the API token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for submitting vehicle details
+        $apiUrl = config('auth_api.vehicle_details_update_url'); // Ensure this is set in your config
+
+        if (!$apiUrl) {
+            Log::error('Vehicle Details Submit URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Vehicle Details Submit URL is not configured.'
+            ], 500);
+        }
+
+         // Step 3: Map form fields to transport_details table fields
+         $transportData = [
+            'transport_detail_id' => $validatedData['transport_detail_id'],
+            'collection_request_id' => $validatedData['collection_request_id'],
+            'warehouse_id'          => $validatedData['warehouse_id'],
+            'transport_partner_id'  => $validatedData['transport_partner_id'],
+            'vehicle_number' => $validatedData['vehicle_number'],
+            'driver_name' => $validatedData['driver_name'],
+            'contact_number' => $validatedData['contact_number'],
+            'alternative_contact_number' => $validatedData['alternate_mobile_no'] ?? null,
+            'email_id' => $validatedData['email_id'],
+            'remarks' => $validatedData['remarks'] ?? null,
+            'created_by' => Auth::id(), // assuming user is authenticated
+            'modified_by' => Auth::id(),
+        ];
+
+        Log::info('Vehicle Details Update Request external API.', ['transportData' => $transportData]);
+
+
+        try {
+            // Send the data to the external API
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->post($apiUrl, $transportData);
+
+            Log::info('External API Response for Vehicle Update Details Submission', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => Arr::get($apiResponse, 'message', 'Vehicle details updated successfully.')
+                    ]);
+                } else {
+                    Log::warning('External API returned failure for Vehicle Details Update Submission.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.')
+                    ]);
+                }
+            } else {
+                Log::error('Failed to submit vehicle details Update via external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to Update the vehicle details via the external API.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while Update vehicle details via external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while Update vehicle details.'
             ], 500);
         }
     }

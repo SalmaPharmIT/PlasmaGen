@@ -115,4 +115,7 @@ return [
     'drc_sourcing_edit_submit_url' =>  $base_url . 'drc_sourcing_edit_submit.php',
     'reports_user_expenses_summary_url' =>  $base_url . 'reports_user_expenses_summary.php',
     'dashboard_web_bloodbanks_map_url' =>  $base_url . 'dashboard_web_bloodbanks_map.php',
+    'warehouse_fetch_all_active_url' =>  $base_url . 'warehouse_fetch_all_active.php',
+    'transport_partners_fetch_all_active_url' =>  $base_url . 'transport_partners_fetch_all_active.php',
+    'vehicle_details_update_url' =>  $base_url . 'vehicle_details_update.php',
 ];

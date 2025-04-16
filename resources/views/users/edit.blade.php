@@ -47,7 +47,7 @@
 
                 <!-- Name -->
                 <div class="col-md-6">
-                    <label for="name" class="form-label">User Name <span style="color:red">*</span></label>
+                    <label for="name" class="form-label">Name <span style="color:red">*</span></label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $user['name']) }}" required>
                 </div>
 

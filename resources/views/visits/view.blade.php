@@ -108,8 +108,41 @@
             <hr> --}}
              <!-- Two-Column Layout -->
              <div class="row">
-                <!-- Left Column: Editable Visit Details -->
+               
+                <!-- Right Column: Read-Only Driver Information -->
                 <div class="col-md-6">
+                    <h5><strong>Transport Information</strong></h5>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Warehouse</th>
+                                <td id="warehouseDisplay">N/A</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Transport Partner</th>
+                                <td id="transportPartnerDisplay">N/A</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" style="width: 40%;">Driver Name</th>
+                                <td id="driverNameDisplay">N/A</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Driver Contact</th>
+                                <td id="driverContactDisplay">N/A</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Vehicle Number</th>
+                                <td id="vehicleNumberDisplay">N/A</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Remarks</th>
+                                <td id="driverRemarksDisplay">N/A</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                 <!-- Left Column: Editable Visit Details -->
+                 <div class="col-md-6">
                     <h5><strong>Visit Information</strong></h5>
                     <table class="table table-bordered">
                         <tbody>
@@ -128,30 +161,6 @@
                             <tr>
                                 <th scope="row">Remarks</th>
                                 <td id="tpRemarksDisplay">N/A</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- Right Column: Read-Only Driver Information -->
-                <div class="col-md-6">
-                    <h5><strong>Transport Information</strong></h5>
-                    <table class="table table-bordered">
-                        <tbody>
-                            <tr>
-                                <th scope="row" style="width: 40%;">Driver Name</th>
-                                <td id="driverNameDisplay">N/A</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Driver Contact</th>
-                                <td id="driverContactDisplay">N/A</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Vehicle Number</th>
-                                <td id="vehicleNumberDisplay">N/A</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Remarks</th>
-                                <td id="driverRemarksDisplay">N/A</td>
                             </tr>
                         </tbody>
                     </table>
@@ -297,6 +306,33 @@
                 </div>
             </div>
             
+            <!-- New Row: Checkbox for Different Transportation Partner -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="differentTransportPartnerCheckbox" name="different_transport_partner" value="1">
+                    <label class="form-check-label" for="differentTransportPartnerCheckbox">
+                    Chosen different Transportation partner
+                    </label>
+                </div>
+                </div>
+            </div>
+            
+            <!-- New Row: Extra Textboxes (initially hidden) -->
+            <div class="row mb-3" id="differentTransportDetailsRow" style="display: none;">
+                <div class="col-md-4">
+                    <label for="transportationName" class="form-label">Transport Name</label>
+                    <input type="text" class="form-control" id="transportationName" name="transportation_name">
+                </div>
+                <div class="col-md-4">
+                    <label for="transportationContactPerson" class="form-label">Transport Contact Person</label>
+                    <input type="text" class="form-control" id="transportationContactPerson" name="transportation_contact_person">
+                </div>
+                <div class="col-md-4">
+                    <label for="transportationContactNumber" class="form-label">Transport Contact Number</label>
+                    <input type="text" class="form-control" id="transportationContactNumber" name="transportation_contact_number">
+                </div>
+            </div>
         
             </div>
             <div class="modal-footer">
@@ -519,6 +555,45 @@
                             </div>
                         </div>
                         <div class="row mb-3">
+                            <!-- No. of Boxes -->
+                            <div class="col-md-4">
+                                <strong>No. of Boxes:</strong>
+                                <p id="view_numBoxesDisplay">N/A</p>
+                            </div>
+                            <!-- No. of Units -->
+                            <div class="col-md-4">
+                                <strong>No. of Units:</strong>
+                                <p id="view_numUnitsDisplay">N/A</p>
+                            </div>
+                            <!-- No. of Litres -->
+                            <div class="col-md-4">
+                                <strong>No. of Litres:</strong>
+                                <p id="view_numLitresDisplay">N/A</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Is Different Transport -->
+                            <div class="col-md-4">
+                                <strong>Other Transport Partner:</strong>
+                                <p id="view_IsDifferentTransportDisplay">N/A</p>
+                            </div>
+                            <!-- Transport Name -->
+                            <div class="col-md-4">
+                                <strong>Transport Name:</strong>
+                                <p id="view_transportNameDisplay">N/A</p>
+                            </div>
+                            <!-- Transport Contact Person -->
+                            <div class="col-md-4">
+                                <strong>Transport Contact Person:</strong>
+                                <p id="view_transportContactPersonDisplay">None</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <!-- Transport Contact Number -->
+                            <div class="col-md-4">
+                                <strong>Transport Contact Number:</strong>
+                                <p id="view_transportContactNumberDisplay">N/A</p>
+                            </div>
                             <!-- Remarks -->
                             <div class="col-md-4">
                                 <strong>Remarks:</strong>
@@ -529,6 +604,8 @@
                                 <strong>Pending Documents:</strong>
                                 <p id="view_pendingDocumentsDisplay">None</p>
                             </div>
+                        </div>
+                        <div class="row mb-3">
                             <!-- Added By -->
                             <div class="col-md-4">
                                 <strong>Added By:</strong>
@@ -546,6 +623,16 @@
                     </div>
                     <div class="card-body">
                         <div class="row mb-3 mt-3">
+                            <!-- Warehouse Name -->
+                            <div class="col-md-4">
+                                <strong>Warehouse:</strong>
+                                <p id="view_warehouseNameDisplay">N/A</p>
+                            </div>
+                            <!-- Transport Partner Name -->
+                            <div class="col-md-4">
+                                <strong>Transport Partner:</strong>
+                                <p id="view_transportPartnerNameDisplay">N/A</p>
+                            </div>
                             <!-- Driver Name -->
                             <div class="col-md-4">
                                 <strong>Driver Name:</strong>
@@ -620,7 +707,7 @@
 
                         <!-- Part-B Invoice Documents -->
                         <div class="mb-4">
-                            <h6><strong>5. Part-B Invoices</strong></h6>
+                            <h6><strong>6. Part-B Invoices</strong></h6>
                             <div class="d-flex flex-wrap" id="view_partBInvoiceAttachments">
                                 <!-- Attachments will be loaded here -->
                             </div>
@@ -628,7 +715,7 @@
 
                         <!-- Part-C Invoice Documents -->
                         <div class="mb-4">
-                            <h6><strong>5. Part-C Invoices</strong></h6>
+                            <h6><strong>7. Part-C Invoices</strong></h6>
                             <div class="d-flex flex-wrap" id="view_partCInvoiceAttachments">
                                 <!-- Attachments will be loaded here -->
                             </div>
@@ -921,6 +1008,30 @@
                   <div class="col-md-4">
                     <label for="editNumLitres" class="form-label">Number of Litres</label>
                     <input type="text" class="form-control" id="editNumLitres" name="edit_litres_collected" >
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4 mt-2">
+                    <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="editOtherTransportPartner" name="edit_collection_other_transport_partner">
+                    <label class="form-check-label" for="editOtherTransportPartner">Other Transport Partner?</label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row mb-3" id="editOtherTransportPartnerSection" style="display: none;">
+                <div class="col-md-4">
+                    <label for="editTransportName" class="form-label">Transport Name</label>
+                    <input type="text" class="form-control" id="editTransportName" name="edit_transport_name">
+                </div>
+                    <div class="col-md-4">
+                    <label for="editTransportContactPerson" class="form-label">Transport Contact Person</label>
+                    <input type="text" class="form-control" id="editTransportContactPerson" name="edit_transport_contact_person">
+                </div>
+                    <div class="col-md-4">
+                    <label for="editTransportContactNumber" class="form-label">Transport Contact Number</label>
+                    <input type="text" class="form-control" id="editTransportContactNumber" name="edit_transport_contact_number" >
                 </div>
             </div>
   
@@ -1843,6 +1954,13 @@
             // Check if the visit_date is the current date
             const visitDate = visit.visit_date ? formatDate(visit.visit_date) : null;
 
+            console.log('visitDate', visitDate);
+            console.log('currentDate', currentDate);
+            console.log('tourPlanType', tourPlanType);
+            console.log('visit.extendedProps.status', visit.extendedProps.status);
+            console.log('visit.extendedProps.tp_status', visit.extendedProps.tp_status);
+
+
             if(visitDate && visitDate === currentDate && tourPlanType === 1 && visit.extendedProps.status == 'submitted' && visit.extendedProps.tp_status == 'accepted') {
                 // Add Update button centered
                 const updateButton = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateVisitModal" data-visit-id="${visit.id}" data-visit='${JSON.stringify(visit)}'>Update Visit</button>`;
@@ -2045,6 +2163,9 @@
             modal.find('#plannedQuantityDisplay').text(visitData.extendedProps.quantity || '-');
             modal.find('#timeDisplay').text(formatTime(visitData.time) || '-');
             modal.find('#tpRemarksDisplay').text(visitData.extendedProps.remarks || '-');
+
+            modal.find('#warehouseDisplay').text(visitData.extendedProps.transport_details.warehouse_name || '-');
+            modal.find('#transportPartnerDisplay').text(visitData.extendedProps.transport_details.transport_partner_name || '-');
 
             modal.find('#driverNameDisplay').text(visitData.extendedProps.transport_details.driver_name || '-');
             modal.find('#driverContactDisplay').text(visitData.extendedProps.transport_details.contact_number || '-');
@@ -2397,19 +2518,30 @@
             $('#view_isGSTIncludeDisplay').text(extendedProps.include_gst == 1 ? 'Yes' : 'No');
             $('#view_gstRateDisplay').text(extendedProps.gst_rate !== null ? extendedProps.gst_rate : 'N/A');
             $('#view_totalInvoicePriceDisplay').text(extendedProps.collection_total_plasma_price !== null ? extendedProps.collection_total_plasma_price : 'N/A');
-           
+            $('#view_numBoxesDisplay').text(extendedProps.num_boxes !== null ? extendedProps.num_boxes : '0');
+            $('#view_numUnitsDisplay').text(extendedProps.num_units !== null ? extendedProps.num_units : '0');
+            $('#view_numLitresDisplay').text(extendedProps.num_litres !== null ? extendedProps.num_litres : '0');
+
             $('#view_timeDisplay').text(formatTime(visit.time) || 'N/A');
             $('#view_tpRemarksDisplay').text(escapeHtml(extendedProps.remarks) || 'N/A');
             $('#view_pendingDocumentsDisplay').text(visit.pending_document_names && visit.pending_document_names.length > 0 ? escapeHtml(visit.pending_document_names.join(', ')) : 'None');
             $('#view_addedByDisplay').text(escapeHtml(extendedProps.created_by_name) || 'N/A');
+            $('#view_IsDifferentTransportDisplay').text(extendedProps.other_transportation == 1 ? 'Yes' : 'No');
+            $('#view_transportNameDisplay').text(escapeHtml(extendedProps.transportation_name) || 'N/A');
+            $('#view_transportContactPersonDisplay').text(escapeHtml(extendedProps.transportation_contact_person) || 'N/A');
+            $('#view_transportContactNumberDisplay').text(escapeHtml(extendedProps.transportation_contact_number) || 'N/A');
 
             // Populate Transport Information
             if(extendedProps.transport_details) {
+                $('#view_warehouseNameDisplay').text(escapeHtml(extendedProps.transport_details.warehouse_name) || 'N/A');
+                $('#view_transportPartnerNameDisplay').text(escapeHtml(extendedProps.transport_details.transport_partner_name) || 'N/A');
                 $('#view_driverNameDisplay').text(escapeHtml(extendedProps.transport_details.driver_name) || 'N/A');
                 $('#view_driverContactDisplay').text(escapeHtml(extendedProps.transport_details.contact_number) || 'N/A');
                 $('#view_vehicleNumberDisplay').text(escapeHtml(extendedProps.transport_details.vehicle_number) || 'N/A');
                 $('#view_driverRemarksDisplay').text(escapeHtml(extendedProps.transport_details.remarks) || 'N/A');
             } else {
+                $('#view_warehouseNameDisplay').text('N/A');
+                $('#view_transportPartnerNameDisplay').text('N/A');
                 $('#view_driverNameDisplay').text('N/A');
                 $('#view_driverContactDisplay').text('N/A');
                 $('#view_vehicleNumberDisplay').text('N/A');
@@ -3044,7 +3176,7 @@
         $('#editPrice').val(extended.price || '');
         $('#editRemarks').val(extended.remarks || '');
         $('#editQuantityCollected').val(extended.available_quantity || '');
-        $('#editRemainingQuantity').val(extended.remaining_quantity || '');
+        $('#editRemainingQuantity').val(extended.remaining_quantity || '0');
         
 
         // Populate GST section (example):
@@ -3064,6 +3196,22 @@
         $('#editNumBoxes').val(extended.num_boxes || '');
         $('#editNumUnits').val(extended.num_units || '');
         $('#editNumLitres').val(extended.num_litres || '');
+
+         // Populate GST section (example):
+         if (extended.other_transportation == 1) {
+            $('#editOtherTransportPartner').prop('checked', true);
+            $('#editOtherTransportPartnerSection').show();
+            $('#editTransportName').val(extended.transportation_name || '');
+            $('#editTransportContactPerson').val(extended.transportation_contact_person || '');
+            $('#editTransportContactNumber').val(extended.transportation_contact_number || '');
+        } else {
+            $('#editOtherTransportPartner').prop('checked', false);
+            $('#editOtherTransportPartnerSection').hide();
+            $('#editTransportName').val('');
+            $('#editTransportContactPerson').val('');
+            $('#editTransportContactNumber').val('');
+        }
+        
         
         
         // (You can also compute and set total price if needed.)
@@ -3273,6 +3421,7 @@
                 const remaining = planned - collected;
                 // Set the value of the editRemainingQuantity field, ensuring it does not go negative.
                 $('#editRemainingQuantity').val(remaining >= 0 ? remaining : 0);
+                console.log('editQuantityCollected', remaining >= 0 ? remaining : 0);
             });
 
         // End Edit Collection Update Visit section *******************
@@ -3408,6 +3557,20 @@
         });
 
         // ************************** End Edit Sourcing Update Visit section ***************************************************
+
+
+        // When the checkbox changes, show or hide the extra transportation fields.
+        $('#differentTransportPartnerCheckbox').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#differentTransportDetailsRow').slideDown();
+            } else {
+                $('#differentTransportDetailsRow').slideUp();
+                // Clear the text boxes when unchecked
+                $('#transportationName').val('');
+                $('#transportationContactPerson').val('');
+                $('#transportationContactNumber').val('');
+            }
+        });
 
     });
 </script>
