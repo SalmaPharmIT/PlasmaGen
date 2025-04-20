@@ -288,7 +288,8 @@
             const testTypeDiv = $('#testTypeDiv');
             const testTypeSelect = $('#test_type');
             var urlGetStatesByIdTemplate = "{{ route('api.states', ['countryId' => '__COUNTRY_ID__']) }}";
-            var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
+           // var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
+            var urlcityByStateIdTemplate = "{{ route('api.citiesById', ['stateId' => '__STATE_ID__']) }}";
 
             // Function to handle test type visibility
             function updateTestTypeVisibility() {

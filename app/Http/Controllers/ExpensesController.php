@@ -304,6 +304,13 @@ class ExpensesController extends Controller
 
             $response = $http->post($apiUrl, $postData);
 
+             // Log the API response
+             Log::info('Add expense API Response', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+
             if ($response->successful()) {
                 $apiResponse = $response->json();
 
@@ -317,6 +324,10 @@ class ExpensesController extends Controller
                 return back()->withErrors(['api_error' => 'Failed to connect to the update server.'])->withInput();
             }
         } catch (\Exception $e) {
+            Log::error('Add Expense API failed', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
             return back()->withErrors(['exception' => 'An error occurred while adding the expense: ' . $e->getMessage()])->withInput();
         }
     }

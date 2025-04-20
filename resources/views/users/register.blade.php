@@ -277,26 +277,8 @@
             const testTypeDiv = $('#testTypeDiv');
             const testTypeSelect = $('#test_type');
             var urlGetStatesByIdTemplate = "{{ route('api.states', ['countryId' => '__COUNTRY_ID__']) }}";
-            var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
-
-            // Handle role change to show/hide test type dropdown
-            roleDropdown.on('change', function() {
-                const roleId = $(this).val();
-                if (roleId == 16) {
-                    testTypeDiv.show();
-                    testTypeSelect.prop('required', true);
-                } else {
-                    testTypeDiv.hide();
-                    testTypeSelect.prop('required', false);
-                    testTypeSelect.val('');
-                }
-            });
-
-            // Initialize test type visibility based on current role selection
-            if (roleDropdown.val() == 16) {
-                testTypeDiv.show();
-                testTypeSelect.prop('required', true);
-            }
+           // var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
+            var urlcityByStateIdTemplate = "{{ route('api.citiesById', ['stateId' => '__STATE_ID__']) }}";
 
             countryDropdown.on('change', function() {
                 const countryId = $(this).val();
