@@ -13,6 +13,8 @@ use App\Http\Controllers\ReportVisitsController;
 use App\Http\Controllers\ReportsMasterController;
 use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\BagEntryController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\BarcodeController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -212,6 +214,19 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/reports/getUserExpensesSummary', [ReportsMasterController::class, 'getUserExpensesSummaryData'])->name('reports.getUserExpensesSummary');
     /* *********************  Report Visits Ends ********************************* */
 
+    /* ********************* Report Upload Routes ********************************* */
+    Route::get('/report/upload', [ReportController::class, 'upload'])->name('report.upload')->middleware('auth');
+    Route::post('/report/store', [ReportController::class, 'store'])->name('report.store')->middleware('auth');
+    Route::post('/report/save', [ReportController::class, 'save'])->name('report.save');
+    Route::post('/report/check-existing', [ReportController::class, 'checkExisting'])->name('report.check-existing');
+    /* ********************* Report Upload Routes Ends ********************************* */
+
+    /* ********************* Barcode Generator Routes ********************************* */
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
+        Route::post('/barcode/generate-codes', [BarcodeController::class, 'generateCodes'])->name('barcode.generate.codes');
+    });
+    /* ********************* Barcode Generator Routes Ends ********************************* */
 
     /* ********************* Expenses Starts ********************************* */
     Route::get('/expenses', [ExpensesController::class, 'index'])->name('expenses.index');
@@ -223,11 +238,17 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('/expenses/delete/{id}', [ExpensesController::class, 'deleteExpense'])->name('expenses.delete');
     /* *********************  Report Visits Ends ********************************* */
 
-/* *********************  Users Starts ********************************* */
-    // View Entities Page
-    Route::get('/newBagEntry', [BagEntryController::class, 'index'])->name('newBag.index');
-    Route::post('/newBagEntry', [BagEntryController::class, 'store'])->name('newBag.store');
-    
-    // Other registration routes...
+    /* ********************* New Bag Entry Routes ********************************* */
+    Route::get('/newBagEntry', [BagEntryController::class, 'index'])->name('newBag.index')->middleware('auth');
+    Route::post('/newBagEntry', [BagEntryController::class, 'store'])->name('newBag.store')->middleware('auth');
+    Route::get('/check-mega-pool/{megaPoolNo}', [BagEntryController::class, 'checkMegaPool'])->name('check.mega.pool')->middleware('auth');
+    /* ********************* New Bag Entry Routes Ends ********************************* */
+
+    // Bag Entry Routes
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/bag-entries', [BagEntryController::class, 'index'])->name('bag-entries.index');
+        Route::post('/bag-entries', [BagEntryController::class, 'store'])->name('bag-entries.store');
+        Route::get('/bag-entries/{bagEntry}', [BagEntryController::class, 'show'])->name('bag-entries.show');
+    });
 });
 

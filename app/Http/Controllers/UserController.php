@@ -165,7 +165,6 @@ class UserController extends Controller
             'dob' => 'nullable|date',
             'pan_id' => 'required|string|max:20',
             'aadhar_id' => 'required|string|max:20',
-           // 'account_status' => 'required|in:active,inactive,suspended',
             'country_id' => 'required|exists:countries,id',
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
@@ -178,6 +177,15 @@ class UserController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'created_by' => 'nullable|exists:users,id',
             'modified_by' => 'nullable|exists:users,id',
+            'test_type' => [
+                'nullable',
+                'in:1,2,3',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->input('role_id') == 16 && empty($value)) {
+                        $fail('The test type field is required when role is 16.');
+                    }
+                },
+            ],
         ]);
 
          // Retrieve the token from the session
@@ -197,13 +205,13 @@ class UserController extends Controller
             'name'                  => $request->input('name'),
             'entity_id'        => $request->input('entity_id'), 
             'role_id' => $request->input('role_id'),  
+            'test_type' => $request->input('role_id') == 16 ? $request->input('test_type') : null,
             'gender'                => $request->input('gender'),
             'mobile_no'            => $request->input('mobile_no'),
             'email'              => $request->input('email'),
             'dob'               => $request->input('dob'),
             'pan_id'               => $request->input('pan_id'),
             'aadhar_id'               => $request->input('aadhar_id'),
-           // 'account_status'            => $request->input('account_status'),
             'country_id'                 => $request->input('country_id'),
             'state_id'             => $request->input('state_id'),
             'city_id'   => $request->input('city_id'),
@@ -343,43 +351,31 @@ class UserController extends Controller
                 if (Arr::get($apiResponse, 'success')) {
                     $user = Arr::get($apiResponse, 'data');
 
+                    // Ensure test_type is properly set from API response
+                    if (isset($user['test_type'])) {
+                        $user['test_type'] = (string)$user['test_type']; // Convert to string for select option comparison
+                    } else {
+                        $user['test_type'] = null;
+                    }
+
                     // Fetch related data for dropdowns
                     $entities = \App\Models\Entity::all();
                     $countries = \App\Models\Country::all();
                     $states = \App\Models\State::all();
                     $cities = \App\Models\City::all();
-                  //  $roles = \App\Models\Role::all();
-                 //   $roles = \App\Models\Role::where('status', 'active')->get();
-                 //   $user = \App\Models\User::all();
+                    $roles = \App\Models\Role::where('status', 'active')
+                        ->where('is_factory', 1)
+                        ->get();
                     $userStatuses = \App\Models\User::$userStatuses;
-                    $userGender = \App\Models\User::$userGender;   
+                    $userGender = \App\Models\User::$userGender;
 
-                     // Fetch roles via API
-                    $rolesResponse = $this->getRoles();
+                    // Log the user data for debugging
+                    Log::info('User data being passed to view', [
+                        'user' => $user,
+                        'test_type' => $user['test_type']
+                    ]);
 
-                    $parentEntityTypesResponse = $this->getParentEntities();
-
-                    $responseContent = $parentEntityTypesResponse->getContent();
-                    $parentEntityTypesData = json_decode($responseContent, true);
-                    $parentEntityTypes = $parentEntityTypesData['data'] ?? [];
-
-                    // Handle API response
-                    if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
-                        // Successfully retrieved roles
-                        $roles = $rolesResponse;
-                    } elseif ($rolesResponse instanceof \Illuminate\Http\JsonResponse) {
-                        // An error occurred while fetching roles
-                        // You can choose to handle the error as needed
-                        // For example, redirect back with an error message
-                        return back()->withErrors(['roles_error' => 'Unable to fetch roles at this time. Please try again later.']);
-                    } else {
-                        // Unexpected response structure
-                        return back()->withErrors(['roles_error' => 'Unexpected error while fetching roles.']);
-                    }
-
-                    Log::info('Fetching single user data from external API.', ['user' => $user]);
-
-                    return view('users.edit', compact('user','entities', 'countries', 'states', 'cities', 'roles',  'userStatuses', 'userGender', 'parentEntityTypes'));
+                    return view('users.edit', compact('user', 'entities', 'countries', 'states', 'cities', 'roles', 'userStatuses', 'userGender'));
                 } else {
                     Log::warning('External API returned failure for single user.', ['message' => Arr::get($apiResponse, 'message')]);
                     return back()->withErrors(['api_error' => Arr::get($apiResponse, 'message', 'Unknown error from API.')]);
@@ -431,6 +427,15 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
             'created_by' => 'nullable|exists:users,id',
             'modified_by' => 'nullable|exists:users,id',
+            'test_type' => [
+                'nullable',
+                'in:1,2,3',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->input('role_id') == 16 && empty($value)) {
+                        $fail('The test type field is required when role is 16.');
+                    }
+                },
+            ],
         ]);
 
         // Retrieve the token from the session
@@ -450,6 +455,7 @@ class UserController extends Controller
             'name' => $request->input('name'),
             'entity_id' => $request->input('entity_id'),
             'role_id' => $request->input('role_id'),
+            'test_type' => $request->input('role_id') == 16 ? $request->input('test_type') : null,
             'gender' => $request->input('gender'),
             'mobile_no' => $request->input('mobile_no'),
             'email' => $request->input('email'),
