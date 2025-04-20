@@ -9,7 +9,7 @@ class BarcodeController extends Controller
 {
     public function generate()
     {
-        if (Auth::user()->role_id != 17) {
+        if (!in_array(Auth::user()->role_id, [12, 17])) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access');
         }
         return view('barcode.generate');
@@ -17,7 +17,7 @@ class BarcodeController extends Controller
 
     public function generateCodes(Request $request)
     {
-        if (Auth::user()->role_id != 17) {
+        if (!in_array(Auth::user()->role_id, [12, 17])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized access'

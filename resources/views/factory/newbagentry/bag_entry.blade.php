@@ -98,7 +98,7 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label class="small mb-1">Mega Pool No./Crate No.</label>
+                            <label class="small mb-1">Mega Pool No.</label>
                             <input type="text" class="form-control form-control-sm" name="mega_pool_no" required>
                         </div>
                     </div>
@@ -157,7 +157,12 @@
                                         <div class="form-control form-control-sm border-0 px-1 bg-light"></div>
                                     @endif
                                 </td>
-                                <td class="p-0"><input type="text" class="form-control form-control-sm border-0 px-1" name="tail_cutting[]"></td>
+                                <td class="p-0 text-center">
+                                    <select class="form-select form-select-sm border-0 px-1" name="tail_cutting[]">
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </td>
                             </tr>
                             @endfor
                             <!-- Total Row -->
