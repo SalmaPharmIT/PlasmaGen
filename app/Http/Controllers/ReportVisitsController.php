@@ -389,7 +389,7 @@ class ReportVisitsController extends Controller
 
            
             // Make the API request with the Bearer token
-            $response = Http::timeout(60)->connectTimeout(20)
+            $response = Http::timeout(120)->connectTimeout(30)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',
@@ -1124,7 +1124,7 @@ class ReportVisitsController extends Controller
 
            
             // Make the API request with the Bearer token
-            $response = Http::timeout(60)->connectTimeout(20)
+            $response = Http::timeout(120)->connectTimeout(30)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json',

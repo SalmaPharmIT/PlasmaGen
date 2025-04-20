@@ -263,8 +263,8 @@
             const stateDropdown = $('#state_id');
             const cityDropdown = $('#city_id');
             var urlGetStatesByIdTemplate = "{{ route('api.states', ['countryId' => '__COUNTRY_ID__']) }}";
-            var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
-
+           // var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
+            var urlcityByStateIdTemplate = "{{ route('api.citiesById', ['stateId' => '__STATE_ID__']) }}";
 
             countryDropdown.on('change', function() {
                 const countryId = $(this).val();
