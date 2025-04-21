@@ -15,6 +15,7 @@ use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\BagEntryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\BarcodeController;
+use App\Http\Controllers\NATReportController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -250,5 +251,12 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('/bag-entries', [BagEntryController::class, 'store'])->name('bag-entries.store');
         Route::get('/bag-entries/{bagEntry}', [BagEntryController::class, 'show'])->name('bag-entries.show');
     });
+
+    /* ********************* NAT Report Routes ********************************* */
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/nat-report', [NATReportController::class, 'index'])->name('nat-report.index');
+        Route::post('/nat-report/generate', [NATReportController::class, 'generateReport'])->name('nat-report.generate');
+    });
+    /* ********************* NAT Report Routes Ends ********************************* */
 });
 

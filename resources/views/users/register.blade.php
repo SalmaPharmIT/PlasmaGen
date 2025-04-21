@@ -280,6 +280,25 @@
            // var urlcityByStateIdTemplate = "{{ route('api.cities', ['stateId' => '__STATE_ID__']) }}";
             var urlcityByStateIdTemplate = "{{ route('api.citiesById', ['stateId' => '__STATE_ID__']) }}";
 
+            // Handle test type field visibility based on role selection
+            roleDropdown.on('change', function() {
+                const roleId = $(this).val();
+                if (roleId == 16) { // QCExecutive role
+                    testTypeDiv.show();
+                    testTypeSelect.prop('required', true);
+                } else {
+                    testTypeDiv.hide();
+                    testTypeSelect.prop('required', false);
+                    testTypeSelect.val(''); // Clear the value when hidden
+                }
+            });
+
+            // Trigger change event on page load if role is already selected
+            if (roleDropdown.val() == 16) {
+                testTypeDiv.show();
+                testTypeSelect.prop('required', true);
+            }
+
             countryDropdown.on('change', function() {
                 const countryId = $(this).val();
                 console.log("Fetching states for countryId:", countryId);

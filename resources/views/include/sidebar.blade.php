@@ -107,7 +107,7 @@
              </a>
            </li>
            <li>
-             <a href="{{ route('report.upload', ['type' => 'nat']) }}">
+             <a href="{{ route('nat-report.index') }}">
                <i class="bi bi-circle"></i><span>NAT</span>
              </a>
            </li>
@@ -135,7 +135,7 @@
             </a>
           </li>
           <li>
-            <a href="{{ route('report.upload', ['type' => 'nat']) }}">
+            <a href="{{ route('nat-report.index') }}">
               <i class="bi bi-circle"></i><span>NAT</span>
             </a>
           </li>
