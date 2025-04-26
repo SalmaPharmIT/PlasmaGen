@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BagEntry;
+use App\Models\Entity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -18,7 +19,13 @@ class BagEntryController extends Controller
      */
     public function index()
     {
-        return view('factory.newbagentry.bag_entry');
+        $bloodCenters = Entity::where('entity_type_id', 2)
+            ->where('account_status', Entity::STATUS_ACTIVE)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+            
+        return view('factory.newbagentry.bag_entry', compact('bloodCenters'));
     }
 
     /**
@@ -40,7 +47,7 @@ class BagEntryController extends Controller
 
             // Validate the request
             $validated = $request->validate([
-                'blood_centre' => 'required|string',
+                'blood_centre_id' => 'required|exists:entities,id',
                 'work_station' => 'required|string',
                 'date' => 'required|date',
                 'pickup_date' => 'required|date',
@@ -56,44 +63,76 @@ class BagEntryController extends Controller
                 'tail_cutting' => 'array',
             ]);
 
-            // Prepare bag details
-            $bagDetails = [];
-            $totalVolume = 0;
-
-            // Process each bag
-            for ($i = 0; $i < count($request->donor_id); $i++) {
-                // Skip empty rows
-                if (empty($request->donor_id[$i]) && empty($request->bag_volume[$i])) {
-                    continue;
-                }
-
-                $bagDetails[] = [
-                    'donor_id' => $request->donor_id[$i] ?? null,
-                    'donation_date' => $request->donation_date[$i] ?? null,
-                    'blood_group' => $request->blood_group[$i] ?? null,
-                    'bag_volume' => $request->bag_volume[$i] ?? null,
-                    'mini_pool_bag_volume' => $request->mini_pool_bag_volume[$i] ?? null,
-                    'segment_number' => $request->segment_number[$i] ?? null,
-                    'tail_cutting' => $request->tail_cutting[$i] ?? null,
-                ];
-
-                // Add to total volume if it's a mini pool volume entry
-                if (!empty($request->mini_pool_bag_volume[$i])) {
-                    $totalVolume += floatval($request->mini_pool_bag_volume[$i]);
-                }
-            }
-
-            // Create the bag entry
+            // Create the main bag entry
             $bagEntry = BagEntry::create([
-                'blood_centre' => $validated['blood_centre'],
+                'blood_bank_id' => $validated['blood_centre_id'], // Map blood_centre_id to blood_bank_id
                 'work_station' => $validated['work_station'],
                 'date' => $validated['date'],
                 'pickup_date' => $validated['pickup_date'],
                 'ar_no' => $validated['ar_no'],
                 'grn_no' => $validated['grn_no'],
                 'mega_pool_no' => $validated['mega_pool_no'],
-                'bag_details' => $bagDetails,
-                'total_volume' => $totalVolume,
+                'total_mini_pool_volume' => 0, // Will be updated later
+            ]);
+
+            $totalVolume = 0;
+            $currentMiniPoolDetails = [];
+            $miniPoolCount = 0;
+
+            // Process each bag entry (72 entries in total)
+            for ($i = 0; $i < count($request->donor_id); $i++) {
+                // Calculate which mini pool group this belongs to (1-6 for 72 entries)
+                $miniPoolGroup = floor($i / 12) + 1;
+                
+                // Create bag entry detail
+                $bagDetail = DB::table('bag_entries_details')->insertGetId([
+                    'bag_entries_id' => $bagEntry->id,
+                    'no_of_bags' => $i + 1,
+                    'bags_in_mini_pool' => (($i % 12) + 1),
+                    'donor_id' => $request->donor_id[$i],
+                    'donation_date' => $request->donation_date[$i],
+                    'blood_group' => $request->blood_group[$i],
+                    'bag_volume_ml' => $request->bag_volume[$i],
+                    'tail_cutting' => $request->tail_cutting[$i],
+                    'created_by' => auth()->id(),
+                    'updated_by' => auth()->id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $currentMiniPoolDetails[] = $bagDetail;
+
+                // Every 12 entries, create a mini pool entry
+                if (($i + 1) % 12 === 0) {
+                    $miniPoolIndex = floor($i / 12);
+                    if (isset($request->mini_pool_bag_volume[$miniPoolIndex]) && 
+                        isset($request->segment_number[$miniPoolIndex])) {
+                        
+                        $miniPoolVolume = floatval($request->mini_pool_bag_volume[$miniPoolIndex]);
+                        $totalVolume += $miniPoolVolume;
+
+                        // Create mini pool entry
+                        DB::table('bag_entries_mini_pools')->insert([
+                            'bag_entries_id' => $bagEntry->id,
+                            'bag_entries_detail_ids' => json_encode($currentMiniPoolDetails),
+                            'mini_pool_bag_volume' => $miniPoolVolume,
+                            'mini_pool_number' => $request->segment_number[$miniPoolIndex],
+                            'created_by' => auth()->id(),
+                            'updated_by' => auth()->id(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+
+                        // Reset current mini pool details array
+                        $currentMiniPoolDetails = [];
+                        $miniPoolCount++;
+                    }
+                }
+            }
+
+            // Update the total volume in the main entry
+            $bagEntry->update([
+                'total_mini_pool_volume' => $totalVolume
             ]);
 
             DB::commit();

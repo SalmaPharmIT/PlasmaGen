@@ -168,7 +168,7 @@
                             <table class="table table-bordered table-striped table-hover table-sm" id="table-{{ $index }}">
                                 <thead>
                                     <tr style="background-color: #f35c24; color: white;">
-                                        <th>Tube ID</th>
+                                        <th>MINI POOL ID</th>
                                         <th>HIV</th>
                                         <th>HBV</th>
                                         <th>HCV</th>
@@ -232,6 +232,9 @@
                                 <i class="bi bi-table me-1"></i> Test Metadata Summary
                             </div>
                             <div>
+                                <button class="btn btn-sm btn-outline-light me-2" id="saveToDatabase">
+                                    <i class="bi bi-save me-1"></i> SAVE
+                                </button>
                                 <button class="btn btn-sm btn-outline-light me-2" id="exportCSV">
                                     <i class="bi bi-file-earmark-excel me-1"></i> CSV
                                 </button>
@@ -245,7 +248,7 @@
                                 <table class="table table-bordered table-striped table-hover table-sm" id="natTable">
                                     <thead>
                                         <tr style="background-color: #f35c24; color: white;">
-                                            <th>Tube ID</th>
+                                            <th>MINI POOL ID</th>
                                             <th>HIV</th>
                                             <th>HBV</th>
                                             <th>HCV</th>
@@ -254,7 +257,7 @@
                                             <th>Analyzer</th>
                                             <th>Operator</th>
                                             <th>Flags</th>
-                                            <th>Source</th>
+                                            {{-- <th>Source</th> --}}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -277,7 +280,7 @@
                                                 <td>{{ $s['analyzer'] }}</td>
                                                 <td>{{ $s['operator'] }}</td>
                                                 <td>{{ $s['flags'] }}</td>
-                                                <td><small>{{ $s['source'] }}</small></td>
+                                                {{-- <td><small>{{ $s['source'] }}</small></td> --}}
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -494,6 +497,130 @@
 
         $('#exportPDF').on('click', function() {
             natTable.button('.buttons-pdf').trigger();
+        });
+
+        // Add save to database functionality
+        $('#saveToDatabase').on('click', function() {
+            const reports = [];
+            let rowCount = 0;
+            
+            try {
+                natTable.rows().every(function() {
+                    const data = this.data();
+                    if (data && data[0]) { // Check if row has data and mini_pool_id
+                        reports.push({
+                            tube_id: data[0] || '',
+                            HIV: data[1] || '',
+                            HBV: data[2] || '',
+                            HCV: data[3] || '',
+                            result: data[4] ? (data[4].includes('Non-Reactive') ? 'N.R.' : 
+                                    data[4].includes('Reactive') ? 'Reactive' : 
+                                    data[4].includes('Invalid') ? 'Invalid' : data[4]) : '',
+                            timestamp: data[5] || '',
+                            analyzer: data[6] || '',
+                            operator: data[7] || '',
+                            flags: data[8] || ''
+                        });
+                        rowCount++;
+                    }
+                });
+
+                if (reports.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No valid data found to save.'
+                    });
+                    return;
+                }
+
+                // Show loading state
+                const loadingSwal = Swal.fire({
+                    title: 'Saving...',
+                    html: `Processing ${rowCount} records`,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Process in chunks of 50 records
+                const chunkSize = 50;
+                const chunks = [];
+                for (let i = 0; i < reports.length; i += chunkSize) {
+                    chunks.push(reports.slice(i, i + chunkSize));
+                }
+
+                let totalSaved = 0;
+                let totalUpdated = 0;
+                let processedChunks = 0;
+                let hasError = false;
+
+                // Process chunks sequentially
+                const processChunk = async (chunk) => {
+                    try {
+                        const response = await $.ajax({
+                            url: '{{ route("nat-report.save") }}',
+                            method: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                reports: chunk
+                            }
+                        });
+
+                        if (response.success) {
+                            totalSaved += response.saved_count;
+                            totalUpdated += response.updated_count;
+                        }
+                    } catch (error) {
+                        console.error('Chunk processing error:', error);
+                        hasError = true;
+                        throw error;
+                    }
+                };
+
+                // Process all chunks
+                (async () => {
+                    try {
+                        for (let i = 0; i < chunks.length; i++) {
+                            await processChunk(chunks[i]);
+                            processedChunks++;
+                            
+                            // Update loading message
+                            loadingSwal.update({
+                                html: `Processing chunk ${processedChunks} of ${chunks.length}<br>` +
+                                      `Records processed: ${processedChunks * chunkSize} of ${reports.length}`
+                            });
+                        }
+
+                        // Show final result
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            html: `Successfully processed all records<br><br>` +
+                                  `New records: ${totalSaved}<br>` +
+                                  `Updated records: ${totalUpdated}`,
+                            timer: 3000
+                        });
+
+                    } catch (error) {
+                        console.error('Error processing chunks:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while processing the data. Check the console for details.'
+                        });
+                    }
+                })();
+
+            } catch (error) {
+                console.error('Processing error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while preparing the data: ' + error.message
+                });
+            }
         });
 
         // Highlight duplicates functionality

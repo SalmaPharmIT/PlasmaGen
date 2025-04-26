@@ -82,23 +82,71 @@
          </ul>
        </li><!-- End Components Nav -->
 
-       <li class="nav-item">
-         <a class="nav-link collapsed" href="{{ route('newBag.index') }}">
-           <i class="bi bi-box"></i>
-           <span>Bag Entry</span>
-         </a>
-       </li>
+        <!-- PLASMA Menu Section -->
+   
+        <li class="nav-item">
+          <a class="nav-link collapsed" data-bs-target="#plasma-nav" data-bs-toggle="collapse" href="#">
+            <i class="bi bi-droplet"></i><span>Plasma Management</span><i class="bi bi-chevron-down ms-auto"></i>
+          </a>
+          <ul id="plasma-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+              <a href="#">
+                <i class="bi bi-circle"></i><span>Plasma Entry</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ route('plasma.dispensing') }}">
+                <i class="bi bi-circle"></i><span>Plasma Dispensing</span>
+              </a>
+            </li>
+          </ul>
+        </li><!-- End Plasma Management Nav -->
 
-       <li class="nav-item">
-         <a class="nav-link collapsed" href="{{ route('barcode.generate') }}">
-           <i class="bi bi-upc-scan"></i>
-           <span>Generate Barcode</span>
-         </a>
-       </li>
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('newBag.index') }}">
+            <i class="bi bi-box"></i>
+            <span>Bag Entry</span>
+          </a>
+        </li>
 
-       <li class="nav-item">
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('barcode.generate') }}">
+            <i class="bi bi-upc-scan"></i>
+            <span>Generate Barcode</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link collapsed" data-bs-target="#report-nav" data-bs-toggle="collapse" href="#">
+            <i class="bi bi-upload"></i><span>Report Upload</span><i class="bi bi-chevron-down ms-auto"></i>
+          </a>
+          <ul id="report-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+              <a href="{{ route('report.upload', ['type' => 'elisa']) }}">
+                <i class="bi bi-circle"></i><span>ELISA</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ route('nat-report.index') }}">
+                <i class="bi bi-circle"></i><span>NAT</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('entities.settings') }}">
+            <i class="bi bi-gear"></i>
+            <span>Entity Settings</span>
+          </a>
+        </li><!-- End Entity Settings Nav -->
+        @endif
+        @if (Auth::check() && Auth::user()->role_id == 16) 
+        <li class="nav-item">
          <a class="nav-link collapsed" data-bs-target="#report-nav" data-bs-toggle="collapse" href="#">
-           <i class="bi bi-upload"></i><span>Report Upload</span><i class="bi bi-chevron-down ms-auto"></i>
+           <i class="bi bi-upload"></i>
+           <span>Report Upload</span>
+           <i class="bi bi-chevron-down ms-auto"></i>
          </a>
          <ul id="report-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
            <li>
@@ -112,36 +160,8 @@
              </a>
            </li>
          </ul>
-       </li>
-
-       <li class="nav-item">
-         <a class="nav-link collapsed" href="{{ route('entities.settings') }}">
-           <i class="bi bi-gear"></i>
-           <span>Entity Settings</span>
-         </a>
-       </li><!-- End Entity Settings Nav -->
-       @endif
-       @if (Auth::check() && Auth::user()->role_id == 16) 
-       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#report-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-upload"></i>
-          <span>Report Upload</span>
-          <i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="report-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="{{ route('report.upload', ['type' => 'elisa']) }}">
-              <i class="bi bi-circle"></i><span>ELISA</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{ route('nat-report.index') }}">
-              <i class="bi bi-circle"></i><span>NAT</span>
-            </a>
-          </li>
-        </ul>
-      </li><!-- End Report Upload Nav -->
-       @endif
+       </li><!-- End Report Upload Nav -->
+        @endif
         <!-- Registration Menu - Visible Only to Factory Admin (role_id == 12) -->
         @if (Auth::check() && Auth::user()->role_id == 17)
         <li class="nav-item">
@@ -288,7 +308,6 @@
 
       @endif
     @endif
-
     
     <!-- Adding masters for admin -->
     <!-- Master Settings - Visible to Admin Roles -->

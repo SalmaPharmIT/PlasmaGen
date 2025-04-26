@@ -13,7 +13,7 @@ use App\Http\Controllers\ReportVisitsController;
 use App\Http\Controllers\ReportsMasterController;
 use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\BagEntryController;
-use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ELISAReportController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\NATReportController;
 
@@ -216,10 +216,10 @@ Route::group(['middleware' => ['auth']], function () {
     /* *********************  Report Visits Ends ********************************* */
 
     /* ********************* Report Upload Routes ********************************* */
-    Route::get('/report/upload', [ReportController::class, 'upload'])->name('report.upload')->middleware('auth');
-    Route::post('/report/store', [ReportController::class, 'store'])->name('report.store')->middleware('auth');
-    Route::post('/report/save', [ReportController::class, 'save'])->name('report.save');
-    Route::post('/report/check-existing', [ReportController::class, 'checkExisting'])->name('report.check-existing');
+    Route::get('/report/upload', [ELISAReportController::class, 'upload'])->name('report.upload')->middleware('auth');
+    Route::post('/report/store', [ELISAReportController::class, 'store'])->name('report.store')->middleware('auth');
+    Route::post('/report/save', [ELISAReportController::class, 'save'])->name('report.save');
+    Route::post('/report/check-existing', [ELISAReportController::class, 'checkExisting'])->name('report.check-existing');
     /* ********************* Report Upload Routes Ends ********************************* */
 
     /* ********************* Barcode Generator Routes ********************************* */
@@ -256,7 +256,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::middleware(['auth'])->group(function () {
         Route::get('/nat-report', [NATReportController::class, 'index'])->name('nat-report.index');
         Route::post('/nat-report/generate', [NATReportController::class, 'generateReport'])->name('nat-report.generate');
+        Route::post('/nat-report/save', [NATReportController::class, 'saveReports'])->name('nat-report.save');
     });
     /* ********************* NAT Report Routes Ends ********************************* */
 });
+
+// Plasma Management Routes
+Route::get('/plasma/dispensing', function () {
+    return view('factory.plasma_management.plasma_dispensing');
+})->name('plasma.dispensing');
 

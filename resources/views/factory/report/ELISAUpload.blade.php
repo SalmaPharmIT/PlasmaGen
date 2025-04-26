@@ -735,25 +735,25 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                if (!form.checkValidity() || !validateFiles(fileInput)) {
+                if (!form.checkValidity()) {
                     e.stopPropagation();
                     form.classList.add('was-validated');
                     return;
                 }
-                
+
+                const formData = new FormData(form);
+
+                // Show loading state
                 uploadBtn.disabled = true;
                 spinner.classList.remove('d-none');
                 progressBar.style.display = 'block';
                 progressBarInner.style.width = '0%';
                 progressBarInner.textContent = '0%';
 
-                const formData = new FormData(form);
-                
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', form.action, true);
-                xhr.setRequestHeader('X-CSRF-TOKEN', form.querySelector('input[name="_token"]').value);
-                xhr.setRequestHeader('Accept', 'application/json');
 
+                // Set up progress handling
                 xhr.upload.onprogress = function(e) {
                     if (e.lengthComputable) {
                         const percentComplete = (e.loaded / e.total) * 100;
@@ -767,31 +767,38 @@
                     spinner.classList.add('d-none');
                     progressBar.style.display = 'none';
 
-                    if (xhr.status === 200) {
-                        const data = JSON.parse(xhr.responseText);
-                        if (data.success) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        
+                        if (xhr.status === 200 && response.success) {
                             // Add new results to existing ones
-                            data.data.forEach(result => {
-                                if (result.test_type) {
-                                    allResults[result.test_type].push(result);
-                                }
-                            });
-                            showResults();
-                            showToast('success', data.message);
-                            form.reset();
+                            if (response.data) {
+                                response.data.forEach(result => {
+                                    if (result.test_type) {
+                                        allResults[result.test_type].push(result);
+                                    }
+                                });
+                                showResults();
+                                showToast('success', response.message);
+                                form.reset();
+                            }
                         } else {
-                            showToast('error', data.message);
+                            const errorMessage = response.message || 'An error occurred while uploading the report.';
+                            showToast('error', errorMessage);
+                            console.error('Upload error:', response);
                         }
-                    } else {
-                        showToast('error', 'An error occurred while uploading the report.');
+                    } catch (error) {
+                        console.error('Error parsing response:', error);
+                        showToast('error', 'An error occurred while processing the server response.');
                     }
                 };
 
-                xhr.onerror = function() {
+                xhr.onerror = function(error) {
                     uploadBtn.disabled = false;
                     spinner.classList.add('d-none');
                     progressBar.style.display = 'none';
-                    showToast('error', 'An error occurred while uploading the report.');
+                    console.error('Upload error:', error);
+                    showToast('error', 'A network error occurred while uploading the report.');
                 };
 
                 xhr.send(formData);

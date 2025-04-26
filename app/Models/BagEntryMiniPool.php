@@ -6,55 +6,44 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BagEntry extends Model
+class BagEntryMiniPool extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'bag_entries_mini_pools';
+
     protected $fillable = [
-        'blood_bank_id',
-        'work_station',
-        'date',
-        'pickup_date',
-        'ar_no',
-        'grn_no',
-        'mega_pool_no',
-        'total_mini_pool_volume',
+        'bag_entries_id',
+        'bag_entries_detail_ids',
+        'mini_pool_bag_volume',
+        'mini_pool_number',
         'created_by',
         'updated_by'
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'pickup_date' => 'date',
-        'total_mini_pool_volume' => 'decimal:2'
+        'bag_entries_detail_ids' => 'array',
+        'mini_pool_bag_volume' => 'decimal:2'
     ];
 
     /**
-     * Get the blood bank that owns the bag entry.
+     * Get the bag entry that owns this mini pool.
      */
-    public function bloodBank()
+    public function bagEntry()
     {
-        return $this->belongsTo(Entity::class, 'blood_bank_id');
+        return $this->belongsTo(BagEntry::class, 'bag_entries_id');
     }
 
     /**
-     * Get the details for this bag entry.
+     * Get the bag entry details associated with this mini pool.
      */
-    public function details()
+    public function bagEntryDetails()
     {
-        return $this->hasMany(BagEntryDetail::class, 'bag_entries_id');
+        return $this->belongsToMany(BagEntryDetail::class, null, null, null, 'bag_entries_detail_ids');
     }
 
     /**
-     * Get the mini pools for this bag entry.
-     */
-    public function miniPools()
-    {
-        return $this->hasMany(BagEntryMiniPool::class, 'bag_entries_id');
-    }
-
-    /**
-     * Get the user who created the bag entry.
+     * Get the user who created the record.
      */
     public function creator()
     {
@@ -62,7 +51,7 @@ class BagEntry extends Model
     }
 
     /**
-     * Get the user who last updated the bag entry.
+     * Get the user who last updated the record.
      */
     public function updater()
     {
@@ -82,4 +71,4 @@ class BagEntry extends Model
             $model->updated_by = auth()->id();
         });
     }
-}
+} 

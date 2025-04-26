@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Validator;
+use App\Models\NATTestReport;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class NATReportController extends Controller
 {
@@ -15,7 +19,7 @@ class NATReportController extends Controller
 
     public function index()
     {
-        return view('nat-report-upload');
+        return view('factory.report.NATUpload');
     }
 
     public function generateReport(Request $request)
@@ -55,7 +59,7 @@ class NATReportController extends Controller
 
             $groupedSamples = $this->groupSamples($allSamples);
 
-            return view('nat-report-upload', [
+            return view('factory.report.NATUpload', [
                 'metadataBlocks' => $metadataBlocks,
                 'groupedSamples' => $groupedSamples
             ]);
@@ -225,5 +229,90 @@ class NATReportController extends Controller
         if (stripos($row, 'validated by') !== false || stripos($row, 'validated') !== false) $metadata['Validated by'] = $row;
         if (stripos($row, 'validated on') !== false) $metadata['Validated on'] = $row;
         if (stripos($row, 'control') !== false) $metadata['Negative control (batch) ID'] = $row;
+    }
+
+    public function saveReports(Request $request)
+    {
+      
+        
+        try {
+            Log::info('Starting saveReports method');
+            Log::info('Received data count: ' . count($request->input('reports', [])));
+
+            $reports = $request->input('reports', []);
+            $savedCount = 0;
+            $updatedCount = 0;
+            
+            foreach ($reports as $report) {
+                try {
+                    // Convert N.R. to nonreactive and handle null values
+                    $hiv = isset($report['HIV']) ? (strtolower(trim($report['HIV'])) === 'n.r.' ? 'nonreactive' : strtolower(trim($report['HIV']))) : null;
+                    $hbv = isset($report['HBV']) ? (strtolower(trim($report['HBV'])) === 'n.r.' ? 'nonreactive' : strtolower(trim($report['HBV']))) : null;
+                    $hcv = isset($report['HCV']) ? (strtolower(trim($report['HCV'])) === 'n.r.' ? 'nonreactive' : strtolower(trim($report['HCV']))) : null;
+                    $status = isset($report['result']) ? (strtolower(trim($report['result'])) === 'n.r.' ? 'nonreactive' : strtolower(trim($report['result']))) : 'nonreactive';
+
+                    // Create array of data
+                    $data = [
+                        'mini_pool_id' => $report['tube_id'],
+                        'hiv' => $hiv,
+                        'hbv' => $hbv,
+                        'hcv' => $hcv,
+                        'status' => $status,
+                        'result_time' => $report['timestamp'] ?? null,
+                        'analyzer' => $report['analyzer'] ?? null,
+                        'operator' => $report['operator'] ?? null,
+                        'flags' => $report['flags'] ?? null,
+                        'timestamp' => now(),
+                        'created_by' => Auth::id()
+                    ];
+
+                    Log::info('Processing record:', ['mini_pool_id' => $data['mini_pool_id']]);
+
+                    // Check if record exists
+                    $existingRecord = \App\Models\NATTestReport::where('mini_pool_id', $data['mini_pool_id'])->first();
+
+                    if ($existingRecord) {
+                        // Update existing record
+                        $existingRecord->update($data);
+                        $updatedCount++;
+                        Log::info('Updated existing record:', ['mini_pool_id' => $data['mini_pool_id']]);
+                    } else {
+                        // Create new record
+                        $record = new \App\Models\NATTestReport($data);
+                        $record->save();
+                        $savedCount++;
+                        Log::info('Created new record:', ['mini_pool_id' => $data['mini_pool_id']]);
+                    }
+                } catch (Exception $e) {
+                    Log::error('Error processing individual record: ' . $e->getMessage());
+                    Log::error('Record data: ', $report);
+                    continue;
+                }
+            }
+
+            Log::info('Operation completed', [
+                'new_records' => $savedCount,
+                'updated_records' => $updatedCount
+            ]);
+
+           
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully processed NAT test reports (New: $savedCount, Updated: $updatedCount)",
+                'saved_count' => $savedCount,
+                'updated_count' => $updatedCount
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error in saveReports: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+        
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving NAT test reports: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

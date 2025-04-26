@@ -164,6 +164,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                
                                     <div class="col-12">
                                         <div class="card shadow-sm">
                                             <div class="card-header text-white" style="background-color: #f35c24">
@@ -369,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <td style="background-color: #f8f9fa;">Mini Pool No.</td>
                                         <td>
                                             <div class="text-center py-2">
-                                                <svg id="minipool_${minipool}"></svg>
+                                                <svg id="minipool_detailed_${minipool}"></svg>
                                             </div>
                                             <div class="text-center">
                                                 <span>${minipool}</span>
@@ -392,7 +393,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 document.getElementById('minipoolBarcodes').innerHTML = minipoolsHtml;
 
-                // Generate compact barcode labels
+                // Generate barcodes for detailed mini pool labels
+                data.minipools.forEach(minipool => {
+                    JsBarcode(`#minipool_detailed_${minipool}`, minipool, {
+                        format: "code128",
+                        width: 2,
+                        height: 50,
+                        displayValue: false,
+                        margin: 2,
+                        textMargin: 0
+                    });
+                });
+
+                // Add mega pool compact barcodes to minipoolBarcodesCompact
+                const megapoolCompactHtml = `
+                    <div class="col-md-2 col-sm-4 mb-2">
+                        <div class="text-center">
+                            <div style="font-size: 12px; margin-bottom: 5px;">MEGA POOL No.</div>
+                            <div class="text-center py-2">
+                                <svg id="megapool_compact_1"></svg>
+                            </div>
+                            <div class="text-center">
+                                <span>${data.megapool}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 mb-2">
+                        <div class="text-center">
+                            <div style="font-size: 12px; margin-bottom: 5px;">MEGA POOL No.</div>
+                            <div class="text-center py-2">
+                                <svg id="megapool_compact_2"></svg>
+                            </div>
+                            <div class="text-center">
+                                <span>${data.megapool}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Generate mini pool compact barcodes HTML
                 const minipoolsCompactHtml = data.minipools.map(minipool => `
                     <div class="col-md-2 col-sm-4 mb-2">
                         <div class="text-center">
@@ -407,21 +446,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `).join('');
 
-                document.getElementById('minipoolBarcodesCompact').innerHTML = minipoolsCompactHtml;
+                // Combine mega pool and mini pool compact barcodes
+                document.getElementById('minipoolBarcodesCompact').innerHTML = megapoolCompactHtml + minipoolsCompactHtml;
 
-                // Generate barcodes for detailed labels
-                data.minipools.forEach(minipool => {
-                    JsBarcode(`#minipool_${minipool}`, minipool, {
-                        format: "code128",
-                        width: 1,
-                        height: 40,
-                        displayValue: false,
-                        margin: 2,
-                        textMargin: 0
-                    });
+                // Generate barcodes for mega pool compact labels
+                JsBarcode("#megapool_compact_1", data.megapool, {
+                    format: "code128",
+                    width: 1,
+                    height: 30,
+                    displayValue: false,
+                    margin: 2,
+                    textMargin: 0
+                });
+                JsBarcode("#megapool_compact_2", data.megapool, {
+                    format: "code128",
+                    width: 1,
+                    height: 30,
+                    displayValue: false,
+                    margin: 2,
+                    textMargin: 0
                 });
 
-                // Generate barcodes for compact labels
+                // Generate barcodes for mini pool compact labels
                 data.minipools.forEach(minipool => {
                     JsBarcode(`#minipool_compact_${minipool}`, minipool, {
                         format: "code128",
