@@ -203,6 +203,7 @@
                         searchable: false
                     }
                 ],
+                order: [[0, 'DESC']], // Sort by the first column (ID) in descending order
                 pageLength: 10,
                 lengthMenu: [5, 10, 25, 50, 100],
                 language: {
