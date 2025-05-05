@@ -36,7 +36,7 @@
                 @if($roleId == 2)
                     <button type="submit" name="status" value="approved" id="approveBtn" class="btn btn-success me-3">Approve</button>
                 @endif
-                @if($roleId == 6)
+                @if($roleId == 6 || $roleId == 19)
                     <button type="submit" name="status" value="accepted" id="acceptBtn" class="btn btn-primary me-3">Accept</button>
                 @endif
                 <button type="submit" name="status" value="rejected" id="rejectBtn" class="btn btn-danger">Reject</button>

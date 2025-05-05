@@ -801,8 +801,11 @@ class ReportVisitsController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-     public function getCoreSourcingBloodBanks()
+     public function getCoreSourcingBloodBanks(Request $request)
      {
+        $visitId = $request->input('visit_id');
+        Log::info('Fetching core sourcing blood banks for visit:', ['visit_id' => $visitId]);
+
          // Retrieve the token from the session
          $token = session()->get('api_token');
  
@@ -821,10 +824,18 @@ class ReportVisitsController extends Controller
  
          try {
              // Make the API request to fetch Core Sourcing Blood Banks
-             $response = Http::withHeaders([
-                 'Authorization' => 'Bearer ' . $token,
-                 'Accept'        => 'application/json',
-             ])->get($apiUrl);
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . session('api_token'),
+                'Accept'        => 'application/json',
+            ])->get($apiUrl, [
+                'visit_id' => $visitId,   // ← forward it here
+            ]);
+
+            Log::info('Core Blood Banks API call', [
+                'url'    => $apiUrl,
+                'params' => ['visit_id' => $visitId],
+                'status' => $response->status(),
+            ]);    
  
              Log::info('Core Sourcing Blood Banks Fetch API Response', [
                  'status' => $response->status(),

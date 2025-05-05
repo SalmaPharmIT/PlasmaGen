@@ -769,6 +769,8 @@
                     <!-- Form to Add Additional Blood Bank Information -->
                     <h5><strong>Add Blood Bank Information</strong></h5>
                     <input type="hidden" name="visit_id" id="sourcingVisitId">
+                    <input type="hidden" name="sourcing_city_latitude" id="sourcing_city_latitude">
+                    <input type="hidden" name="sourcing_city_longitude" id="sourcing_city_longitude">
                     <input type="hidden" name="sourcing_user_latitude" id="sourcing_user_latitude">
                     <input type="hidden" name="sourcing_user_longitude" id="sourcing_user_longitude">
                     
@@ -2215,6 +2217,7 @@
          $('#updateSourcingVisitModal').on('show.bs.modal', function (event) {
             const modal = $(this);
             const visitData = modal.data('data-visit'); // Extract info from data-* attributes
+            const visitId   = visitData.id;   // ← here
 
             // Check if visitData exists
             if (!visitData) {
@@ -2231,6 +2234,10 @@
             modal.find('#sourcingCityDisplay').text(escapeHtml(extendedProps.sourcing_city_name) || 'N/A');
             modal.find('#sourcingAddedByDisplay').text(escapeHtml(extendedProps.created_by_name) || 'N/A');
 
+            
+            modal.find('#sourcing_city_latitude').val(extendedProps.city_latitude || '');
+            modal.find('#sourcing_city_longitude').val(extendedProps.city_longitude || '');
+
             // Set the visit ID in the hidden input
             modal.find('#sourcingVisitId').val(visitData.id || '');
 
@@ -2245,7 +2252,7 @@
             // Fetch Core Blood Bank Details
             // fetchCoreBloodBanks(modal);
             // Call your function to fetch core blood banks.
-            fetchCoreBloodBanks().done(function(response) {
+            fetchCoreBloodBanks(visitId).done(function(response) {
                 if(response.success) {
                     coreBloodBanks = response.data;
                     // Populate the dropdown only once if empty.
@@ -2780,6 +2787,63 @@
         $('#updateSourcingVisitForm').on('submit', function(e) {
             e.preventDefault();
 
+            // Show loading alert
+            Swal.fire({
+                    title: 'Submitting...',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+             // If location is enabled, show a loading modal while fetching/calculating location data
+             if (entityFeatures.location_enabled.toLowerCase() === 'yes') {
+             
+                // Check if user's location is available
+                if (!userLocation) {
+                    Swal.close(); // Close loading alert
+                    Swal.fire('Location Required', 'Please allow location access to proceed.', 'warning');
+                    return; // Exit form submission if location data is missing
+                }
+
+                // Get blood bank coordinates from hidden inputs
+                const cityLat = $('#sourcing_city_latitude').val();
+                const cityLon = $('#sourcing_city_longitude').val();
+
+                // const cityLat = 13.3606459;
+                // const cityLon = 74.7885524;
+
+
+                // console.log('City Latitude:', cityLat);
+                // console.log('City Longitude:', cityLon);
+                // console.log('User Latitude:', userLocation.latitude);
+                // console.log('User Longitude:', userLocation.longitude);
+
+                if (isNaN(cityLat) || isNaN(cityLon)) {
+                    Swal.close(); // Close loading alert
+                    Swal.fire('Error', 'City location data is missing.', 'error');
+                    return;
+                }
+
+                // Calculate distance using your calculateDistance() helper function
+                const distance = calculateDistance(userLocation.latitude, userLocation.longitude, cityLat, cityLon);
+                console.log('Distance to City:', distance, 'km');
+
+                const kmBound = parseFloat(entityFeatures.km_bound);
+                if (distance > kmBound) {
+                    Swal.close(); // Close loading alert
+                    Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the City.`, 'error');
+                    return;
+                }
+
+                // Close the loading modal once location data has been processed
+               // Swal.close();
+            }
+            else {
+                console.log('Location check not required. Skipping.');
+            }
+
             const formData = new FormData(this);
             const visitId = $('#sourcingVisitId').val();
 
@@ -2864,25 +2928,48 @@
 
 
          // Function to fetch Core Blood Bank Lits when modal opens
-         function fetchCoreBloodBanks(modal) {
+        //  function fetchCoreBloodBanks(modal) {
+        //     return $.ajax({
+        //         url: "{{ route('visits.getCoreSourcingBloodBanks') }}",
+        //         type: 'GET',
+        //         dataType: 'json',
+        //         success: function(response) {
+        //             if(response.success) {
+        //                 coreBloodBanks = response.data;
+        //                 console.log('coreBloodBanks:', coreBloodBanks);
+
+                       
+        //             } else {
+        //                 Swal.fire('Error', response.message, 'error');
+        //             }
+        //         },
+        //         error: function(xhr, status, error) {
+        //             console.error("Error fetching CoreBloodBanks:", error);
+        //             Swal.fire('Error', 'An error occurred while fetching CoreBloodBanks.', 'error');
+        //         }
+        //     });
+        // }
+
+        function fetchCoreBloodBanks(visitId) {
             return $.ajax({
                 url: "{{ route('visits.getCoreSourcingBloodBanks') }}",
                 type: 'GET',
                 dataType: 'json',
+                data: { visit_id: visitId },    // ← pass it here
                 success: function(response) {
                     if(response.success) {
                         coreBloodBanks = response.data;
                         console.log('coreBloodBanks:', coreBloodBanks);
 
-                       
+                        
                     } else {
                         Swal.fire('Error', response.message, 'error');
                     }
-                },
+            },
                 error: function(xhr, status, error) {
-                    console.error("Error fetching CoreBloodBanks:", error);
-                    Swal.fire('Error', 'An error occurred while fetching CoreBloodBanks.', 'error');
-                }
+                        console.error("Error fetching CoreBloodBanks:", error);
+                        Swal.fire('Error', 'An error occurred while fetching CoreBloodBanks.', 'error');
+            }
             });
         }
 

@@ -200,6 +200,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/reports/getTourPlannerDateWiseSummary', [ReportsMasterController::class, 'getTourPlannerDateWiseSummaryData'])->name('reports.getTourPlannerDateWiseSummary');
     Route::get('/reports/userExpensesSummary', [ReportsMasterController::class, 'userExpensesSummaryIndex'])->name('reports.user_expenses_summary');
     Route::post('/reports/getUserExpensesSummary', [ReportsMasterController::class, 'getUserExpensesSummaryData'])->name('reports.getUserExpensesSummary');
+    Route::get('/reports/dcrSummary', [ReportsMasterController::class, 'dcrSummaryIndex'])->name('reports.dcr_summary');
+    Route::post('/reports/getUserDCRSummary', [ReportsMasterController::class, 'getUserDCRSummaryData'])->name('reports.getUserDCRSummary');
     /* *********************  Report Visits Ends ********************************* */
 
 
