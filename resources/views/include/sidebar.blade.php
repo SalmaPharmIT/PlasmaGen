@@ -90,29 +90,29 @@
           </a>
           <ul id="plasma-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             <li>
-              <a href="#">
+              <a href="{{ route('plasma.entry') }}">
                 <i class="bi bi-circle"></i><span>Plasma Entry</span>
               </a>
             </li>
             <li>
-              <a href="{{ route('plasma.dispensing') }}">
-                <i class="bi bi-circle"></i><span>Plasma Dispensing</span>
+              <a href="{{ route('plasma.generate-ar-no') }}">
+                <i class="bi bi-circle"></i><span>AR.No Generate</span>
               </a>
             </li>
           </ul>
         </li><!-- End Plasma Management Nav -->
 
         <li class="nav-item">
-          <a class="nav-link collapsed" href="{{ route('newBag.index') }}">
-            <i class="bi bi-box"></i>
-            <span>Bag Entry</span>
-          </a>
-        </li>
-
-        <li class="nav-item">
           <a class="nav-link collapsed" href="{{ route('barcode.generate') }}">
             <i class="bi bi-upc-scan"></i>
             <span>Generate Barcode</span>
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('newBag.index') }}">
+            <i class="bi bi-box"></i>
+            <span>Bag Entry</span>
           </a>
         </li>
 
@@ -131,9 +131,37 @@
                 <i class="bi bi-circle"></i><span>NAT</span>
               </a>
             </li>
+            {{-- <li>
+              <a href="{{ route('factory.report.plasma_despense') }}">
+                <i class="bi bi-circle"></i><span>Plasma Despense</span>
+              </a>
+            </li> --}}
           </ul>
         </li>
-
+        <!-- Report Menu Section -->
+        <li class="nav-item">
+          <a class="nav-link collapsed" data-bs-target="#report-menu-nav" data-bs-toggle="collapse" href="#">
+            <i class="bi bi-file-text"></i><span>Reports</span><i class="bi bi-chevron-down ms-auto"></i>
+          </a>
+          <ul id="report-menu-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+              <a href="{{ route('factory.generate_report.mega_pool_mini_pool') }}">
+                <i class="bi bi-circle"></i><span>Mega Pool Mini Pool</span>
+              </a>
+            </li>
+          
+            {{-- <li>
+              <a href="{{ route('factory.generate_report.sub_mini_pool') }}">
+                <i class="bi bi-circle"></i><span>Sub Mini Pool</span>
+              </a>
+            </li> --}}
+            <li>
+              <a href="{{ route('factory.generate_report.plasma_dispensing') }}">
+                <i class="bi bi-circle"></i><span>Plasma Despense List</span>
+              </a>
+            </li>
+          </ul>
+        </li><!-- End Report Menu Nav -->
         <li class="nav-item">
           <a class="nav-link collapsed" href="{{ route('entities.settings') }}">
             <i class="bi bi-gear"></i>
@@ -161,6 +189,7 @@
            </li>
          </ul>
        </li><!-- End Report Upload Nav -->
+       
         @endif
         <!-- Registration Menu - Visible Only to Factory Admin (role_id == 12) -->
         @if (Auth::check() && Auth::user()->role_id == 17)
@@ -389,7 +418,6 @@
       </li>
       <!-- End Add Expenses -->
     @endif
- 
 
    <!-- Add more sidebar items as needed -->
 

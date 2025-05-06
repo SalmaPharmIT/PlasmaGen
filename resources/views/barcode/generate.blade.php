@@ -35,13 +35,13 @@
                                     <i class="bi bi-hash me-1"></i>A.R. Number
                                 </label>
                                 <div class="input-group">
-                                    <input type="text" 
-                                           class="form-control" 
+                                    <select class="form-select" 
                                            id="ar_number" 
                                            name="ar_number" 
-                                           required
-                                           placeholder="Enter A.R. Number">
-                                    <div class="invalid-feedback">Please enter A.R. Number.</div>
+                                           required>
+                                        <option value="">Select A.R. Number</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select A.R. Number.</div>
                                 </div>
                             </div>
 
@@ -191,7 +191,10 @@
                             </div>
                         </div>
                         <div class="text-end mb-3">
-                            <button type="button" class="btn btn-primary" onclick="printBarcodes()">
+                            <button type="button" class="btn btn-primary" onclick="saveBarcodes()">
+                                <i class="bi bi-printer me-1"></i>Save Barcodes
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="printBarcodes()">
                                 <i class="bi bi-printer me-1"></i>Print Barcodes
                             </button>
                         </div>
@@ -278,6 +281,24 @@
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Fetch A.R. Numbers and populate dropdown
+    fetch('{{ route("barcode.ar-numbers") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const arSelect = document.getElementById('ar_number');
+                data.data.forEach(arNumber => {
+                    const option = document.createElement('option');
+                    option.value = arNumber;
+                    option.textContent = arNumber;
+                    arSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching A.R. Numbers:', error);
+        });
+
     const form = document.getElementById('barcodeForm');
     
     form.addEventListener('submit', function(e) {
@@ -494,6 +515,69 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function saveBarcodes() {
+    // Get the form data
+    const workstationId = document.getElementById('workstation_id').value;
+    const arNumber = document.getElementById('ar_number').value;
+    const refNumber = document.getElementById('ref_number').value;
+    
+    // Get the mega pool and mini pool numbers from the page
+    const megaPool = document.getElementById('megapoolNumber1').textContent;
+    const miniPools = [];
+    
+    // Get all mini pool numbers
+    document.querySelectorAll('#minipoolBarcodes .card').forEach(card => {
+        const minipoolNumber = card.querySelector('span').textContent;
+        miniPools.push(minipoolNumber);
+    });
+
+    // Send data to server
+    fetch('{{ route("barcode.save") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            workstation_id: workstationId,
+            ar_number: arNumber,
+            ref_number: refNumber,
+            mega_pool: megaPool,
+            mini_pools: miniPools
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Barcodes saved successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#0c4c90'
+            });
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Error saving barcodes: ' + data.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#0c4c90'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'An error occurred while saving barcodes.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#0c4c90'
+        });
+    });
+}
 
 function printBarcodes() {
     window.print();

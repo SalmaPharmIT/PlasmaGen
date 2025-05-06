@@ -16,6 +16,8 @@ use App\Http\Controllers\BagEntryController;
 use App\Http\Controllers\ELISAReportController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\NATReportController;
+use App\Http\Controllers\PlasmaController;
+use App\Http\Controllers\ReportMiniPoolMegaPoolController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -181,6 +183,7 @@ Route::group(['middleware' => ['auth']], function () {
 
 
     Route::get('/dashboard/getDashboardData', [DashboardController::class, 'getDashboardData'])->name('dashboard.getDashboardData');
+    Route::get('/dashboard/getFactoryDashboardData', [DashboardController::class, 'getFactoryDashboardData'])->name('dashboard.getFactoryDashboardData');
     Route::get('/dashboard/getDashboardGraphData', [DashboardController::class, 'getDashboardGraphData'])->name('dashboard.getDashboardGraphData');
     Route::get('/dashboard/getDashboardBloodBanksMapData', [DashboardController::class, 'getDashboardBloodBanksMapData'])->name('dashboard.getDashboardBloodBanksMapData');
 
@@ -225,7 +228,9 @@ Route::group(['middleware' => ['auth']], function () {
     /* ********************* Barcode Generator Routes ********************************* */
     Route::middleware(['auth'])->group(function () {
         Route::get('/barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
-        Route::post('/barcode/generate-codes', [BarcodeController::class, 'generateCodes'])->name('barcode.generate.codes');
+        Route::post('/barcode/generate/codes', [BarcodeController::class, 'generateCodes'])->name('barcode.generate.codes');
+        Route::post('/barcode/save', [BarcodeController::class, 'saveBarcodes'])->name('barcode.save');
+        Route::get('/barcode/ar-numbers', [BarcodeController::class, 'getArNumbers'])->name('barcode.ar-numbers');
     });
     /* ********************* Barcode Generator Routes Ends ********************************* */
 
@@ -245,6 +250,20 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/check-mega-pool/{megaPoolNo}', [BagEntryController::class, 'checkMegaPool'])->name('check.mega.pool')->middleware('auth');
     /* ********************* New Bag Entry Routes Ends ********************************* */
 
+    // Plasma Management Routes
+    Route::prefix('plasma')->group(function () {
+        Route::get('/entry', [PlasmaController::class, 'plasmaEntry'])->name('plasma.entry');
+        Route::post('/store', [PlasmaController::class, 'store'])->name('plasma.store');
+        Route::get('/dispensing', [PlasmaController::class, 'dispensing'])->name('plasma.dispensing');
+        Route::get('/generate-ar-no', [PlasmaController::class, 'generateArNo'])->name('plasma.generate-ar-no');
+        Route::post('/update-ar-no', [PlasmaController::class, 'updateArNo'])->name('plasma.update-ar-no');
+        Route::get('/get-by-ar-no/{ar_no}', [PlasmaController::class, 'getByArNo'])->name('plasma.get-by-ar-no')->where('ar_no', '.*');
+        Route::get('/get-ar-numbers', [PlasmaController::class, 'getArNumbers'])->name('plasma.get-ar-numbers');
+    });
+
+    // Add the API route for blood banks
+    Route::get('/api/plasma/bloodbanks', [PlasmaController::class, 'getBloodBanks'])->name('api.plasma.bloodbanks');
+
     // Bag Entry Routes
     Route::middleware(['auth'])->group(function () {
         Route::get('/bag-entries', [BagEntryController::class, 'index'])->name('bag-entries.index');
@@ -261,8 +280,20 @@ Route::group(['middleware' => ['auth']], function () {
     /* ********************* NAT Report Routes Ends ********************************* */
 });
 
-// Plasma Management Routes
-Route::get('/plasma/dispensing', function () {
-    return view('factory.plasma_management.plasma_dispensing');
-})->name('plasma.dispensing');
+// Factory Generate Report Routes
+Route::get('/factory/generate-report/mega-pool-mini-pool', [ReportMiniPoolMegaPoolController::class, 'index'])
+    ->name('factory.generate_report.mega_pool_mini_pool');
+Route::post('/factory/generate-report/fetch-mega-pool-data', [ReportMiniPoolMegaPoolController::class, 'fetchMegaPoolData'])
+    ->name('factory.generate_report.fetch_mega_pool_data');
 
+Route::get('/factory/generate-report/sub-mini-pool', function () {
+    return view('factory.generate_report.sub_mini_pool');
+})->name('factory.generate_report.sub_mini_pool');
+
+Route::get('/factory/generate-report/plasma_dispensing', function () {
+    return view('factory.generate_report.plasma_dispensing');
+})->name('factory.generate_report.plasma_dispensing');
+
+/* *********************  Factory Report Routes Start ********************************* */
+Route::get('/factory/report/plasma-despense', [PlasmaController::class, 'despense'])->name('factory.report.plasma_despense');
+/* *********************  Factory Report Routes Ends ********************************* */

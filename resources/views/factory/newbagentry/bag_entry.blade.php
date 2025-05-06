@@ -383,6 +383,14 @@
                 <div class="row g-2 mb-2">
                     <div class="col-md-3">
                         <div class="form-group">
+                            <label class="small mb-1">A.R. No.</label>
+                            <select class="form-control form-control-sm select2-ar-no" name="ar_no" required>
+                                <option value="">Select A.R. No.</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
                             <label class="small mb-1">Blood Centre Name & City</label>
                             <div>
                                 <select class="form-control form-control-sm select2" name="blood_centre_id" required>
@@ -417,12 +425,7 @@
                             <input type="date" class="form-control form-control-sm" name="pickup_date" required>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label class="small mb-1">A.R. No.</label>
-                            <input type="text" class="form-control form-control-sm" name="ar_no" required>
-                        </div>
-                    </div>
+                
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="small mb-1">GRN No.</label>
@@ -490,8 +493,8 @@
                                 @endif
                                 <td class="p-0 text-center">
                                     <select class="form-select form-select-sm border-0 px-1" name="tail_cutting[]">
-                                        <option value="Yes">Yes</option>
                                         <option value="No">No</option>
+                                        <option value="Yes">Yes</option>  
                                     </select>
                                 </td>
                             </tr>
@@ -524,11 +527,86 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Initialize Select2
+        // Initialize Select2 for Blood Centre
         $('.select2').select2({
             placeholder: "Select Blood Centre",
             allowClear: true,
             width: '100%'
+        });
+
+        // Initialize Select2 for AR No.
+        $('.select2-ar-no').select2({
+            placeholder: "Select A.R. No.",
+            allowClear: true,
+            width: '100%',
+            ajax: {
+                url: '/plasma/get-ar-numbers',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        search: params.term,
+                        page: params.page || 1
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.results || []
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 1
+        });
+
+        // Handle AR No. change event
+        $('.select2-ar-no').on('select2:select', function(e) {
+            const data = e.params.data;
+            if (!data.id) return;
+
+            // Show loader
+            $('#loader').show();
+
+            // Fetch plasma entry details
+            $.ajax({
+                url: `/plasma/get-by-ar-no/${encodeURIComponent(data.id)}`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        // Set blood bank
+                        $('select[name="blood_centre_id"]').val(response.data.blood_bank_id).trigger('change');
+                        
+                        // Set GRN No.
+                        $('input[name="grn_no"]').val(response.data.grn_no);
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'Failed to fetch entry details'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Failed to fetch entry details'
+                    });
+                },
+                complete: function() {
+                    // Hide loader
+                    $('#loader').hide();
+                }
+            });
+        });
+
+        // Handle AR No. clear event
+        $('.select2-ar-no').on('select2:clear', function() {
+            // Clear blood bank and GRN No.
+            $('select[name="blood_centre_id"]').val('').trigger('change');
+            $('input[name="grn_no"]').val('');
         });
 
         // Blood Group Dropdown Functionality

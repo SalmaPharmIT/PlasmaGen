@@ -126,11 +126,11 @@
                             <td id="total_requested" class="text-center">0.00</td>
                             <td id="total_issued" class="text-center">0.00</td>
                             <td colspan="2"></td>
-                            <td class="text-center">
+                            {{-- <td class="text-center">
                                 <button type="button" class="btn btn-success btn-sm" id="addRow">
                                     <i class="bi bi-plus-circle"></i> Add
                                 </button>
-                            </td>
+                            </td> --}}
                         </tr>
                     </tbody>
                 </table>

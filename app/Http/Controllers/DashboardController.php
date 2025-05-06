@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth; 
+use App\Models\PlasmaEntry;
+use App\Models\BagEntryDetail;
 
 class DashboardController extends Controller
 {
@@ -18,6 +20,11 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user(); // Retrieve the authenticated user
+
+        // Check if user has role_id 12 (factory user)
+        if ($user && $user->role_id == 12) {
+            return view('include.factory-dashboard', compact('user'));
+        }
 
         return view('dashboard', compact('user'));
     }
@@ -241,6 +248,110 @@ class DashboardController extends Controller
                 'success' => false,
                 'message' => 'An error occurred while fetching dashboard BloodBank Map data.',
             ], 500);
+        }
+    }
+
+    /**
+     * Get dashboard data for factory user
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFactoryDashboardData(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            
+            // Only proceed if user is a factory user
+            if ($user->role_id != 12) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access'
+                ], 403);
+            }
+
+            $filter = $request->get('filter', 'This Month');
+            $dateRange = $this->getDateRangeForFactory($filter);
+            
+            // Get total plasma entries count
+            $totalCollections = PlasmaEntry::when($dateRange, function($query, $dateRange) {
+                return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
+            })->count();
+
+            // Get approved plasma count
+            $approvedCount = PlasmaEntry::when($dateRange, function($query, $dateRange) {
+                return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
+            })->whereNotNull('alloted_ar_no')->count();
+
+            // Get rejected plasma count
+            $rejectedCount = PlasmaEntry::when($dateRange, function($query, $dateRange) {
+                return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
+            })->whereNotNull('destruction_no')->count();
+
+             // Get tail cutting plasma count
+             $tailCuttingCount = BagEntryDetail::when($dateRange, function($query, $dateRange) {
+                return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+            })
+            ->where('tail_cutting', 'Yes')
+            ->count();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_collections' => $totalCollections,
+                    'tail_cutting_count' => $tailCuttingCount,
+                    'approved_count' => $approvedCount,
+                    'rejected_count' => $rejectedCount
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in factory dashboard data: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching factory dashboard data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get date range for factory dashboard filters
+     *
+     * @param string $filter
+     * @return array|null
+     */
+    private function getDateRangeForFactory($filter)
+    {
+        $now = now();
+        
+        switch($filter) {
+            case 'This Month':
+                return [
+                    'start' => $now->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->endOfMonth()->format('Y-m-d')
+                ];
+            case 'Last 3 Months':
+                return [
+                    'start' => $now->subMonths(3)->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->endOfMonth()->format('Y-m-d')
+                ];
+            case 'Last 6 Months':
+                return [
+                    'start' => $now->subMonths(6)->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->endOfMonth()->format('Y-m-d')
+                ];
+            case 'Last 12 Months':
+                return [
+                    'start' => $now->subMonths(12)->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->endOfMonth()->format('Y-m-d')
+                ];
+            case 'All':
+                return null;
+            default:
+                return [
+                    'start' => $now->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->endOfMonth()->format('Y-m-d')
+                ];
         }
     }
 }

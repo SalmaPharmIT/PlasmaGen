@@ -55,4 +55,66 @@ class BarcodeController extends Controller
             'ref_number' => $request->ref_number
         ]);
     }
+
+    public function saveBarcodes(Request $request)
+    {
+        if (!in_array(Auth::user()->role_id, [12, 17])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access'
+            ], 403);
+        }
+
+        $request->validate([
+            'workstation_id' => 'required',
+            'ar_number' => 'required',
+            'ref_number' => 'required',
+            'mega_pool' => 'required',
+            'mini_pools' => 'required|array'
+        ]);
+
+        try {
+            \DB::table('barcode_entries')->insert([
+                'work_station' => $request->workstation_id,
+                'ar_no' => $request->ar_number,
+                'ref_doc_no' => $request->ref_number,
+                'mega_pool_no' => $request->mega_pool,
+                'mini_pool_number' => implode(',', $request->mini_pools),
+                'timestamp' => now(),
+                'created_by' => Auth::user()->name,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Barcodes saved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving barcodes: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getArNumbers()
+    {
+        if (!in_array(Auth::user()->role_id, [12, 17])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access'
+            ], 403);
+        }
+
+        $arNumbers = \DB::table('plasma_entries')
+            ->whereNotNull('alloted_ar_no')
+            ->distinct()
+            ->pluck('alloted_ar_no');
+
+        return response()->json([
+            'success' => true,
+            'data' => $arNumbers
+        ]);
+    }
 } 

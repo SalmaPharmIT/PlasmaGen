@@ -348,6 +348,16 @@
     // Track if data is saved
     let isDataSaved = false;
 
+    // Function to get cutoff values based on test type
+    function getCutoffValues(testType) {
+        switch (testType.toUpperCase()) {
+            case 'HCV': return { low: 0.2, high: 0.3 };
+            case 'HBV': return { low: 0.25, high: 0.35 };
+            case 'HIV': return { low: 0.15, high: 0.25 };
+            default: return { low: 0.1, high: 1.0 };
+        }
+    }
+
     // Export functions
     function exportToCSV() {
         if (!isDataSaved) {
@@ -444,16 +454,27 @@
                                                   (reading.hbv === 'borderline' || reading.hcv === 'borderline' || reading.hiv === 'borderline') ? 'Borderline' : 'Non-Reactive';
                                 const finalResultClass = finalResult === 'Reactive' ? 'danger' : finalResult === 'Borderline' ? 'info' : 'success';
                                 
+                                // Determine HBV badge color based on HCV and HIV results
+                                const hbvBadgeColor = (reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive') ? '#f35c24' : 
+                                                    (reading.hbv === 'nonreactive' ? 'success' : 
+                                                     reading.hbv === 'borderline' ? 'info' : 'danger');
+
+                                // Determine if we should show HBV badge in final result
+                                const showHbvBadge = reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive';
+
                                 return `
                                     <tr>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.sequence_id}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.well_label}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.value}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.timestamp}</td>
-                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.hbv || '-'}</td>
-                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.hcv || '-'}</td>
-                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.hiv || '-'}</td>
-                                        <td style="border: 1px solid #ddd; padding: 8px; color: ${finalResultClass === 'danger' ? '#dc3545' : finalResultClass === 'info' ? '#0dcaf0' : '#198754'}">${finalResult}</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.hbv ? `<span class="badge" style="background-color: ${hbvBadgeColor === '#f35c24' ? '#f35c24' : `var(--bs-${hbvBadgeColor})`}">${reading.hbv.charAt(0).toUpperCase() + reading.hbv.slice(1)}</span>` : '-'}</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.hcv ? `<span class="badge bg-${reading.hcv === 'nonreactive' ? 'success' : reading.hcv === 'borderline' ? 'info' : 'danger'}">${reading.hcv.charAt(0).toUpperCase() + reading.hcv.slice(1)}</span>` : '-'}</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.hiv ? `<span class="badge bg-${reading.hiv === 'nonreactive' ? 'success' : reading.hiv === 'borderline' ? 'info' : 'danger'}">${reading.hiv.charAt(0).toUpperCase() + reading.hiv.slice(1)}</span>` : '-'}</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px; color: ${finalResultClass === 'danger' ? '#dc3545' : finalResultClass === 'info' ? '#0dcaf0' : '#198754'}">
+                                            <span class="badge bg-${finalResultClass}">${finalResult}</span>
+                                            ${showHbvBadge ? `<span class="badge bg-light text-dark ms-1">HBV</span>` : ''}
+                                        </td>
                                     </tr>
                                 `;
                             }).join('')}
@@ -899,7 +920,7 @@
             // Generate table rows
             finalResultsTable.innerHTML = sortedReadings.map(reading => {
                 // Determine final result
-                let finalResult = 'Non-Reactive';
+                let finalResult = 'nonreactive';
                 let finalResultClass = 'success';
                 
                 // If any test is reactive, final result is reactive
@@ -913,16 +934,27 @@
                     finalResultClass = 'info';
                 }
 
+                // Determine HBV badge color based on HCV and HIV results
+                const hbvBadgeColor = (reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive') ? '#f35c24' : 
+                                    (reading.hbv === 'nonreactive' ? 'success' : 
+                                     reading.hbv === 'borderline' ? 'info' : 'danger');
+
+                // Determine if we should show HBV badge in final result
+                const showHbvBadge = reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive';
+
                 return `
                 <tr>
                     <td>${reading.sequence_id}</td>
                     <td>${reading.well_label}</td>
                     <td>${reading.value}</td>
                     <td>${reading.timestamp}</td>
-                    <td>${reading.hbv ? `<span class="badge bg-${reading.hbv === 'nonreactive' ? 'success' : reading.hbv === 'borderline' ? 'info' : 'danger'}">${reading.hbv.charAt(0).toUpperCase() + reading.hbv.slice(1)}</span>` : '-'}</td>
+                    <td>${reading.hbv ? `<span class="badge" style="background-color: ${hbvBadgeColor === '#f35c24' ? '#f35c24' : `var(--bs-${hbvBadgeColor})`}">${reading.hbv.charAt(0).toUpperCase() + reading.hbv.slice(1)}</span>` : '-'}</td>
                     <td>${reading.hcv ? `<span class="badge bg-${reading.hcv === 'nonreactive' ? 'success' : reading.hcv === 'borderline' ? 'info' : 'danger'}">${reading.hcv.charAt(0).toUpperCase() + reading.hcv.slice(1)}</span>` : '-'}</td>
                     <td>${reading.hiv ? `<span class="badge bg-${reading.hiv === 'nonreactive' ? 'success' : reading.hiv === 'borderline' ? 'info' : 'danger'}">${reading.hiv.charAt(0).toUpperCase() + reading.hiv.slice(1)}</span>` : '-'}</td>
-                    <td><span class="badge bg-${finalResultClass}">${finalResult}</span></td>
+                    <td>
+                        <span class="badge bg-${finalResultClass}">${finalResult}</span>
+                        ${showHbvBadge ? `<span class="badge text-light ms-1" style="background-color: #f35c24">HBV</span>` : ''}
+                    </td>
                 </tr>
                 `;
             }).join('') || '<tr><td colspan="8" class="text-center">No readings available</td></tr>';
@@ -978,6 +1010,13 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
+                                 <div class="card">
+                                    <div class="card-body">
+                                        <div class="p-2 text-white rounded" style="background-color: #f35c24;">
+                                            <p><strong>Cutoffs:</strong> Non-Reactive &lt; ${getCutoffValues(result.test_type).low} | Borderline ${getCutoffValues(result.test_type).low}-${getCutoffValues(result.test_type).high} | Reactive ≥ ${getCutoffValues(result.test_type).high}</p>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="card">
                                     <div class="card-body">
                                         <h6 class="card-title" style="font-size: 1.0rem;padding: 5px 0 5px 0;">Results Summary</h6>

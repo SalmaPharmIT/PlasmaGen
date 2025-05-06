@@ -56,7 +56,7 @@ class BagEntry extends Model
     /**
      * Get the user who created the bag entry.
      */
-    public function creator()
+    public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
@@ -64,7 +64,7 @@ class BagEntry extends Model
     /**
      * Get the user who last updated the bag entry.
      */
-    public function updater()
+    public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }

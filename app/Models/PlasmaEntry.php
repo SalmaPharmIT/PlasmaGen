@@ -6,47 +6,46 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ElisaTestReport extends Model
+class PlasmaEntry extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'elisa_test_report';
-
     protected $fillable = [
-        'mini_pool_id',
-        'well_num',
-        'od_value',
-        'result_time',
-        'hbv',
-        'hcv',
-        'hiv',
-        'final_result',
-        'timestamp',
+        'reciept_date',
+        'grn_no',
+        'blood_bank_id',
+        'alloted_ar_no',
+        'destruction_no',
+        'remarks',
         'created_by',
         'updated_by',
         'deleted_by'
     ];
 
     protected $casts = [
-        'od_value' => 'decimal:2',
-        'timestamp' => 'datetime',
+        'reciept_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime'
     ];
 
-    public function createdBy()
+    public function bloodBank()
+    {
+        return $this->belongsTo(Entity::class, 'blood_bank_id');
+    }
+
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function updatedBy()
+    public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function deletedBy()
+    public function deleter()
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
-}
+} 
