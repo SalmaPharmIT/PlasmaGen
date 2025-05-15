@@ -268,7 +268,31 @@
             buttons: [
                 {
                     extend: 'excelHtml5',
-                    title: 'User Expenses Summary'
+                    title: 'User Expenses Summary',
+                    exportOptions: {
+                    format: {
+                        body: function (data, row, column, node) {
+                            // attachments is the 11th column, zero-based index 10
+                            if (column === 10) {
+                                // create a temporary container and parse the HTML
+                                var div = document.createElement('div');
+                                div.innerHTML = data;
+                                // find all <a> tags
+                                var anchors = div.querySelectorAll('a');
+                                if (anchors.length) {
+                                    // extract their href attrs and join with commas
+                                    return Array.from(anchors)
+                                    .map(a => a.getAttribute('href'))
+                                    .join(',');
+                                }
+                                // fallback text
+                                return 'No attachments';
+                            }
+                                // all other columns: just return the displayed data
+                                return data;
+                        }
+                    }
+                }
                 }
             ]
         });

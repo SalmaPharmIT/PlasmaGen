@@ -1161,8 +1161,19 @@ class TourPlannerController extends Controller
                 'Accept' => 'application/json',
             ])->get($apiUrl, $queryParams);
 
+            // Log the data being sent
+            Log::info('DCR Details API apiUrl', [
+                'apiUrl' => $apiUrl,
+            ]);
+
             if ($response->successful()) {
                 $apiResponse = $response->json();
+
+                 // Log the data being apiResponse
+                Log::info('DCR Details API apiResponse', [
+                    'apiResponse' => $apiResponse,
+                ]);
+
                 if (Arr::get($apiResponse, 'success') && is_array(Arr::get($apiResponse, 'data')) && count(Arr::get($apiResponse, 'data')) > 0) {
                     $dcr = $apiResponse['data'][0];
                     $tourPlanType = Arr::get($dcr, 'extendedProps.tour_plan_type');

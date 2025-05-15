@@ -40,7 +40,7 @@
 
 
      <!-- Registration Menu - Visible Only to Comapny Admin (role_id == 2) -->
-     @if (Auth::check() && Auth::user()->role_id == 2)
+     @if (Auth::check() && (Auth::user()->role_id == 2 || Auth::user()->role_id == 18))
      <li class="nav-item">
        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
          <i class="bi bi-card-list"></i><span>Onboard</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -251,7 +251,7 @@
         @endif
 
     <!-- Tour Planner - Visible to Company Admin (role_id == 2) and Role ID 6 RBE-->
-    @if (Auth::check() && in_array(Auth::user()->role_id, [2, 6]))
+    @if (Auth::check() && in_array(Auth::user()->role_id, [2, 6, 18, 19]))
      <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
         <i class="bi bi-journal-text"></i><span>Tour Planner</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -267,11 +267,15 @@
             <i class="bi bi-circle"></i><span>Manage Tour Planner</span>
           </a>
         </li>
-        <li>
+         <!-- Blood Bank Reports - Visible to Role ID 1 and 2 -->
+         @if (in_array(Auth::user()->role_id, [1, 2, 6, 19]))
+         <li>
           <a href="{{ route('tourplanner.finalDCR') }}">
             <i class="bi bi-circle"></i><span>DCR Approvals</span>
           </a>
         </li>
+        @endif
+      
         <li>
           <a href="{{ route('tourplanner.collectionIncomingRequests') }}">
             <i class="bi bi-circle"></i><span>TP Collection Requests</span>
@@ -307,11 +311,11 @@
     
       <!-- Reports - Visible to Admin & Manager Roles -->
       @if (Auth::check())
-      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
+      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role_id == 18)
         <li class="nav-heading">Reports</li>
 
         <!-- Reports - Visible to Role ID 1 and 2 -->
-        @if (in_array(Auth::user()->role_id, [1, 2]))
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
           <li class="nav-item">
             <a class="nav-link collapsed" href="{{ route('reports.reports_work_summary') }}" >
               <i class="bi bi-graph-up"></i>
@@ -321,7 +325,7 @@
         @endif
 
         <!-- Blood Bank Reports - Visible to Role ID 1 and 2 -->
-        @if (in_array(Auth::user()->role_id, [1, 2]))
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
          <li class="nav-item">
            <a class="nav-link collapsed" href="{{ route('reports.blood_banks_summary') }}" >
              <i class="bi bi-droplet-half"></i>
@@ -332,7 +336,7 @@
 
 
         <!-- Blood Bank Reports - Visible to Role ID 1 and 2 -->
-        @if (in_array(Auth::user()->role_id, [1, 2]))
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
          <li class="nav-item">
            <a class="nav-link collapsed" href="{{ route('reports.user_wise_collection_summary') }}" >
              <i class="bi bi-person-circle"></i>
@@ -342,7 +346,7 @@
         @endif
 
         <!-- Blood Bank Wise Colletion Reports - Visible to Role ID 1 and 2 -->
-        @if (in_array(Auth::user()->role_id, [1, 2]))
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
           <li class="nav-item">
            <a class="nav-link collapsed" href="{{ route('reports.bloodbank_wise_collection_summary') }}" >
              <i class="bi bi-geo-alt"></i>
@@ -352,7 +356,7 @@
         @endif
 
         <!-- Tour Planner Datewise Reports - Visible to Role ID 1 and 2 -->
-        @if (in_array(Auth::user()->role_id, [1, 2]))
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
         <li class="nav-item">
           <a class="nav-link collapsed" href="{{ route('reports.tour_palnner_datewise_summary') }}" >
             <i class="bi bi-reception-4"></i>
@@ -362,11 +366,21 @@
        @endif
 
         <!-- User Expenses Reports - Visible to Role ID 1 and 2 -->
-        @if (in_array(Auth::user()->role_id, [1, 2]))
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
         <li class="nav-item">
           <a class="nav-link collapsed" href="{{ route('reports.user_expenses_summary') }}" >
             <i class="bi bi-currency-rupee"></i>
             <span>Uses Expenses</span>
+          </a>
+         </li>
+       @endif
+
+        <!-- DCR Reports - Visible to Role ID 1 and 2 -->
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.dcr_summary') }}" >
+            <i class="bi bi-currency-rupee"></i>
+            <span>DCR Summary</span>
           </a>
          </li>
        @endif
@@ -377,11 +391,11 @@
     <!-- Adding masters for admin -->
     <!-- Master Settings - Visible to Admin Roles -->
     @if (Auth::check())
-      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
+      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role_id == 18)
         <li class="nav-heading">Master Settings</li>
 
         <!-- City Master - Visible to Role ID 1 and 2 -->
-        @if (in_array(Auth::user()->role_id, [1, 2]))
+        @if (in_array(Auth::user()->role_id, [1, 2, 18]))
           <li class="nav-item">
             <a class="nav-link collapsed" href="{{ route('citymaster.index') }}" >
               <i class="bi bi-geo-alt"></i>
@@ -391,7 +405,7 @@
         @endif
 
         <!-- Entity Features - Visible Only to Role ID 2 -->
-        @if (Auth::user()->role_id == 2)
+        @if (Auth::user()->role_id == 2 || Auth::user()->role_id == 18)
           <li class="nav-item">
             <a class="nav-link collapsed" href="{{ route('entities.features') }}" >
               <i class="bi bi-gear"></i>
@@ -431,7 +445,7 @@
     @endif
 
     <!-- Role ID 9 Collecting/Sourcing Agents-->
-    @if (Auth::user()->role_id == 9 || Auth::user()->role_id == 6 || Auth::user()->role_id == 8)
+    @if (Auth::user()->role_id == 9 || Auth::user()->role_id == 6 || Auth::user()->role_id == 8 || Auth::user()->role_id == 19)
        <li class="nav-item">
          <a class="nav-link collapsed" href="{{ route('visits.index') }}" >
            <i class="bi bi-calendar2-week"></i>
@@ -442,7 +456,7 @@
 
 
     <!-- Role ID 9, 8, 68 Collecting/Sourcing Agents, Managers-->
-    @if (Auth::user()->role_id == 9 || Auth::user()->role_id == 6 || Auth::user()->role_id == 8)
+    @if (Auth::user()->role_id == 9 || Auth::user()->role_id == 6 || Auth::user()->role_id == 8 || Auth::user()->role_id == 19)
       <!-- Add Expenses -->
       <li class="nav-heading">Expenses</li>
 

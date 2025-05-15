@@ -118,4 +118,5 @@ return [
     'warehouse_fetch_all_active_url' =>  $base_url . 'warehouse_fetch_all_active.php',
     'transport_partners_fetch_all_active_url' =>  $base_url . 'transport_partners_fetch_all_active.php',
     'vehicle_details_update_url' =>  $base_url . 'vehicle_details_update.php',
+    'reports_user_dcr_summary_url' =>  $base_url . 'reports_user_dcr_summary.php',
 ];

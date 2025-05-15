@@ -125,7 +125,7 @@ class CityMasterController extends Controller
 
         // Prepare the data to send to the external API
         $postData = [
-            'name'      => strtolower(trim($validatedData['name'])), // Convert to lowercase and trim
+            'name'      => trim($validatedData['name']), // Convert to lowercase and trim
             'state_id'  => intval($validatedData['state_id']),
             'pin_code'  => trim($validatedData['pin_code']),
             'latitude'  => isset($validatedData['latitude']) ? floatval($validatedData['latitude']) : null,
@@ -211,7 +211,7 @@ class CityMasterController extends Controller
 
         $postData = [
             'id'        => $id,
-            'name'      => strtolower(trim($validatedData['name'])),
+            'name'      => trim($validatedData['name']),
             'state_id'  => intval($validatedData['state_id']),
             'pin_code'  => trim($validatedData['pin_code']),
             'latitude'  => isset($validatedData['latitude']) ? floatval($validatedData['latitude']) : null,

@@ -1355,9 +1355,9 @@
                                 });
 
                                  // If the tour plan has been submitted, ask if the user wants to edit.
-                                if (status.toLowerCase() === 'submitted') {
+                                if (status.toLowerCase() === 'submitted' || status.toLowerCase() === 'accepted') {
                                     Swal.fire({
-                                        title: 'Already Submitted',
+                                        title: 'Already Submitted/Accepted',
                                         text: "You have already submitted this month's tour plan. Do you want to edit?",
                                         icon: 'info',
                                         showCancelButton: true,

@@ -67,7 +67,7 @@ class DashboardController extends Controller
                 'Accept' => 'application/json',
             ])->get($apiUrl, ['filter' => $filter]);
 
-            Log::info('External API Response', [
+            Log::info('External API Response getDashboardData', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);

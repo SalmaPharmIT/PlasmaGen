@@ -208,14 +208,14 @@
                 }
             },
             columns: [
-                // { data: 'id' },
-                { 
-                    data: null, 
-                    title: 'SI. No',
-                    render: function (data, type, row, meta) {
-                        return meta.row + 1;
-                    }
-                },
+                 { data: 'id' },
+                // { 
+                //     data: null, 
+                //     title: 'SI. No',
+                //     render: function (data, type, row, meta) {
+                //         return meta.row + 1;
+                //     }
+                // },
                 { data: 'entity_name', defaultContent: 'N/A' },
                 { data: 'manager_name', defaultContent: 'N/A' },
                 { data: 'manager_role_name', defaultContent: 'N/A' },
@@ -248,7 +248,7 @@
                     searchable: false
                 }
             ],
-            order: [[0, 'desc']], // Sort by the first column (ID) in descending order
+            order: [[0, 'DESC']], // Sort by the first column (ID) in descending order
             pageLength: 10,
             lengthMenu: [5, 10, 25, 50, 100]
         });
