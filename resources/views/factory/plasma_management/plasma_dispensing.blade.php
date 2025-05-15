@@ -75,14 +75,15 @@
             <div class="row mb-3">
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label class="form-label">Batch No./ Document Request No.:</label>
-                        <input type="text" class="form-control form-control-sm" name="batch_no" required>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">Request By (Department):</label>
-                        <input type="text" class="form-control form-control-sm" name="request_by" required>
+                        <label class="small mb-1">Blood Centre Name & City</label>
+                        <div>
+                            <select class="form-control-sm select2-bloodbank" name="blood_bank" id="blood_bank" data-placeholder="Select Blood Centre">
+                                <option></option>
+                                @foreach($bloodCenters as $center)
+                                    <option value="{{ $center['id'] }}">{{ $center['text'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -100,9 +101,9 @@
                             <th rowspan="2" style="width: 10%;">A.R. No.</th>
                             <th rowspan="2" style="width: 20%;">Mega Pool No./ Mini Pool No./ Donor ID</th>
                             <th colspan="2" class="text-center" style="width: 20%;">Volume in Liters</th>
+                            <th rowspan="2" style="width: 15%;">Donation Date</th>
+                            <th rowspan="2" style="width: 15%;">Blood Group</th>
                             <th rowspan="2" style="width: 15%;">Dispensed By Sign/ Date<br>(Warehouse)</th>
-                            <th rowspan="2" style="width: 15%;">Verified By Sign/ Date<br>(QA)</th>
-                            <th rowspan="2" style="width: 20%;">Checked & Received By<br>Sign/ Date<br>(User)</th>
                         </tr>
                         <tr>
                             <th style="width: 10%;">Requested</th>
@@ -136,11 +137,11 @@
                 </table>
             </div>
 
-            <div class="row mt-3">
+            {{-- <div class="row mt-3">
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary btn-sm float-end">Submit</button>
                 </div>
-            </div>
+            </div> --}}
 
             <div class="row mt-3">
                 <div class="col-12">
@@ -161,57 +162,108 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Function to add new row
-        $('#addRow').click(function() {
-            var newRow = `
-                <tr>
-                    <td><input type="text" class="form-control-sm" name="ar_no[]"></td>
-                    <td><input type="text" class="form-control-sm" name="pool_no[]"></td>
-                    <td><input type="number" step="0.01" class="form-control-sm requested" name="volume_requested[]"></td>
-                    <td><input type="number" step="0.01" class="form-control-sm issued" name="volume_issued[]"></td>
-                    <td><input type="text" class="form-control-sm" name="dispensed_by[]"></td>
-                    <td><input type="text" class="form-control-sm" name="verified_by[]"></td>
-                    <td><input type="text" class="form-control-sm" name="checked_by[]"></td>
-                </tr>
-            `;
-            $(newRow).insertBefore('#totalRow');
-            calculateTotals();
+         // Add CSRF token to all AJAX requests
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
         });
 
-        // Calculate totals when input changes
-        $(document).on('input', '.requested, .issued', function() {
-            calculateTotals();
+        // Initialize Select2 for blood bank
+        $('.select2-bloodbank').select2({
+            placeholder: "Select Blood Centre",
+            allowClear: true,
+            width: '100%'
         });
 
-        function calculateTotals() {
+        // Handle blood bank selection
+        $('#blood_bank').on('change', function() {
+            const selectedText = $(this).find('option:selected').text();
+            $('#display_blood_centre').text(selectedText || '-');
+        });
+
+        // Function to fetch bag status details
+        function fetchBagStatusDetails() {
+            const bloodBankId = $('#blood_bank').val();
+            const pickupDate = $('input[name="date"]').val();
+
+            console.log('Fetching details with:', {
+                bloodBankId,
+                pickupDate
+            });
+
+            if (!bloodBankId || !pickupDate) {
+                console.log('Missing required fields');
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route("plasma.dispensing.get-bag-status") }}',
+                method: 'POST',
+                data: {
+                    blood_bank_id: bloodBankId,
+                    pickup_date: pickupDate
+                },
+                success: function(response) {
+                    console.log('Response received:', response);
+                    if (response.status === 'success') {
+                        // Clear existing table rows except header
+                        $('#plasmaTableBody tr:not(#totalRow)').remove();
+                        
+                        if (response.data.length === 0) {
+                            console.log('No data found');
+                            return;
+                        }
+
+                        // Add new rows
+                        response.data.forEach(function(item) {
+                            console.log('Processing item:', item);
+                            const row = `
+                                <tr>
+                                    <td><input type="text" class="form-control-sm" name="ar_no[]" value="${item.ar_no || ''}" readonly></td>
+                                    <td><input type="text" class="form-control-sm" name="pool_no[]" value="${item.mini_pool_id}" readonly></td>
+                                    <td><input type="number" step="0.01" class="form-control-sm requested" name="volume_requested[]" value="0.39"></td>
+                                    <td><input type="number" step="0.01" class="form-control-sm issued" name="volume_issued[]" value="0.39"></td>
+                                    <td><input type="text" class="form-control-sm" name="donation_date[]" value="2025-04-01" readonly></td>
+                                    <td><input type="text" class="form-control-sm" name="blood_group[]" value="A+" readonly></td>
+                                    <td>
+                                        <input type="text" class="form-control-sm" name="dispensed_by[]" value="${item.created_by_name || '{{ Auth::user()->name }}'}" readonly>
+                                        <input type="hidden" name="created_by[]" value="${item.created_by || '{{ Auth::id() }}'}">
+                                    </td>
+                                </tr>
+                            `;
+                            $('#totalRow').before(row);
+                        });
+
+                        // Update totals
+                        updateTotals();
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error fetching bag status details:', xhr.responseText);
+                }
+            });
+        }
+
+        // Function to update totals
+        function updateTotals() {
             let totalRequested = 0;
             let totalIssued = 0;
 
             $('.requested').each(function() {
-                totalRequested += parseFloat($(this).val() || 0);
+                totalRequested += parseFloat($(this).val()) || 0;
             });
 
             $('.issued').each(function() {
-                totalIssued += parseFloat($(this).val() || 0);
+                totalIssued += parseFloat($(this).val()) || 0;
             });
 
             $('#total_requested').text(totalRequested.toFixed(2));
             $('#total_issued').text(totalIssued.toFixed(2));
         }
 
-        // Handle form submission
-        $('#plasmaDispenseForm').on('submit', function(e) {
-            e.preventDefault();
-            
-            // Validate if there are any rows
-            if ($('#plasmaTableBody tr').length <= 2) { // Updated to account for total and add row rows
-                alert('Please add at least one entry.');
-                return;
-            }
-
-            // Add your form submission logic here
-            alert('Form submitted! Add your backend logic.');
-        });
+        // Add event listeners for blood bank and date changes
+        $('#blood_bank, input[name="date"]').on('change', fetchBagStatusDetails);
     });
 </script>
 @endpush 

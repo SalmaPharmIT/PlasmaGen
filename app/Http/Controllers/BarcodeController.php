@@ -12,7 +12,13 @@ class BarcodeController extends Controller
         if (!in_array(Auth::user()->role_id, [12, 17])) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access');
         }
-        return view('barcode.generate');
+
+        // Get the reference number from entity settings
+        $entityId = Auth::user()->entity_id;
+        $entitySettings = \App\Models\EntitySetting::where('entity_id', $entityId)->first();
+        $refNumber = $entitySettings ? $entitySettings->ref_no : '';
+
+        return view('barcode.generate', compact('refNumber'));
     }
 
     public function generateCodes(Request $request)
@@ -34,17 +40,28 @@ class BarcodeController extends Controller
         $month = date('m');
         $workstation = str_pad($request->workstation_id, 2, '0', STR_PAD_LEFT);
         
-        // Get the last serial number from the database or start from 0001
-        $lastSerial = 1; // TODO: Get from database
-        $serial = str_pad($lastSerial, 4, '0', STR_PAD_LEFT);
+        // Get the last mega pool number for the current year, month, and workstation
+        $prefix = "MG" . $year . $month . $workstation;
+        $lastMegaPool = \DB::table('barcode_entries')
+            ->where('mega_pool_no', 'LIKE', $prefix . '%')
+            ->orderBy('mega_pool_no', 'desc')
+            ->first();
+
+        // Extract the last sequence number or start from 1
+        if ($lastMegaPool) {
+            $lastSequence = intval(substr($lastMegaPool->mega_pool_no, -4));
+            $sequence = str_pad($lastSequence + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $sequence = '0001';
+        }
 
         // Generate mega pool number
-        $megapool = "MG" . $year . $month . $workstation . $serial;
+        $megapool = $prefix . $sequence;
 
         // Generate mini pool numbers
         $minipools = [];
         for ($i = 1; $i <= 6; $i++) {
-            $minipools[] = $year . $month . $workstation . $serial . str_pad($i, 2, '0', STR_PAD_LEFT);
+            $minipools[] = $year . $month . $workstation . $sequence . str_pad($i, 2, '0', STR_PAD_LEFT);
         }
 
         return response()->json([

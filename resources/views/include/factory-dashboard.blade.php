@@ -66,7 +66,7 @@
                             </div>
                             <div class="stat-content mt-4">
                                 <h3 class="stat-value mb-2">0</h3>
-                                <p class="stat-label mb-2">Total Collections</p>
+                                <p class="stat-label mb-2">Total Inwards</p>
                                 <div class="stat-trend positive">
                                     <i class="bi bi-arrow-up"></i>
                                     <span>12.5% increase</span>

@@ -18,6 +18,9 @@ use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\NATReportController;
 use App\Http\Controllers\PlasmaController;
 use App\Http\Controllers\ReportMiniPoolMegaPoolController;
+use App\Http\Controllers\SubMiniPoolEntryController;
+use App\Http\Controllers\PlasmaManagementController;
+use App\Http\Controllers\BagStatusController;
 
 // Redirect root to login
 Route::get('/', function () {
@@ -58,6 +61,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/entities/parent-entities', [EntityController::class, 'getParentEntities'])->name('entities.getParentEntities');
 
     Route::get('/entities/settings', [EntityController::class, 'settings'])->name('entities.settings');
+
+    Route::put('/entity/settings/save', [EntityController::class, 'saveSettings'])->name('entity.settings.save');
 
     // Route::post('/entities/update-name', [EntityController::class, 'updateName'])->name('entities.updateName');
     // Route::post('/entities/update-code', [EntityController::class, 'updateCode'])->name('entities.updateCode');
@@ -246,19 +251,26 @@ Route::group(['middleware' => ['auth']], function () {
 
     /* ********************* New Bag Entry Routes ********************************* */
     Route::get('/newBagEntry', [BagEntryController::class, 'index'])->name('newBag.index')->middleware('auth');
+    Route::get('/factory/newbagentry/sub-mini-pool-bag-entry', [BagEntryController::class, 'subMiniPoolBagEntry'])->name('factory.newbagentry.sub_mini_pool_bag_entry')->middleware('auth');
     Route::post('/newBagEntry', [BagEntryController::class, 'store'])->name('newBag.store')->middleware('auth');
     Route::get('/check-mega-pool/{megaPoolNo}', [BagEntryController::class, 'checkMegaPool'])->name('check.mega.pool')->middleware('auth');
     /* ********************* New Bag Entry Routes Ends ********************************* */
 
     // Plasma Management Routes
-    Route::prefix('plasma')->group(function () {
-        Route::get('/entry', [PlasmaController::class, 'plasmaEntry'])->name('plasma.entry');
-        Route::post('/store', [PlasmaController::class, 'store'])->name('plasma.store');
-        Route::get('/dispensing', [PlasmaController::class, 'dispensing'])->name('plasma.dispensing');
-        Route::get('/generate-ar-no', [PlasmaController::class, 'generateArNo'])->name('plasma.generate-ar-no');
-        Route::post('/update-ar-no', [PlasmaController::class, 'updateArNo'])->name('plasma.update-ar-no');
-        Route::get('/get-by-ar-no/{ar_no}', [PlasmaController::class, 'getByArNo'])->name('plasma.get-by-ar-no')->where('ar_no', '.*');
-        Route::get('/get-ar-numbers', [PlasmaController::class, 'getArNumbers'])->name('plasma.get-ar-numbers');
+    Route::prefix('plasma')->name('plasma.')->group(function () {
+        Route::get('/entry', [PlasmaController::class, 'plasmaEntry'])->name('entry');
+        Route::post('/store', [PlasmaController::class, 'store'])->name('store');
+        Route::get('/dispensing', [PlasmaController::class, 'dispensing'])->name('dispensing');
+        Route::get('/rejection', [PlasmaController::class, 'rejection'])->name('rejection');
+        Route::post('/dispensing/get-bag-status', [PlasmaController::class, 'getBagStatusDetails'])->name('dispensing.get-bag-status');
+        Route::post('/rejection/get-bag-status', [PlasmaController::class, 'getBagStatusForRejection'])->name('rejection.get-bag-status');
+        Route::get('/generate-ar-no', [PlasmaController::class, 'generateArNo'])->name('generate-ar-no');
+        Route::post('/update-ar-no', [PlasmaController::class, 'updateArNo'])->name('update-ar-no');
+        Route::get('/get-by-ar-no/{ar_no}', [PlasmaController::class, 'getByArNo'])->name('get-by-ar-no')->where('ar_no', '.*');
+        Route::get('/get-ar-numbers', [PlasmaController::class, 'getArNumbers'])->name('get-ar-numbers');
+        Route::get('/get-mini-pool-numbers', [PlasmaController::class, 'getMiniPoolNumbers'])
+            ->name('get_mini_pool_numbers');
+        Route::post('/get-bag-status-details', [PlasmaController::class, 'getBagStatusDetails'])->name('getBagStatusDetails');
     });
 
     // Add the API route for blood banks
@@ -278,6 +290,10 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('/nat-report/save', [NATReportController::class, 'saveReports'])->name('nat-report.save');
     });
     /* ********************* NAT Report Routes Ends ********************************* */
+
+    Route::get('/mini-pool-details', [BagStatusController::class, 'getMiniPoolDetails'])->name('mini.pool.details');
+    Route::get('/blood-centres', [BagStatusController::class, 'getBloodCentres'])->name('blood.centres');
+    Route::get('/cities', [BagStatusController::class, 'getCities'])->name('cities');
 });
 
 // Factory Generate Report Routes
@@ -296,4 +312,21 @@ Route::get('/factory/generate-report/plasma_dispensing', function () {
 
 /* *********************  Factory Report Routes Start ********************************* */
 Route::get('/factory/report/plasma-despense', [PlasmaController::class, 'despense'])->name('factory.report.plasma_despense');
+Route::get('/factory/report/plasma-rejection', [PlasmaController::class, 'rejection'])->name('factory.report.plasma_rejection');
+Route::post('/factory/report/plasma-rejection', [BagStatusController::class, 'storePlasmaRejection'])->name('plasma.rejection.store');
 /* *********************  Factory Report Routes Ends ********************************* */
+
+/* ********************* Factory Report Routes ********************************* */
+Route::get('/factory/report/sub-minipool-entry', [PlasmaController::class, 'subMiniPoolEntry'])->name('factory.report.sub_minipool_entry')->middleware('auth');
+Route::get('/factory/report/get-reactive-minipools', [ReportMiniPoolMegaPoolController::class, 'getReactiveMiniPools'])->name('factory.report.get-reactive-minipools')->middleware('auth');
+Route::get('/factory/report/get-minipool-data/{mini_pool_id}', [ReportMiniPoolMegaPoolController::class, 'getMiniPoolData'])->name('factory.report.get-minipool-data')->middleware('auth');
+
+Route::post('/sub-mini-pool-entries', [SubMiniPoolEntryController::class, 'store'])->name('sub-mini-pool-entries.store');
+
+/* *********************  Expenses Ends ********************************* */
+
+/* *********************  Plasma Despense Starts ********************************* */
+Route::get('/plasma-despense', [BagStatusController::class, 'showPlasmaDespense'])->name('plasma.despense');
+Route::get('/mini-pool-nonreactive-details', [BagStatusController::class, 'getNonReactiveMiniPoolDetails'])->name('mini.pool.nonreactive.details');
+Route::post('/plasma-despense', [BagStatusController::class, 'storePlasmaDespense'])->name('plasma.despense.store');
+/* *********************  Plasma Despense Ends ********************************* */

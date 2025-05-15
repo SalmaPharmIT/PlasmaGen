@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth; 
+use App\Models\EntitySetting;
 
 class EntityController extends Controller
 {
@@ -706,7 +707,10 @@ class EntityController extends Controller
     
     public function settings()
     {
-        return view('entities.settings');
+        $entity = Auth::user()->entity;
+        $settings = EntitySetting::where('entity_id', $entity->id)->first();
+        
+        return view('entities.settings', compact('settings'));
     }
 
     public function updateName(Request $request)
@@ -761,5 +765,30 @@ class EntityController extends Controller
         $entity->save();
 
         return response()->json(['success' => true]);
+    }
+
+    public function saveSettings(Request $request)
+    {
+        $request->validate([
+            'entity_ref_doc' => 'nullable|string|max:255'
+        ]);
+
+        // Only proceed if entity_ref_doc has data
+        if (!empty($request->entity_ref_doc)) {
+            $entityId = Auth::user()->entity->id;
+
+            EntitySetting::updateOrCreate(
+                ['entity_id' => $entityId],
+                [
+                    'ref_no' => $request->entity_ref_doc,
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id()
+                ]
+            );
+
+            return redirect()->back()->with('success', 'Settings saved successfully');
+        }
+
+        return redirect()->back()->with('warning', 'No data to save');
     }
 }

@@ -55,6 +55,8 @@
                                            id="ref_number" 
                                            name="ref_number" 
                                            required
+                                           readonly
+                                           value="{{ $refNumber }}"
                                            placeholder="Enter Reference Number">
                                     <div class="invalid-feedback">Please enter Reference Number.</div>
                                 </div>
@@ -556,6 +558,11 @@ function saveBarcodes() {
                 icon: 'success',
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#0c4c90'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Refresh the page after clicking OK
+                    window.location.reload();
+                }
             });
         } else {
             Swal.fire({

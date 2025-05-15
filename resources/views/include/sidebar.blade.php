@@ -99,6 +99,16 @@
                 <i class="bi bi-circle"></i><span>AR.No Generate</span>
               </a>
             </li>
+            <li>
+              <a href="{{ route('plasma.dispensing') }}">
+                <i class="bi bi-circle"></i><span>Plasma Despense List</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ route('plasma.rejection') }}">
+                <i class="bi bi-circle"></i><span>Plasma Rejection List</span>
+              </a>
+            </li>
           </ul>
         </li><!-- End Plasma Management Nav -->
 
@@ -110,11 +120,32 @@
         </li>
         
         <li class="nav-item">
-          <a class="nav-link collapsed" href="{{ route('newBag.index') }}">
-            <i class="bi bi-box"></i>
-            <span>Bag Entry</span>
+          <a class="nav-link collapsed" data-bs-target="#components-nav-bag-entry" data-bs-toggle="collapse" href="#">
+            <i class="bi bi-card-list"></i><span>Bag Entry</span><i class="bi bi-chevron-down ms-auto"></i>
           </a>
-        </li>
+          <ul id="components-nav-bag-entry" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+            <li>
+              <a href="{{ route('newBag.index') }}">
+                <i class="bi bi-circle"></i><span>Manual Entry</span>
+              </a>
+            </li>
+            <li>
+              <a href="#">
+                <i class="bi bi-circle"></i><span>Excel Entry</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ route('newBag.index') }}">
+                <i class="bi bi-circle"></i><span>Damaged Bag Entry</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ route('factory.newbagentry.sub_mini_pool_bag_entry') }}">
+                <i class="bi bi-circle"></i><span>Sub Mini Pool Bag Entry</span>
+              </a>
+            </li>
+          </ul>
+        </li><!-- End Components Nav -->
 
         <li class="nav-item">
           <a class="nav-link collapsed" data-bs-target="#report-nav" data-bs-toggle="collapse" href="#">
@@ -131,11 +162,21 @@
                 <i class="bi bi-circle"></i><span>NAT</span>
               </a>
             </li>
-            {{-- <li>
+            <li>
+              <a href="{{ route('factory.report.sub_minipool_entry') }}">
+                <i class="bi bi-circle"></i><span>Sub Mini Pool Entry</span>
+              </a>
+            </li>
+            <li>
               <a href="{{ route('factory.report.plasma_despense') }}">
                 <i class="bi bi-circle"></i><span>Plasma Despense</span>
               </a>
-            </li> --}}
+            </li>
+            <li>
+              <a href="{{ route('factory.report.plasma_rejection') }}">
+                <i class="bi bi-circle"></i><span>Plasma Rejection</span>
+              </a>
+            </li>
           </ul>
         </li>
         <!-- Report Menu Section -->
@@ -149,17 +190,12 @@
                 <i class="bi bi-circle"></i><span>Mega Pool Mini Pool</span>
               </a>
             </li>
-          
+        
             {{-- <li>
-              <a href="{{ route('factory.generate_report.sub_mini_pool') }}">
-                <i class="bi bi-circle"></i><span>Sub Mini Pool</span>
-              </a>
-            </li> --}}
-            <li>
               <a href="{{ route('factory.generate_report.plasma_dispensing') }}">
                 <i class="bi bi-circle"></i><span>Plasma Despense List</span>
               </a>
-            </li>
+            </li> --}}
           </ul>
         </li><!-- End Report Menu Nav -->
         <li class="nav-item">

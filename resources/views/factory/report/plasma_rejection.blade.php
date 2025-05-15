@@ -3,6 +3,7 @@
 @push('styles')
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
     .card {
         margin: 0.5rem;
@@ -156,11 +157,11 @@
 @section('content')
 
 <div class="pagetitle">
-    <h1>Plasma Despense Sheet</h1>
+    <h1>Plasma Rejection Sheet</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-            <li class="breadcrumb-item active">Plasma Despense Sheet</li>
+            <li class="breadcrumb-item active">Plasma Rejection Sheet</li>
         </ol>
     </nav>
 </div>
@@ -170,7 +171,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('plasma.despense.store') }}" id="plasmaDespenseForm">
+                    <form method="POST" action="{{ route('plasma.rejection.store') }}" id="plasmaRejectionForm">
                         @csrf
                         <div class="row g-2 mb-3">
                             <div class="col-md-4">
@@ -209,20 +210,42 @@
                                     <td class="logo-cell">
                                         <img src="{{ asset('assets/img/pgblogo.png') }}" alt="Company Logo">
                                     </td>
-                                    <td colspan="10" class="text-center">
-                                        <h5 class="mb-0">PLASMA DESPENSE RECORD</h5>
+                                    <td colspan="5" class="text-center">
+                                        <h5 class="mb-0">PLASMA REJECTION RECORD</h5>
                                     </td>
                                 </tr>
-                               
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="4">
+                                        <strong>Type of Rejection:</strong> 
+                                        <div class="d-inline-block ms-2">
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input rejection-type" type="checkbox" value="damage" id="rejection_damaged">
+                                                <label class="form-check-label" for="rejection_damaged">Damaged</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input rejection-type" type="checkbox" value="rejection" id="rejection_hemolyzed">
+                                                <label class="form-check-label" for="rejection_hemolyzed">Hemolyzed(Red)</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input rejection-type" type="checkbox" value="expiry" id="rejection_expiry">
+                                                <label class="form-check-label" for="rejection_expiry">Expiry</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input rejection-type" type="checkbox" value="quality" id="rejection_quality">
+                                                <label class="form-check-label" for="rejection_quality">Quality Rejected</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td colspan="2">
+                                        <strong>Date:</strong> <span id="display_date"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">
                                         <strong>Blood Centre Name & City:</strong> <span id="display_blood_centre"></span>
                                     </td>
                                     <td colspan="2">
                                         <strong>Pickup Date:</strong> <span id="display_pickup_date"></span>
-                                    </td>
-                                    <td colspan="2">
-                                        <strong>Date:</strong> <span id="display_date"></span>
                                     </td>
                                 </tr>
                             </table>
@@ -289,7 +312,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Add CSRF token to all AJAX requests
+    // Set up CSRF token for all AJAX requests
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -346,38 +369,33 @@ $(document).ready(function() {
 
         // Make AJAX call to get data
         $.ajax({
-            url: '{{ route("mini.pool.nonreactive.details") }}',
+            url: '{{ route("mini.pool.details") }}',
             method: 'GET',
             data: {
                 blood_centre_name: bloodBank,
                 pickup_date: pickupDate
             },
             success: function(response) {
+            console.log("response");
+            console.log(response);
                 if (response.status === 'success' && response.data.length > 0) {
                     let html = '';
                     response.data.forEach((item, index) => {
+                        const testResults = [];
+                        if (item.hiv === 'reactive') testResults.push('HIV');
+                        if (item.hbv === 'reactive') testResults.push('HBV');
+                        if (item.hcv === 'reactive') testResults.push('HCV');
+                        
                         html += `<tr>
                             <td class="text-center">${index + 1}</td>
                             <td class="text-center">${item.mini_pool_id || '-'}</td>
                             <td class="text-center">${item.donation_date || '-'}</td>
                             <td class="text-center">${item.blood_group || '-'}</td>
                             <td class="text-center">${item.bag_volume_ml || '-'}</td>
-                            <td class="remarks-cell" contenteditable="true" data-mini-pool-id="${item.mini_pool_id}"></td>
+                            <td contenteditable="true" class="remarks-cell" data-mini-pool-id="${item.mini_pool_id}" style="min-width: 150px;"></td>
                         </tr>`;
                     });
                     $('#reportBody').html(html);
-
-                    // Add event listeners for remarks cells
-                    $('.remarks-cell').on('focus', function() {
-                        $(this).addClass('editing');
-                    }).on('blur', function() {
-                        $(this).removeClass('editing');
-                    }).on('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            $(this).blur();
-                        }
-                    });
                 } else {
                     $('#reportBody').html('<tr><td colspan="6" class="text-center py-3"><div class="alert alert-info mb-0">No data found</div></td></tr>');
                 }
@@ -389,33 +407,47 @@ $(document).ready(function() {
         });
     });
 
-    // Handle despense type checkboxes
-    $('.despense-type').on('change', function() {
+    // Handle rejection type checkboxes
+    $('.rejection-type').on('change', function() {
         let selectedTypes = [];
-        $('.despense-type:checked').each(function() {
+        $('.rejection-type:checked').each(function() {
             selectedTypes.push($(this).val());
         });
     });
 
     // Handle form submission
-    $('#plasmaDespenseForm').on('submit', function(e) {
+    $('#plasmaRejectionForm').on('submit', function(e) {
         e.preventDefault();
-        
+
         const bloodBank = $('#blood_bank').val();
         const pickupDate = $('#pickup_date').val();
-        
-        if (!bloodBank || !pickupDate) {
-            alert('Please select both Blood Centre and Pickup Date');
+        const selectedTypes = [];
+        $('.rejection-type:checked').each(function() {
+            selectedTypes.push($(this).val());
+        });
+
+        if (!bloodBank) {
+            alert('Please select a Blood Centre');
             return;
         }
 
-        // Collect all mini pool data
+        if (!pickupDate) {
+            alert('Please select a Pickup Date');
+            return;
+        }
+
+        if (selectedTypes.length === 0) {
+            alert('Please select at least one rejection type');
+            return;
+        }
+
+        // Collect mini pool data
         const miniPools = [];
         $('#reportBody tr').each(function() {
-            const miniPoolId = $(this).find('td:eq(1)').text().trim();
+            const miniPoolId = $(this).find('td[data-mini-pool-id]').data('mini-pool-id');
             const remarks = $(this).find('.remarks-cell').text().trim();
             
-            if (miniPoolId && miniPoolId !== '-') {
+            if (miniPoolId) {
                 miniPools.push({
                     mini_pool_id: miniPoolId,
                     remarks: remarks
@@ -424,38 +456,46 @@ $(document).ready(function() {
         });
 
         if (miniPools.length === 0) {
-            alert('No mini pools found to save');
+            alert('No mini pools found to submit');
             return;
         }
 
         // Show loading state
-        const submitBtn = $(this).find('button[type="submit"]');
-        const originalText = submitBtn.text();
-        submitBtn.prop('disabled', true).text('Saving...');
+        Swal.fire({
+            title: 'Saving...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-        // Submit the data
+        // Submit form data
         $.ajax({
             url: $(this).attr('action'),
             method: 'POST',
             data: {
                 blood_bank: bloodBank,
                 pickup_date: pickupDate,
+                rejection_type: selectedTypes,
                 mini_pools: miniPools
             },
             success: function(response) {
-                if (response.status === 'success') {
-                    alert('Plasma despense records saved successfully');
-                    // Optionally refresh the page or clear the form
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
                     window.location.reload();
-                } else {
-                    alert('Error: ' + response.message);
-                }
+                });
             },
             error: function(xhr) {
-                alert('Error saving plasma despense records: ' + (xhr.responseJSON?.message || 'Unknown error'));
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false).text(originalText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'An error occurred while saving the data'
+                });
             }
         });
     });

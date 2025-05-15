@@ -161,4 +161,14 @@ class BagEntryController extends Controller
         $exists = BagEntry::where('mega_pool_no', $megaPoolNo)->exists();
         return response()->json(['exists' => $exists]);
     }
+
+    /**
+     * Show the sub mini pool bag entry form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function subMiniPoolBagEntry()
+    {
+        return view('factory.newbagentry.sub_mini_pool_bag_entry');
+    }
 }

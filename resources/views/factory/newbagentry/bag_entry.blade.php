@@ -435,7 +435,9 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="small mb-1">Mega Pool No.</label>
-                            <input type="text" class="form-control form-control-sm" name="mega_pool_no" required>
+                            <select class="form-control form-control-sm" name="mega_pool_no" required>
+                                <option value="">Select Mega Pool No.</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -534,6 +536,18 @@
             width: '100%'
         });
 
+        // Add event listener for Donor ID inputs
+        $(document).on('input', 'input[name="donor_id[]"]', function() {
+            const donorId = $(this).val().trim();
+            const tailCuttingSelect = $(this).closest('tr').find('select[name="tail_cutting[]"]');
+            
+            if (donorId !== '') {
+                tailCuttingSelect.val('Yes');
+            } else {
+                tailCuttingSelect.val('No');
+            }
+        });
+
         // Initialize Select2 for AR No.
         $('.select2-ar-no').select2({
             placeholder: "Select A.R. No.",
@@ -572,12 +586,39 @@
                 url: `/plasma/get-by-ar-no/${encodeURIComponent(data.id)}`,
                 method: 'GET',
                 success: function(response) {
+                    console.log('AR No. Response:', response); // Debug log
+                    
                     if (response.status === 'success') {
                         // Set blood bank
                         $('select[name="blood_centre_id"]').val(response.data.blood_bank_id).trigger('change');
                         
                         // Set GRN No.
                         $('input[name="grn_no"]').val(response.data.grn_no);
+
+                        // Set Work Station No.
+                        $('input[name="work_station"]').val(response.data.work_station || '01');
+                        
+                        // Set Pickup Date
+                        if (response.data.pickup_date) {
+                            $('input[name="pickup_date"]').val(response.data.pickup_date);
+                        }
+
+                        // Set Mega Pool Numbers dropdown
+                        const megaPoolSelect = $('select[name="mega_pool_no"]');
+                        megaPoolSelect.empty().append('<option value="">Select Mega Pool No.</option>');
+                        
+                        if (response.data.mega_pool_numbers && response.data.mega_pool_numbers.length > 0) {
+                            response.data.mega_pool_numbers.forEach(megaPoolNo => {
+                                megaPoolSelect.append(`<option value="${megaPoolNo}">${megaPoolNo}</option>`);
+                            });
+                        }
+
+                        // Debug logs for each field
+                        console.log('Work Station:', response.data.work_station);
+                        console.log('Pickup Date:', response.data.pickup_date);
+                        console.log('Blood Bank ID:', response.data.blood_bank_id);
+                        console.log('GRN No:', response.data.grn_no);
+                        console.log('Mega Pool Numbers:', response.data.mega_pool_numbers);
                     } else {
                         // Show error message
                         Swal.fire({
@@ -587,7 +628,8 @@
                         });
                     }
                 },
-                error: function(xhr) {
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', {xhr, status, error}); // Debug log
                     const response = xhr.responseJSON || {};
                     Swal.fire({
                         icon: 'error',
@@ -700,21 +742,57 @@
         });
 
         // Generate mini pool numbers based on mega pool number
-        const megaPoolInput = document.querySelector('input[name="mega_pool_no"]');
+        const megaPoolInput = document.querySelector('select[name="mega_pool_no"]');
         const miniPoolInputs = document.querySelectorAll('input[name="segment_number[]"]');
 
         function updateMiniPoolNumbers() {
-            const megaPoolNo = megaPoolInput.value.trim();
+            const megaPoolNo = megaPoolInput ? megaPoolInput.value : '';
             
             if (megaPoolNo) {
-                // Extract the base number (year + month + workstation + serial)
-                const baseNumber = megaPoolNo.replace('MG', '');
-                
-                // Generate sequential mini pool numbers
-                miniPoolInputs.forEach((input, index) => {
-                    // Each mini pool number should be unique within the mega pool
-                    const miniPoolNo = baseNumber + padNumber((index + 1).toString(), 2, '0');
-                    input.value = miniPoolNo;
+                // Show loader
+                $('#loader').show();
+
+                // Fetch mini pool numbers from barcode_entries table
+                $.ajax({
+                    url: '/plasma/get-mini-pool-numbers',
+                    method: 'GET',
+                    data: {
+                        mega_pool_no: megaPoolNo
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Split the comma-separated mini pool numbers
+                            const miniPoolNumbers = response.mini_pool_numbers.split(',');
+                            
+                            // Update mini pool number inputs
+                            miniPoolInputs.forEach((input, index) => {
+                                if (index < miniPoolNumbers.length) {
+                                    input.value = miniPoolNumbers[index];
+                                } else {
+                                    input.value = '';
+                                }
+                            });
+                        } else {
+                            // Show error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'Failed to fetch mini pool numbers'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', {xhr, status, error});
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to fetch mini pool numbers'
+                        });
+                    },
+                    complete: function() {
+                        // Hide loader
+                        $('#loader').hide();
+                    }
                 });
             } else {
                 // Clear mini pool numbers if mega pool number is empty
@@ -724,19 +802,8 @@
             }
         }
 
-        // Helper function to pad numbers with zeros
-        function padNumber(n, length, pad) {
-            n = n.toString();
-            while (n.length < length) {
-                n = pad + n;
-            }
-            return n;
-        }
-
         // Update mini pool numbers when mega pool number changes
         if (megaPoolInput) {
-            megaPoolInput.addEventListener('input', updateMiniPoolNumbers);
-            megaPoolInput.addEventListener('blur', updateMiniPoolNumbers);
             megaPoolInput.addEventListener('change', updateMiniPoolNumbers);
         }
 

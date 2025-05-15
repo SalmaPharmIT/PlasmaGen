@@ -160,18 +160,20 @@
                         <thead>
                             <tr>
                                 <th rowspan="2" style="width: 5%;">SL No.</th>
+                                <th rowspan="2" style="width: 15%;">Pickup Date</th>
                                 <th rowspan="2" style="width: 15%;">Date of Receipt</th>
                                 <th rowspan="2" style="width: 20%;">GRN No.</th>
                                 <th rowspan="2" style="width: 20%;">Blood Bank Name</th>
-                                <th rowspan="2" style="width: 15%;">Alloted AR No.</th>
+                                <th rowspan="2" style="width: 15%;">Plasma Qty(Ltr)</th>
                                 <th rowspan="2" style="width: 15%;">Entered By</th>
                                 <th rowspan="2" style="width: 10%;">Remarks</th>
                             </tr>
                         </thead>
                         <tbody id="plasmaTableBody">
-                            @for ($i = 0; $i < 8; $i++)
+                            @for ($i = 0; $i < 5; $i++)
                             <tr>
                                 <td><input type="text" class="form-control-sm" name="sl_no[]" readonly value="{{ $i + 1 }}"></td>
+                                <td><input type="date" class="form-control-sm" name="pickup_date[]"></td>
                                 <td><input type="date" class="form-control-sm" name="receipt_date[]"></td>
                                 <td><input type="text" class="form-control-sm" name="grn_no[]"></td>
                                 <td>
@@ -182,7 +184,7 @@
                                         @endforeach
                                     </select>
                                 </td>
-                                <td><input type="text" class="form-control-sm" name="ar_no[]"></td>
+                                <td><input type="text" class="form-control-sm" name="plasma_qty[]"></td>
                                 <td>
                                     <input type="text" class="form-control-sm" name="entered_by[]" readonly value="{{ $userName }}">
                                     <input type="hidden" name="entered_by_id[]" value="{{ Auth::id() }}">
@@ -191,12 +193,11 @@
                             </tr>
                             @endfor
                             <tr id="totalRow" class="table-secondary">
-                                <td colspan="6" class="text-end pe-2">
+                                <td colspan="8" class="text-end pe-2">
                                     <button type="button" class="btn btn-success btn-sm" id="addRow">
                                         <i class="bi bi-plus-circle"></i> Add Row
                                     </button>
                                 </td>
-                                <td></td>
                             </tr>
                         </tbody>
                     </table>
@@ -266,6 +267,7 @@
             var newRow = `
                 <tr>
                     <td><input type="text" class="form-control-sm" name="sl_no[]" readonly value="${nextNumber}"></td>
+                    <td><input type="date" class="form-control-sm" name="pickup_date[]"></td>
                     <td><input type="date" class="form-control-sm" name="receipt_date[]"></td>
                     <td><input type="text" class="form-control-sm" name="grn_no[]"></td>
                     <td>
@@ -273,7 +275,7 @@
                             <option></option>
                         </select>
                     </td>
-                    <td><input type="text" class="form-control-sm" name="ar_no[]"></td>
+                    <td><input type="text" class="form-control-sm" name="plasma_qty[]"></td>
                     <td>
                         <input type="text" class="form-control-sm" name="entered_by[]" readonly value="{{ $userName }}">
                         <input type="hidden" name="entered_by_id[]" value="{{ Auth::id() }}">
@@ -297,7 +299,7 @@
                 if ($(this).val() || 
                     $('input[name="grn_no[]"]').eq(rowIndex).val() || 
                     $('select[name="blood_bank[]"]').eq(rowIndex).val() || 
-                    $('input[name="ar_no[]"]').eq(rowIndex).val() || 
+                    $('input[name="plasma_qty[]"]').eq(rowIndex).val() || 
                     $('input[name="remarks[]"]').eq(rowIndex).val()) {
                     hasData = true;
                     return false;
