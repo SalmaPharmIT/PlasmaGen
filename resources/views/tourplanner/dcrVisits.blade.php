@@ -121,6 +121,15 @@
           width: 100%;
           height: 400px;
       }
+
+    /* overrides for cancelled cards */
+    .dcr-card.cancelled {
+        border-color: red !important;
+    }
+    .dcr-card.cancelled .status-cancelled {
+        color: red !important;
+        font-weight: bold;
+    }
     </style>
 @endpush
 
@@ -148,19 +157,31 @@
                     } else if (event.extendedProps.tour_plan_type === 2) {
                         tourPlanType = 'Sourcing';
                     } else if (event.extendedProps.tour_plan_type === 3) {
-                        tourPlanType = 'Both';
+                        tourPlanType = 'Assigned Collections';
                     }
 
                     var visitDate = event.visit_date ? event.visit_date : '-';
                     var time = event.time ? formatTime(event.time) : '-';
-                    var tp_status = event.extendedProps.status ? capitalizeFirstLetter(event.extendedProps.status.replace('_', ' ')) : '-';
+                  //  var tp_status = event.extendedProps.status ? capitalizeFirstLetter(event.extendedProps.status.replace('_', ' ')) : '-';
                     
+                    var rawStatus = event.extendedProps.status;
+                    var tp_status = rawStatus
+                                    ? rawStatus.replace('_', ' ').toUpperCase()
+                                    : '-';
+
+                    // flag cancelled
+                    var isCancelled = rawStatus === 'cancel_requested' || rawStatus === 'cancel_approved';
+
+                    // CSS classes if cancelled
+                    var cardClasses   = isCancelled ? 'dcr-card cancelled' : 'dcr-card';
+                    var statusClasses = isCancelled ? 'status-cancelled' : '';
+
                     // Optionally, if you have an "end_time" field, set it:
                     var endTime = event.end_time ? formatTime(event.end_time) : '-';
 
                     // Build the card HTML with a two/three row layout:
                     var cardHtml = `
-                        <div class="dcr-card" data-id="${event.id}">
+                        <div class="${cardClasses}" data-id="${event.id}">
                             <div class="row">
                                 <div class="col-12">
                                     <h5>${event.title}</h5>

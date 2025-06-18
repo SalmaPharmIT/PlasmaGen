@@ -90,10 +90,10 @@
                   <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeSourcing" value="sourcing">
                   <label class="form-check-label" for="typeSourcing">Sourcing</label>
                 </div>
-                {{-- <div class="form-check form-check-inline">
+                <div class="form-check form-check-inline">
                     <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeBoth" value="both">
-                    <label class="form-check-label" for="typeBoth">Both</label>
-                  </div> --}}
+                    <label class="form-check-label" for="typeBoth">Assigned Collections</label>
+                  </div>
               </div>
             </div>
 
@@ -127,7 +127,7 @@
               <!-- Time Input -->
               <div class="mb-3">
                 <label for="tourPlanTime" class="form-label">Time (24 Hrs, hh:mm)</label>
-                <input type="time" class="form-control" id="tourPlanTime" name="time" required>
+                <input type="time" class="form-control" id="tourPlanTime" name="time">
                 <div class="invalid-feedback">
                   Please provide a valid time.
                 </div>
@@ -440,7 +440,7 @@
                             // modalDropdown.trigger('change');
 
                             // If the authenticated user's role is 6, auto-select his own collecting agent value
-                            if(authRoleId === 6) {
+                            if(authRoleId === 6 || authRoleId === 19) {
                                 dropdown.val(authUserId).trigger('change');
                                 modalDropdown.val(authUserId).trigger('change');
 
@@ -700,9 +700,17 @@
                     var eventObj = info.event;
                     var tourPlanType = eventObj.extendedProps.tour_plan_type; // 1 for Collections, 2 for Sourcing
 
+                    console.log('eventObj.start ', eventObj.start );
                     // Common fields
                     var collectingAgent = eventObj.extendedProps.collecting_agent_name || 'N/A';
-                    var date = eventObj.start ? eventObj.start.toISOString().split('T')[0] : 'N/A';
+                  //  var date = eventObj.start ? eventObj.start : 'N/A';
+                  var date = eventObj.start
+                                        ? [
+                                            eventObj.start.getFullYear(),
+                                            String(eventObj.start.getMonth() + 1).padStart(2, '0'),
+                                            String(eventObj.start.getDate()).padStart(2, '0')
+                                            ].join('-')
+                                        : 'N/A';
                     var status = eventObj.extendedProps.status || 'N/A';
                     var remarks = eventObj.extendedProps.remarks || 'N/A';
                     var createdBy = eventObj.extendedProps.created_by_name || 'N/A';
@@ -748,13 +756,42 @@
                         var cityName = eventObj.extendedProps.sourcing_city_name || 'N/A';
                         $('#detailCity').text(cityName);
                     }
+                    else  if (tourPlanType === 3) {
+                        // Collections view
+                        var bloodBank = eventObj.extendedProps.blood_bank_name || 'N/A';
+                        var quantity = eventObj.extendedProps.quantity || 'N/A';
+                        var pendingDocuments = eventObj.extendedProps.pending_document_names || [];
+
+                        $('#detailBloodBank').text(bloodBank);
+                        $('#detailQuantity').text(quantity);
+                        
+                        var pendingDocumentsHtml = pendingDocuments.length 
+                            ? pendingDocuments.map(doc => `<li>${doc}</li>`).join('')
+                            : '<li>No pending documents.</li>';
+                        $('#detailPendingDocuments').html(pendingDocumentsHtml);
+                        
+                    }
 
                     // Store the tourPlanId in the modal's data attribute if needed
                     $('#viewTourPlanModal').data('tourPlanId', eventObj.id);
 
                     // Update modal title to reflect the plan type
-                    var planTypeLabel = tourPlanType === 1 ? 'Collections' : (tourPlanType === 2 ? 'Sourcing' : '');
+                   // var planTypeLabel = tourPlanType === 1 ? 'Collections' : (tourPlanType === 2 ? 'Sourcing' : '');
+                   // $('#viewTourPlanModalLabel').text('Tour Plan Details (' + planTypeLabel + ')');
+
+                    var planTypeLabel = '';
+
+                    if (tourPlanType === 1) {
+                        planTypeLabel = 'Collections';
+                    } else if (tourPlanType === 2) {
+                        planTypeLabel = 'Sourcing';
+                    } else if (tourPlanType === 3) {
+                        planTypeLabel = 'Assigned Collections';
+                    }
+
+                    // Update the modal title to include the plan type
                     $('#viewTourPlanModalLabel').text('Tour Plan Details (' + planTypeLabel + ')');
+
 
                     // Show the modal
                     $('#viewTourPlanModal').modal('show');
@@ -883,6 +920,23 @@
                     var agentId = $(this).val();
                     var selectedAgentRoleId = $(this).find('option:selected').data('role-id');
                     console.log("Selected Agent Role ID: " + selectedAgentRoleId);
+
+                    // after you’ve got selectedAgentRoleId:
+                    var bothWrapper = $('input[name="tour_plan_type"][value="both"]').closest('.form-check-inline');
+
+                    // show “Assigned Collections” only for role 6 or 19
+                    if (selectedAgentRoleId === 6 || selectedAgentRoleId === 19) {
+                    bothWrapper.show();
+                    } else {
+                    bothWrapper.hide();
+
+                    // if “both” was checked, fall back to collections
+                    if ($('input[name="tour_plan_type"]:checked').val() === 'both') {
+                        $('input[name="tour_plan_type"][value="collections"]')
+                        .prop('checked', true)
+                        .trigger('change');
+                    }
+                    }
                     
                     // Update the filter dropdown value as well
                     $('#collectingAgentDropdown').val(agentId).trigger('change.select2');
@@ -995,11 +1049,14 @@
                     formData.sourcing_blood_bank_name = $('#sourcingBloodBankName').val();
                     formData.sourcing_city_id = $('#sourcingCityDropdown').val();
                 } else if (tourPlanType === 'both')  {
+                    // formData.remarks = $('#tourPlanRemarks').val();
+                    // var pendingDocuments = $('#tourPlanPendingDocuments').val(); // Array of selected IDs
+                    // formData.pending_documents_id = pendingDocuments; // Add to formData
+                    // formData.sourcing_blood_bank_name = $('#sourcingBloodBankName').val();
+                    // formData.sourcing_city_id = $('#sourcingCityDropdown').val();
                     formData.remarks = $('#tourPlanRemarks').val();
                     var pendingDocuments = $('#tourPlanPendingDocuments').val(); // Array of selected IDs
                     formData.pending_documents_id = pendingDocuments; // Add to formData
-                    formData.sourcing_blood_bank_name = $('#sourcingBloodBankName').val();
-                    formData.sourcing_city_id = $('#sourcingCityDropdown').val();
                 }
 
                 // If Sourcing, validate additional fields
@@ -1099,6 +1156,23 @@
                 var selectedAgentRoleId = $(this).find('option:selected').data('role-id');
                 console.log("Selected Agent ID: " + selectedAgentId);
                 console.log("Selected Agent Role ID: " + selectedAgentRoleId);
+
+                // after you’ve got selectedAgentRoleId:
+                var bothWrapper = $('input[name="tour_plan_type"][value="both"]').closest('.form-check-inline');
+
+                // show “Assigned Collections” only for role 6 or 19
+                if (selectedAgentRoleId === 6 || selectedAgentRoleId === 19) {
+                bothWrapper.show();
+                } else {
+                bothWrapper.hide();
+
+                // if “both” was checked, fall back to collections
+                if ($('input[name="tour_plan_type"]:checked').val() === 'both') {
+                    $('input[name="tour_plan_type"][value="collections"]')
+                    .prop('checked', true)
+                    .trigger('change');
+                }
+                }
                 
                 // Update the modal's Collecting Agent dropdown
                 $('#tourPlanCollectingAgent').val(selectedAgentId).trigger('change.select2');
@@ -1270,6 +1344,26 @@
                     return;
                 }
 
+                // 1. Read the date text (YYYY-MM-DD) from the modal and turn it into a Date object
+                var clickedDateString = $('#detailDate').text().trim();
+                 console.log('clickedDateString:', clickedDateString);
+                const dateStr = new Date(clickedDateString);
+                var clickedDate = dateStr;
+                var currentDate = new Date();
+                currentDate.setHours(0,0,0,0); // Set to midnight to compare dates only
+                clickedDate.setHours(0,0,0,0);
+
+                console.log('currentDate:', currentDate);
+                console.log('clickedDate:', clickedDate);
+
+                // only block if planDate is strictly BEFORE today
+                if (clickedDate < currentDate) {
+                     Swal.fire('Warning', 'You cannot delete the Tour Plan for previous dates !!!', 'warning');
+                    return;
+                }
+
+                
+
                 // Show confirmation dialog
                 Swal.fire({
                     title: 'Are you sure?',
@@ -1368,8 +1462,14 @@
 
                     if (selectedType === 'both') {
                         // Enable both sections
-                        $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                      //  $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                      //  $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                    
                         $('#collectionsFields').slideDown().find('input, select, textarea').prop('disabled', false);
+                        $('#sourcingFields').slideUp().find('input, select, textarea').prop('disabled', true);
+                        // Optionally clear sourcing fields if needed
+                        $('#sourcingBloodBankName').val('');
+                        $('#sourcingCityDropdown').val(null).trigger('change');
                     } else if (selectedType === 'sourcing') {
                         // Enable sourcing and disable collections
                         $('#sourcingFields').slideDown().find('input, select, textarea').prop('disabled', false);

@@ -126,6 +126,15 @@
                       <input type="number" class="form-control" id="totalPrice" name="totalPrice" step="0.01" value="0" readonly>
                     </div>
 
+                    <!-- Remarks -->
+                    <div class="mb-3">
+                        <label for="remarks" class="form-label">Remarks</label>
+                        <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+                        <div class="invalid-feedback">
+                        Please enter remarks.
+                        </div>
+                    </div>
+
                     <!-- Attach Documents -->
                     <div class="col-md-12">
                       <label for="documents" class="form-label">Attach Documents (If any)</label>
@@ -223,26 +232,29 @@
               <div class="col-12">
                   <h5 class="card-title">View Expenses</h5>
 
-                  <table id="expensesTable" class="table table-bordered table-striped">
-                    <thead>
-                      <tr>
-                        <th>SI. No.</th> <!-- New column for serial number -->
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Food</th>
-                        <th>Conveyance</th>
-                        <th>Tel/Fax</th>
-                        <th>Lodging</th>
-                        <th>Sundry</th>
-                        <th>Total Price</th>
-                        <th>Attachments</th> <!-- New column for attachments -->
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="expensesList">
-                      <!-- Expenses will be dynamically added here -->
-                    </tbody>
-                  </table>
+                  <div class="table-responsive">
+                    <table id="expensesTable" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>SI. No.</th> <!-- New column for serial number -->
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Food</th>
+                            <th>Conveyance</th>
+                            <th>Tel/Fax</th>
+                            <th>Lodging</th>
+                            <th>Sundry</th>
+                            <th>Total Price</th>
+                            <th>Remarks</th>
+                            <th>Attachments</th> <!-- New column for attachments -->
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="expensesList">
+                        <!-- Expenses will be dynamically added here -->
+                        </tbody>
+                    </table>
+                  </div>
         
               </div>
             </div>
@@ -590,9 +602,11 @@
 
          // Initialize DataTable with equal column width
           $('#expensesTable').DataTable({
-              "columnDefs": [
-                  { "width": "10%", "targets": "_all" } // Equal width for all columns
-              ]
+                responsive: true,
+                autoWidth: false,
+                "columnDefs": [
+                    { "width": "10%", "targets": "_all" } // Equal width for all columns
+                ]
           });
 
          // Construct the URL correctly for the API
@@ -628,7 +642,7 @@
                                     });
                                     bloodBankNames = names.join(', ');
                                 }
-                            } else if (event.extendedProps.tour_plan_type == 1) {
+                            } else if (event.extendedProps.tour_plan_type == 1 || event.extendedProps.tour_plan_type == 3) {
                                 // Use the title for tour_plan_type 1
                                 bloodBankNames = event.title;
                             }
@@ -857,6 +871,18 @@
             console.log('form inside');
             form.addEventListener('submit', function(event) {
                 console.log('form submit triggered');  // This should now be logged
+
+                // if no files selected, block submit and show swal
+                if (!documentsInput.files.length) {
+                event.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No attachment',
+                    text: 'Please attach at least one document before submitting.'
+                });
+                return;
+                }
+
                 event.preventDefault();
 
                 // Clear the existing files in the documents input before appending new files
@@ -927,6 +953,7 @@
                                       <td>${expense.lodging}</td>
                                       <td>${expense.sundry}</td>
                                       <td>${expense.total_price}</td>
+                                      <td>${expense.remarks}</td>
                                       <td>
                                           ${documentPreviews || '-'}
                                       </td>

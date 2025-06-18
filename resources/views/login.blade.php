@@ -59,7 +59,7 @@
                                         <div class="col-12">
                                             <label for="yourUsername" class="form-label">Username</label>
                                             <div class="input-group has-validation">
-                                                <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                                {{-- <span class="input-group-text" id="inputGroupPrepend">@</span> --}}
                                                 <input type="text" name="username" class="form-control @error('username') is-invalid @enderror" id="yourUsername" value="{{ old('username') }}" required>
                                                 @error('username')
                                                     <div class="invalid-feedback">
@@ -96,8 +96,11 @@
                                 </div>
                             </div>
 
+                            <div class="copyright">
+                                &copy; Copyright <strong><span>PlasmaGen</span></strong>. All Rights Reserved
+                            </div>
                             <div class="credits">
-                                Designed & Developed by <a href="https://pharmit.in/">PharmIT</a>
+                                Designed & Developed by <a href="https://pharmit.co.in/">PharmIT</a>
                             </div>
 
                         </div>

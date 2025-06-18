@@ -237,6 +237,7 @@ class ExpensesController extends Controller
             'lodgingPrice' => 'nullable|numeric|min:0',
             'sundryPrice' => 'nullable|numeric|min:0',
             'totalPrice' => 'nullable|numeric|min:0',
+            'remarks' => 'nullable|string|max:255',
             // New validation rules for documents
             'documents' => 'nullable|array',
             'documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
@@ -262,6 +263,7 @@ class ExpensesController extends Controller
             'lodgingPrice'        => $request->input('lodgingPrice'),
             'sundryPrice'         => $request->input('sundryPrice'),
             'totalPrice'          => $request->input('totalPrice'),
+            'remarks'          => $request->input('remarks'),
             'modified_by'         => auth()->id(),
             'tour_plan_id'         => $request->input('tour_plan_id'),
         ];

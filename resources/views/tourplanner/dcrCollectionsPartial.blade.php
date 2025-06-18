@@ -140,6 +140,11 @@
                     <strong>Added By:</strong>
                     <p>{{ $dcr['extendedProps']['created_by_name'] ?? 'N/A' }}</p>
                 </div>
+                 <!-- Reporting Time -->
+                 <div class="col-md-4">
+                    <strong>Reporting Time:</strong>
+                    <p>{{ $dcr['extendedProps']['reporting_time'] ?? 'N/A' }}</p>
+                </div>
               </div>
           </div>
       </div>
@@ -180,7 +185,7 @@
       @endif
 
       <!-- In collection partial (dcrCollectionsPartial.blade.php) -->
-        @if(isset($dcr['extendedProps']['latitude']) && isset($dcr['extendedProps']['longitude']))
+        {{-- @if(isset($dcr['extendedProps']['latitude']) && isset($dcr['extendedProps']['longitude']))
         <div class="card mb-4">
             <!-- Hidden inputs for lat & lng -->
             <input type="hidden" id="collectionLatitude" value="{{ $dcr['extendedProps']['latitude'] }}">
@@ -193,7 +198,37 @@
                 <div id="collectionMap" style="width: 100%; height: 300px;"></div>
             </div>
         </div>
-        @endif
+        @endif --}}
+
+      @php
+          // parse coordinates as floats (default to 0)
+          $lat = floatval($dcr['extendedProps']['latitude'] ?? 0);
+          $lng = floatval($dcr['extendedProps']['longitude'] ?? 0);
+      @endphp
+
+      <!-- Collection Map -->
+      @if($lat && $lng)
+        <div class="card mb-4">
+            <input type="hidden" id="collectionLatitude"  value="{{ $lat }}">
+            <input type="hidden" id="collectionLongitude" value="{{ $lng }}">
+            <input type="hidden" id="collectionMapTitle" value="{{ 'Visit Location: ' . $dcr['title'] ?? 'DCR Location' }}">
+            <div class="card-header text-black">
+                <h5 class="mb-0"><strong>View Map (Collections)</strong></h5>
+            </div>
+            <div class="card-body">
+                <div id="collectionMap" style="width: 100%; height: 300px;"></div>
+            </div>
+        </div>
+      @else
+        <div class="card mb-4">
+            <div class="card-header text-black">
+                <h5 class="mb-0"><strong>View Map (Collections)</strong></h5>
+            </div>
+            <div class="card-body mt-2">
+                <p class="text-muted">Location not captured.</p>
+            </div>
+        </div>
+      @endif
 
 
       <!-- Attachments Card -->

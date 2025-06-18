@@ -180,7 +180,7 @@
                                 } else if (event.tp_tour_plan_type == 2) {
                                     typeLabel = 'Sourcing';
                                 } else if (event.tp_tour_plan_type == 3) {
-                                    typeLabel = 'Both';
+                                    typeLabel = 'Assigned Collections';
                                 } else {
                                     typeLabel = 'Other';
                                 }
@@ -189,7 +189,7 @@
                                 // For Collection (type 1), use the top-level field provided by the API.
                                 // For Sourcing (type 2), loop through visits and take the visit_sourcing_blood_bank_name.
                                 var bankNameDisplay = '-';
-                                if (event.tp_tour_plan_type == 1) {
+                                if (event.tp_tour_plan_type == 1 || event.tp_tour_plan_type == 3) {
                                     bankNameDisplay = event.visit_collection_blood_bank_name ? event.visit_collection_blood_bank_name : '-';
                                 } else {
                                     var bankNames = [];
@@ -215,8 +215,8 @@
                                     "tp_type": typeLabel,  // TP Type column
                                     "visit_date": visitDate,
                                     "bank": bankNameDisplay, // Display the blood bank name
-                                    "tp_status": capitalizeFirstLetter(tpStatus),
-                                    "tp_dcr_status": capitalizeFirstLetter(tpDCRStatus),
+                                    "tp_status": capitalizeFirstLetter(tpStatus).toUpperCase(),
+                                    "tp_dcr_status": capitalizeFirstLetter(tpDCRStatus).toUpperCase(),
                                     "actions": actions
                                 });
                             });

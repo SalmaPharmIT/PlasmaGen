@@ -169,6 +169,7 @@
             <hr>
             <!-- Update Form Fields -->
             <input type="hidden" name="visit_id" id="visitId">
+            <input type="hidden" name="visit_tour_plan_type" id="visitTPType">
             <input type="hidden" name="blood_bank_latitude" id="blood_bank_latitude">
             <input type="hidden" name="blood_bank_longitude" id="blood_bank_longitude">
             <input type="hidden" name="user_latitude" id="user_latitude">
@@ -769,6 +770,7 @@
                     <!-- Form to Add Additional Blood Bank Information -->
                     <h5><strong>Add Blood Bank Information</strong></h5>
                     <input type="hidden" name="visit_id" id="sourcingVisitId">
+                    <input type="hidden" name="visit_tour_plan_type" id="visitTPType">
                     <input type="hidden" name="sourcing_city_latitude" id="sourcing_city_latitude">
                     <input type="hidden" name="sourcing_city_longitude" id="sourcing_city_longitude">
                     <input type="hidden" name="sourcing_user_latitude" id="sourcing_user_latitude">
@@ -1698,6 +1700,9 @@
                             if (tourPlanType === 2 && (status === "updated" || status === "dcr_submitted" || status === "rejected")  && visit.extendedProps.tp_status == 'accepted') {
                                 return true;
                             }
+                            if (tourPlanType === 3 && (status === "updated" || status === "dcr_submitted" || status === "rejected") && visit.extendedProps.tp_status == 'accepted') {
+                                return true;
+                            }
                             return false;
                         }); 
 
@@ -1726,7 +1731,7 @@
                             } else  if(tourPlanType == 2) {
                                 visitType = 'Sourcing';
                             } else  if(tourPlanType == 3) {
-                                visitType = 'Both';
+                                visitType = 'Assigned Collections';
                             }
                             else {
                                 visitType = 'Unknown'; 
@@ -1798,11 +1803,7 @@
                                         data-visit='${encodedVisit}'>
                                     View Collection Details
                                 </button>
-                                <button type="button" 
-                                        class="btn btn-info btn-sm view-sourcing-dcr-btn" 
-                                        data-visit='${encodedVisit}'>
-                                    View Sourcing Details
-                                </button>
+                              
                                 `;
                             }
                             }
@@ -1854,7 +1855,7 @@
             } else  if(tourPlanType == 2) {
                 visitType = 'Sourcing';
             } else  if(tourPlanType == 3) {
-                visitType = 'Both';
+                visitType = 'Assigned Collections';
             }
             else {
                 visitType = 'Unknown'; 
@@ -1919,7 +1920,33 @@
                 `;
             }
            else if(tourPlanType === 3) { // Both
-                detailsHtml += `
+                // detailsHtml += `
+                //         <tr>
+                //             <th scope="row">Time (24Hrs)</th>
+                //             <td>${escapeHtml(formatTime(visit.time)) ? escapeHtml(formatTime(visit.time)) : 'N/A'}</td>
+                //         </tr>
+                //         <tr>
+                //             <th scope="row">Quantity</th>
+                //             <td>${extendedProps.quantity !== null && extendedProps.quantity !== undefined ? extendedProps.quantity : 'N/A'}</td>
+                //         </tr>
+                //         <tr>
+                //             <th scope="row">Remarks</th>
+                //             <td>${escapeHtml(extendedProps.remarks) ? escapeHtml(extendedProps.remarks) : 'N/A'}</td>
+                //         </tr>
+                //         <tr>
+                //             <th scope="row">Pending Documents</th>
+                //             <td>${visit.pending_document_names && visit.pending_document_names.length > 0 ? escapeHtml(visit.pending_document_names.join(', ')) : 'None'}</td>
+                //         </tr>
+                //         <tr>
+                //             <th scope="row">Sourcing City</th>
+                //             <td>${escapeHtml(extendedProps.sourcing_city_name) ? escapeHtml(extendedProps.sourcing_city_name) : 'N/A'}</td>
+                //         </tr>
+                //         <tr>
+                //             <th scope="row">Added By</th>
+                //             <td>${escapeHtml(extendedProps.created_by_name) ? escapeHtml(extendedProps.created_by_name) : 'N/A'}</td>
+                //         </tr>
+                // `;
+                 detailsHtml += `
                         <tr>
                             <th scope="row">Time (24Hrs)</th>
                             <td>${escapeHtml(formatTime(visit.time)) ? escapeHtml(formatTime(visit.time)) : 'N/A'}</td>
@@ -1935,10 +1962,6 @@
                         <tr>
                             <th scope="row">Pending Documents</th>
                             <td>${visit.pending_document_names && visit.pending_document_names.length > 0 ? escapeHtml(visit.pending_document_names.join(', ')) : 'None'}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Sourcing City</th>
-                            <td>${escapeHtml(extendedProps.sourcing_city_name) ? escapeHtml(extendedProps.sourcing_city_name) : 'N/A'}</td>
                         </tr>
                         <tr>
                             <th scope="row">Added By</th>
@@ -1963,9 +1986,9 @@
             console.log('visit.extendedProps.tp_status', visit.extendedProps.tp_status);
 
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 1 && visit.extendedProps.status == 'submitted' && visit.extendedProps.tp_status == 'accepted') {
+            if(visitDate && visitDate === currentDate && tourPlanType === 1 && (visit.extendedProps.status == 'submitted' || visit.extendedProps.status == 'initiated') && visit.extendedProps.tp_status == 'accepted') {
                 // Add Update button centered
-                const updateButton = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateVisitModal" data-visit-id="${visit.id}" data-visit='${JSON.stringify(visit)}'>Update Visit</button>`;
+                const updateButton = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateVisitModal" data-visit-id="${visit.id}" data-visit='${JSON.stringify(visit)}'>Update Collection Visit</button>`;
                 detailsHtml += `<div class="mt-3 text-center">${updateButton}</div>`;
 
                 // The Fetch Entity Features is now handled within the modal show event
@@ -1988,7 +2011,15 @@
                 detailsHtml += `<div class="mt-3 text-center">${submitButton}</div>`;
             }
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 3  && visit.extendedProps.tp_status == 'accepted') {
+            if(visitDate && visitDate === currentDate && tourPlanType === 3 && (visit.extendedProps.status == 'submitted' || visit.extendedProps.status == 'initiated') && visit.extendedProps.tp_status == 'accepted') {
+                // Add Update button centered
+                const updateButton = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateVisitModal" data-visit-id="${visit.id}" data-visit='${JSON.stringify(visit)}'>Update Assigned Collection Visit</button>`;
+                detailsHtml += `<div class="mt-3 text-center">${updateButton}</div>`;
+
+                // The Fetch Entity Features is now handled within the modal show event
+            }
+
+          /*  if(visitDate && visitDate === currentDate && tourPlanType === 3  && visit.extendedProps.tp_status == 'accepted') {
         
 
                 // Collection Submit - For Both 
@@ -2030,10 +2061,12 @@
 
                 // The Fetch Entity Features is now handled within the modal show event
             }
+            */
 
             // Update the details section
             visitDetailsContentEl.html(detailsHtml);
         }
+        
 
         // Helper function to capitalize the first letter
         function capitalizeFirstLetter(string) {
@@ -2126,29 +2159,68 @@
 
             // Populate the modal with visit details in the header
             const modal = $(this);
-            let modalDetailsHtml = `
+            // let modalDetailsHtml = `
+            //     <h5><strong>Driver Information</strong></h5>
+            //     <table class="table table-bordered">
+            //         <tbody>
+            //             <tr>
+            //                 <th scope="row">Driver Name</th>
+            //                 <td>${escapeHtml(visitData.extendedProps.transport_details.driver_name) || 'N/A'}</td>
+            //             </tr>
+            //             <tr>
+            //                 <th scope="row">Driver Contact</th>
+            //                 <td>${escapeHtml(visitData.extendedProps.transport_details.contact_number) || 'N/A'}</td>
+            //             </tr>
+            //             <tr>
+            //                 <th scope="row">Vehicle Number</th>
+            //                 <td>${escapeHtml(visitData.extendedProps.transport_details.vehicle_number) || 'N/A'}</td>
+            //             </tr>
+            //             <!-- Add more driver info fields as needed -->
+            //         </tbody>
+            //     </table>
+            // `;
+
+            // // Append to modalVisitDetails
+            // modal.find('#modalVisitDetails').html(modalDetailsHtml);
+
+
+             // safely pull out transport_details
+            const transport = visitData.extendedProps.transport_details;
+
+            // --- HEADER SECTION (if you still want this) ---
+            // make sure you have this <div id="modalVisitDetails"></div> un-commented in your HTML!
+            if (transport) {
+                modal.find('#modalVisitDetails').html(`
                 <h5><strong>Driver Information</strong></h5>
                 <table class="table table-bordered">
                     <tbody>
-                        <tr>
-                            <th scope="row">Driver Name</th>
-                            <td>${escapeHtml(visitData.extendedProps.transport_details.driver_name) || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Driver Contact</th>
-                            <td>${escapeHtml(visitData.extendedProps.transport_details.contact_number) || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Vehicle Number</th>
-                            <td>${escapeHtml(visitData.extendedProps.transport_details.vehicle_number) || 'N/A'}</td>
-                        </tr>
-                        <!-- Add more driver info fields as needed -->
+                    <tr>
+                        <th>Driver Name</th>
+                        <td>${escapeHtml(transport.driver_name) || '-'}</td>
+                    </tr>
+                    <tr>
+                        <th>Driver Contact</th>
+                        <td>${escapeHtml(transport.contact_number) || '-'}</td>
+                    </tr>
+                    <tr>
+                        <th>Vehicle Number</th>
+                        <td>${escapeHtml(transport.vehicle_number) || '-'}</td>
+                    </tr>
+                    <tr>
+                        <th>Remarks</th>
+                        <td>${escapeHtml(transport.remarks) || '-'}</td>
+                    </tr>
                     </tbody>
                 </table>
-            `;
+                `);
+            } else {
+                modal.find('#modalVisitDetails').html(`
+                <div class="alert alert-info">
+                    No transport details available.
+                </div>
+                `);
+            }
 
-            // Append to modalVisitDetails
-            modal.find('#modalVisitDetails').html(modalDetailsHtml);
 
             // Populate form fields with visit data
             modal.find('#bloodBankName').val(visitData.extendedProps.blood_bank_name || '');
@@ -2166,17 +2238,25 @@
             modal.find('#timeDisplay').text(formatTime(visitData.time) || '-');
             modal.find('#tpRemarksDisplay').text(visitData.extendedProps.remarks || '-');
 
-            modal.find('#warehouseDisplay').text(visitData.extendedProps.transport_details.warehouse_name || '-');
-            modal.find('#transportPartnerDisplay').text(visitData.extendedProps.transport_details.transport_partner_name || '-');
+            // modal.find('#warehouseDisplay').text(visitData.extendedProps.transport_details.warehouse_name || '-');
+            // modal.find('#transportPartnerDisplay').text(visitData.extendedProps.transport_details.transport_partner_name || '-');
 
-            modal.find('#driverNameDisplay').text(visitData.extendedProps.transport_details.driver_name || '-');
-            modal.find('#driverContactDisplay').text(visitData.extendedProps.transport_details.contact_number || '-');
-            modal.find('#vehicleNumberDisplay').text(visitData.extendedProps.transport_details.vehicle_number || '-');
-            modal.find('#driverRemarksDisplay').text(visitData.extendedProps.transport_details.remarks || '-');
+            // modal.find('#driverNameDisplay').text(visitData.extendedProps.transport_details.driver_name || '-');
+            // modal.find('#driverContactDisplay').text(visitData.extendedProps.transport_details.contact_number || '-');
+            // modal.find('#vehicleNumberDisplay').text(visitData.extendedProps.transport_details.vehicle_number || '-');
+            // modal.find('#driverRemarksDisplay').text(visitData.extendedProps.transport_details.remarks || '-');
 
+            // Now the transport side
+            modal.find('#warehouseDisplay').text(transport?.warehouse_name               || 'N/A');
+            modal.find('#transportPartnerDisplay').text(transport?.transport_partner_name || 'N/A');
+            modal.find('#driverNameDisplay').text(transport?.driver_name                 || 'N/A');
+            modal.find('#driverContactDisplay').text(transport?.contact_number            || 'N/A');
+            modal.find('#vehicleNumberDisplay').text(transport?.vehicle_number            || 'N/A');
+            modal.find('#driverRemarksDisplay').text(transport?.remarks                  || 'N/A');
 
             // Set the visit ID in the hidden input
             modal.find('#visitId').val(visitData.id || '');
+            modal.find('#visitTPType').val(visitData.extendedProps.tour_plan_type || '');
             modal.find('#blood_bank_latitude').val(visitData.extendedProps.latitude || '');
             modal.find('#blood_bank_longitude').val(visitData.extendedProps.longitude || '');
   
@@ -2297,6 +2377,8 @@
         $('#updateVisitForm').on('submit', function(e) {
             e.preventDefault();
 
+            const visitTPType = $('#visitTPType').val();
+
               // Show loading alert
                 Swal.fire({
                     title: 'Submitting...',
@@ -2341,15 +2423,8 @@
             // }
 
              // If location is enabled, show a loading modal while fetching/calculating location data
-            if (entityFeatures.location_enabled.toLowerCase() === 'yes') {
-                // Swal.fire({
-                //     title: 'Fetching Location...',
-                //     allowOutsideClick: false,
-                //     didOpen: () => {
-                //         Swal.showLoading();
-                //     }
-                // });
-
+            if (entityFeatures.location_enabled.toLowerCase() === 'yes' && visitTPType != 3) {
+                console.log('Location check  required.');
                 // Check if user's location is available
                 if (!userLocation) {
                     Swal.close(); // Close loading alert
@@ -2392,7 +2467,7 @@
 
 
             const formData = new FormData(this);
-            // // Log each key and value in the FormData
+            // Log each key and value in the FormData
             // for (let [key, value] of formData.entries()) {
             //     console.log(key + ':', value);
             // }
@@ -2778,6 +2853,7 @@
 
             // Set the visit ID in the hidden input
             $('#sourcingVisitId').val(visit.id || '');
+            $('#visitTPType').val(visit.tour_plan_type || '');
 
             // Reset the form fields
             $('#updateSourcingVisitForm')[0].reset();
