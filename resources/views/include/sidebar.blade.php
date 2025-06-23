@@ -102,7 +102,7 @@
           </a>
         </li>
          <!-- Blood Bank Reports - Visible to Role ID 1 and 2 -->
-         @if (in_array(Auth::user()->role_id, [1, 2, 6, 19]))
+         @if (in_array(Auth::user()->role_id, [1, 2, 6]))
          <li>
           <a href="{{ route('tourplanner.finalDCR') }}">
             <i class="bi bi-circle"></i><span>DCR Approvals</span>
