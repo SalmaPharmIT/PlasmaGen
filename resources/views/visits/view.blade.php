@@ -1640,11 +1640,15 @@
 
 <script>
     $(document).ready(function() {
-        const selectedDate = "{{ $date }}";
+       // const selectedDate = "{{ $date }}";
         // Get the server's current date in 'YYYY-MM-DD' format
-        const currentDate = "{{ \Carbon\Carbon::now()->toDateString() }}";
+      //  const currentDate = "{{ \Carbon\Carbon::now()->toDateString() }}";
         const visitsListEl = $('#visitsList');
         const visitDetailsContentEl = $('#visitDetailsContent');
+
+        const selectedDate = "{{ $date }}";
+        const currentDate  = "{{ \Carbon\Carbon::now()->toDateString() }}";
+        const cutoffDate   = "2025-07-01";   // ← NEW
 
         let entityFeatures = {}; // To store km_bound and location_enabled
         let userLocation = null; // To store user's current location
@@ -1706,10 +1710,19 @@
                             return false;
                         }); 
 
-                        if(anyUpdated) {
-                            $("#finalDcrSubmitForm").show();
+                        // if(anyUpdated) {
+                        //     $("#finalDcrSubmitForm").show();
+                        // } else {
+                        //     $("#finalDcrSubmitForm").hide();
+                        // }
+
+                        // new:
+                        const sel = new Date(selectedDate);
+                        const co  = new Date(cutoffDate);
+                        if ((sel <= co || selectedDate === currentDate) && anyUpdated) {
+                        $("#finalDcrSubmitForm").show();
                         } else {
-                            $("#finalDcrSubmitForm").hide();
+                        $("#finalDcrSubmitForm").hide();
                         }
 
                         // Create a list group
@@ -1985,16 +1998,21 @@
             console.log('visit.extendedProps.status', visit.extendedProps.status);
             console.log('visit.extendedProps.tp_status', visit.extendedProps.tp_status);
 
+            const vd = new Date(visitDate);
+            const co  = new Date(cutoffDate);
+            // show if visitDate ≤ cutoff OR is today
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 1 && (visit.extendedProps.status == 'submitted' || visit.extendedProps.status == 'initiated') && visit.extendedProps.tp_status == 'accepted') {
-                // Add Update button centered
+            // if(visitDate && visitDate === currentDate && tourPlanType === 1 && (visit.extendedProps.status == 'submitted' || visit.extendedProps.status == 'initiated') && visit.extendedProps.tp_status == 'accepted') {
+            if((vd <= co || visitDate === currentDate) && tourPlanType === 1 && (visit.extendedProps.status == 'submitted' || visit.extendedProps.status == 'initiated') && visit.extendedProps.tp_status == 'accepted') {
+               // Add Update button centered
                 const updateButton = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateVisitModal" data-visit-id="${visit.id}" data-visit='${JSON.stringify(visit)}'>Update Collection Visit</button>`;
                 detailsHtml += `<div class="mt-3 text-center">${updateButton}</div>`;
 
                 // The Fetch Entity Features is now handled within the modal show event
             }
 
-            if(visitDate && visitDate === currentDate && tourPlanType === 2 && (visit.extendedProps.status == 'initiated' || visit.extendedProps.status == 'updated') && visit.extendedProps.tp_status == 'accepted') {   // For Sourcing DCR Submit Button
+           // if(visitDate && visitDate === currentDate && tourPlanType === 2 && (visit.extendedProps.status == 'initiated' || visit.extendedProps.status == 'updated') && visit.extendedProps.tp_status == 'accepted') {   // For Sourcing DCR Submit Button
+            if((vd <= co || visitDate === currentDate) && tourPlanType === 2 && (visit.extendedProps.status == 'initiated' || visit.extendedProps.status == 'updated') && visit.extendedProps.tp_status == 'accepted') {   // For Sourcing DCR Submit Button
               // Encode the visit data to safely include in the data attribute
                 const encodedVisit = encodeURIComponent(JSON.stringify(visit));
 

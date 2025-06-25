@@ -2618,5 +2618,81 @@ class TourPlannerController extends Controller
         }
     }
 
+    
+    /**
+     * API Endpoint to Fetch All DCR ApprovalsCollecting Agents Users Lists.
+     *
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function getDCRApprovalsCollectingAgents()
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching entities
+        $apiUrl = config('auth_api.dcr_approvals_collecting_agents_fetch_by_managerId_url');
+
+        if (!$apiUrl) {
+            Log::error('Collecting Agents fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Collecting Agents fetch URL is not configured.'
+            ], 500);
+        }
+
+      //  Log::info('Fetching collecting agents from external API.', ['api_url' => $apiUrl]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            Log::info('External API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch collecting agents from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch collecting agents from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching collecting agents from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching collecting agents.',
+            ], 500);
+        }
+    }
 
 }

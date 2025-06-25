@@ -142,6 +142,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/markTPAdded', [TourPlannerController::class, 'markTPAdded'])->name('tourplanner.markTPAdded');
     Route::get('/tourplanner/getAllActiveWarehouses', [TourPlannerController::class, 'getAllActiveWarehouses'])->name('tourplanner.getAllActiveWarehouses');  // Get All Acive Warehouses
     Route::get('/tourplanner/getAllActiveTransportPartners', [TourPlannerController::class, 'getAllActiveTransportPartners'])->name('tourplanner.getAllActiveTransportPartners'); 
+    Route::get('/tourplanner/getDCRApprovalsCollectingAgents', [TourPlannerController::class, 'getDCRApprovalsCollectingAgents'])->name('tourplanner.getDCRApprovalsCollectingAgents'); 
     /* *********************  Tour Planner Ends ********************************* */
 
     /* *********************  Manage Tour Planner Starts ********************************* */
