@@ -1,14 +1,14 @@
 @extends('include.dashboardLayout')
 
-@section('title', 'Expenses')
+@section('title', 'Expense Clearance')
 
 @section('content')
 
 <div class="pagetitle">
-    <h1>Expenses</h1>
+    <h1>Expense Clearance</h1>
     <nav>
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('expenses.index') }}">Expenses</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('expenses.clearance') }}">Expenses Clearance</a></li>
         <li class="breadcrumb-item active">Views</li>
       </ol>
     </nav>
@@ -23,6 +23,15 @@
 
             <!-- Filters Row -->
             <div class="row mb-4 mt-2 align-items-end">
+
+                <!-- Collecting Agent Dropdown -->
+                <div class="col-md-4">
+                    <label for="collectingAgentDropdown" class="form-label">Collecting/Sourcing Executives</label>
+                    <select id="collectingAgentDropdown" class="form-select select2" name="collecting_agent_id[]" multiple>
+                        <option value="">Choose Collecting/Sourcing Executives</option>
+                        <!-- Options will be populated via AJAX -->
+                    </select>
+                </div>
               
                 <!-- Month Picker -->
                 <div class="col-md-4">
@@ -119,7 +128,7 @@
        $(document).ready(function() {
 
             // Define route URLs with placeholders
-            var expenseVisitDetailsRoute = "{{ route('expenses.view') }}"; // Use base route without placeholders
+            var expenseVisitDetailsRoute = "{{ route('expenses.details') }}"; // Use base route without placeholders
 
 
             initializeFilters();
@@ -149,12 +158,13 @@
         
 
             // Function to load DCR Approvals based on filters
-            function loadUpdatedVisitsLists(selectedMonth) {
+            function loadUpdatedVisitsLists(selectedMonth, selectedAgentId) {
                 $.ajax({
-                    url: "{{ route('expenses.getUpdatedVisits') }}",
+                    url: "{{ route('expenses.getAllExpenses') }}",
                     type: 'GET',
                     data: {
-                        month: selectedMonth
+                        month: selectedMonth,
+                        agent_id: selectedAgentId
                     },
                     beforeSend: function() {
                         Swal.fire({
@@ -177,42 +187,11 @@
                                 var typeLabel = event.tour_plan_type ? event.tour_plan_type : '-';
                                 var bankNameDisplay = event.visit_to ? event.visit_to : '-';
 
-                                // // Determine the TP Type label based on tp_tour_plan_type
-                                // var typeLabel = '';
-                                // if (event.tp_tour_plan_type == 1) {
-                                //     typeLabel = 'Collection';
-                                // } else if (event.tp_tour_plan_type == 2) {
-                                //     typeLabel = 'Sourcing';
-                                // } else if (event.tp_tour_plan_type == 3) {
-                                //     typeLabel = 'Assigned Collections';
-                                // } else {
-                                //     typeLabel = 'Other';
-                                // }
-
-                                // Determine the blood bank name to display.
-                                // For Collection (type 1), use the top-level field provided by the API.
-                                // For Sourcing (type 2), loop through visits and take the visit_sourcing_blood_bank_name.
-                                // var bankNameDisplay = '-';
-                                // if (event.tp_tour_plan_type == 1 || event.tp_tour_plan_type == 3) {
-                                //     bankNameDisplay = event.visit_collection_blood_bank_name ? event.visit_collection_blood_bank_name : '-';
-                                // } else {
-                                //     var bankNames = [];
-                                //     if (event.visits && event.visits.length > 0) {
-                                //         $.each(event.visits, function(i, visit) {
-                                //             if (visit.visit_sourcing_blood_bank_name) {
-                                //                 bankNames.push(visit.visit_sourcing_blood_bank_name);
-                                //             }
-                                //         });
-                                //     }
-                                //     bankNameDisplay = bankNames.length > 0 ? bankNames.join(', ') : '-';
-                                // }
-                                // console.log('bankNameDisplay', bankNameDisplay);
-
                                // Dynamically build the URL with query parameters
                                 var viewInfoUrl = expenseVisitDetailsRoute + '?date=' + encodeURIComponent(event.visit_date) + '&dcr_id=' + encodeURIComponent(event.dcr_id);
 
                                 // Create the "View Info" button
-                                var actions = `<a href="${viewInfoUrl}" class="btn btn-sm btn-primary mb-1">Add Expense</a>`;
+                                var actions = `<a href="${viewInfoUrl}" class="btn btn-sm btn-primary mb-1">View</a>`;
 
                                 // Add the row to the DataTable.
                                 table.row.add({
@@ -241,6 +220,7 @@
 
             // Function to initialize the page with saved filters or defaults
             function initializeFilters() {
+                 var savedAgentId = sessionStorage.getItem('dcrFilterAgentId');
                 var savedMonth = sessionStorage.getItem('dcrFilterMonth');
 
                 // If no saved month, default to current month (from the monthPicker input)
@@ -250,11 +230,17 @@
                     $('#monthPicker').val(savedMonth);
                 }
 
+                 if (savedAgentId) {
+                    $('#collectingAgentDropdown').val(savedAgentId).trigger('change');
+                }
+
                 // Load DCR Approvals with the filters (or defaults)
-                loadUpdatedVisitsLists(savedMonth);
+                loadUpdatedVisitsLists(savedMonth, savedAgentId);
             }
 
           
+            // Load Collecting Agents on page load and initialize filters in the callback
+            loadCollectingAgents(initializeFilters);
 
             // Function to format time (HH:MM:SS to HH:MM AM/PM)
             function formatTime(timeStr) {
@@ -270,6 +256,10 @@
 
             // Handle Filter Button Click
             $('#filterButton').on('click', function() {
+                var agentIds = $('#collectingAgentDropdown').val() || [];  // always an array
+                // (no need to check for 'all': our select-all code already expanded it)
+                var agentParam = Array.isArray(agentIds) ? agentIds.join(',') : agentIds;
+
                 var selectedMonth = $('#monthPicker').val();
 
                 if (!selectedMonth) {
@@ -277,7 +267,11 @@
                     return;
                 }
 
-                loadUpdatedVisitsLists(selectedMonth);
+                 // Save filters to sessionStorage
+                sessionStorage.setItem('dcrFilterAgentId', agentParam);
+                sessionStorage.setItem('dcrFilterMonth', selectedMonth);
+
+                loadUpdatedVisitsLists(selectedMonth, agentParam);
             });
 
             // Handle Reset Button Click
@@ -295,7 +289,46 @@
                     initializeFilters();
                 }
             });
+
+
+             // 2. Load executives dropdown
+            function loadCollectingAgents(){
+                $.get("{{ route('tourplanner.getCollectingAgents') }}", res => {
+                // if(res.success){
+                //   const dd = $('#collectingAgentDropdown').empty().append('<option value="">Choose Executives</option>');
+                //   res.data.forEach(a => dd.append(`<option value="${a.id}">${a.name} (${a.role.role_name})</option>`));
+                // } else {
+                //   Swal.fire('Error', res.message, 'error');
+                // }
+                if(!res.success) return Swal.fire('Error', res.message,'error');
+
+                const dd = $('#collectingAgentDropdown').empty();
+                // 2.1 add the "Select All" first
+                dd.append(new Option('Select All','all'));
+                // 2.2 then all the real agents
+                res.data.forEach(a => {
+                    dd.append(new Option(`${a.name} (${a.role.role_name})`, a.id));
+                });
+                // notify select2 of the change
+                dd.trigger('change');
+                });
+            }
+
+            
+            // 3. When the user picks "Select All", grab every real option and select it
+            $('#collectingAgentDropdown').on('select2:select', function(e) {
+                if (e.params.data.id === 'all') {
+                const allIds = $(this).find('option')
+                    .map((_,opt) => opt.value)
+                    .get()
+                    .filter(v => v && v !== 'all');
+                // overwrite the selection with all real IDs
+                $(this).val(allIds).trigger('change');
+                }
             });
+
+
+        });
 
               // Helper function to capitalize the first letter
         function capitalizeFirstLetter(string) {

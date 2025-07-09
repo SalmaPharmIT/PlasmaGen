@@ -215,6 +215,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/expenses/submit', [ExpensesController::class, 'submitExpenses'])->name('expenses.submit');  
     Route::get('expenses/fetchExpenses/{tp_id}', [ExpensesController::class, 'fetchExpenses'])->name('expenses.fetchExpenses');
     Route::delete('/expenses/delete/{id}', [ExpensesController::class, 'deleteExpense'])->name('expenses.delete');
+    Route::get('/expenses/clearance', [ExpensesController::class, 'expenseClearance'])->name('expenses.clearance');
+    Route::get('/expenses/getAllExpenses', [ExpensesController::class, 'getAllExpenses'])->name('expenses.getAllExpenses');
+    Route::get('/expenses/details', [ExpensesController::class, 'showExpenseDetails'])->name('expenses.details');
+    Route::get('/expenses/expenseStatus', [ExpensesController::class, 'expenseStatusFetch'])->name('expenses.expenseStatus');
+    Route::post('/expenses/dcr/{id}/update-status', [ExpensesController::class, 'expenseStatusUpdate'])->name('expenses.dcr.updateStatus');
     /* *********************  Report Visits Ends ********************************* */
 
 

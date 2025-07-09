@@ -174,7 +174,7 @@
 
 
               <!-- Expenses Information Card -->
-       @if(isset($dcr['extendedProps']['expenses']) && count($dcr['extendedProps']['expenses']) > 0)
+       {{-- @if(isset($dcr['extendedProps']['expenses']) && count($dcr['extendedProps']['expenses']) > 0)
        <div class="card mb-4 mt-4">
            <div class="card-header text-black">
                <h5 class="mb-0"><strong>Expenses Information</strong></h5>
@@ -244,7 +244,7 @@
                <p>No expenses have been recorded for this DCR.</p>
            </div>
        </div>
-       @endif
+       @endif --}}
 
     </div>
 </div>

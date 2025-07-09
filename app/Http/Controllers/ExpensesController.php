@@ -78,6 +78,11 @@ class ExpensesController extends Controller
                 'body' => $response->body(),
             ]);
 
+            // Log::info('External API Response for Updated Visits', [
+            //     'status' => $response->status(),
+            //     'body'   => $response->body(),
+            // ]);
+
             if ($response->successful()) {
                 $apiResponse = $response->json();
 
@@ -136,7 +141,7 @@ class ExpensesController extends Controller
 
         // Retrieve filters from the request
         $visit_date = $request->input('date');
-        $tp_id = $request->input('tp_id');
+        $dcr_id = $request->input('dcr_id');
 
         // Validate inputs
         if (!$visit_date) {
@@ -147,10 +152,10 @@ class ExpensesController extends Controller
         }
 
         // Validate inputs
-        if (!$tp_id) {
+        if (!$dcr_id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tour Plan ID is required.'
+                'message' => 'DCR ID is required.'
             ], 400);
         }
 
@@ -161,16 +166,18 @@ class ExpensesController extends Controller
         }
 
         // Define the external API URL for fetching DCR details
-        $apiUrl = config('auth_api.tour_plan_visits_details_url');
+        $apiUrl = config('auth_api.dcr_expenses_details_url');
         if (!$apiUrl) {
             return response()->json(['error' => 'Tour Plan visits details fetch URL is not configured.'], 500);
         }
+
+        Log::info('fetchVisitsExpenses URL:', ['fetchVisitsExpenses' => $apiUrl]);
 
         try {
             // Use the 'tp_id' and 'date' in your API call
             // Construct the query parameters
             $queryParams = [
-                'id' => $tp_id,        // Tour Plan ID
+                'id' => $dcr_id,        // Tour Plan ID
                 'date' => $visit_date  // Visit Date
             ];
 
@@ -239,8 +246,19 @@ class ExpensesController extends Controller
             'totalPrice' => 'nullable|numeric|min:0',
             'remarks' => 'nullable|string|max:255',
             // New validation rules for documents
-            'documents' => 'nullable|array',
-            'documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
+            // 'documents' => 'nullable|array',
+            // 'documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
+            'bill_available' => 'required|boolean',
+            'food_attach'       => 'nullable|array',
+            'food_attach.*'     => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
+            'conveyance_attach' => 'nullable|array',
+            'conveyance_attach.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
+            'telfax_attach'     => 'nullable|array',
+            'telfax_attach.*'   => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
+            'lodging_attach'    => 'nullable|array',
+            'lodging_attach.*'  => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
+            'sundry_attach'     => 'nullable|array',
+            'sundry_attach.*'   => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
         ]);
 
         // Retrieve the token from the session
@@ -266,7 +284,24 @@ class ExpensesController extends Controller
             'remarks'          => $request->input('remarks'),
             'modified_by'         => auth()->id(),
             'tour_plan_id'         => $request->input('tour_plan_id'),
+            'dcr_id'         => $request->input('tour_plan_id'),
+            'bill_available' => $request->boolean('bill_available'),
         ];
+
+          // Bills attachments
+        foreach (['food','conveyance','telfax','lodging','sundry'] as $type) {
+            $key  = $type . '_attach';
+            if ($request->hasFile($key)) {
+                $postData[$key] = [];
+                foreach ($request->file($key) as $file) {
+                    if ($file->isValid()) {
+                        $base64 = 'data:'.$file->getMimeType().';base64,'.
+                                base64_encode(file_get_contents($file->getRealPath()));
+                        $postData[$key][] = $base64;
+                    }
+                }
+            }
+        }
 
         // Send the request using Laravel's HTTP client
         $http = Http::withHeaders([
@@ -453,7 +488,285 @@ class ExpensesController extends Controller
         }
     }
 
+    /**
+     * Show the  expense clearance list page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function expenseClearance()
+    {
+        return view('expenses.clearance');
+    }
 
-
+    /**
+     * API Endpoint to Fetch all expenses based on filters.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllExpenses(Request $request)
+    {
+        // Retrieve filters from the request
+        $month = $request->input('month'); // Expected format: YYYY-MM
+        $agentId = $request->input('agent_id');
     
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching calendar events
+        $apiUrl = config('auth_api.expense_clearance_fetch_url');
+
+        if (!$apiUrl) {
+            Log::error('Updated Visits fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Updated Visits fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Build query parameters
+            $queryParams = [
+                'month' => $month,
+            ];
+
+            if ($agentId) {
+                $queryParams['agent_id'] = $agentId;
+            }
+
+
+
+            // Log the data being sent
+            Log::info('Expense clearance list request API', [
+                'data' => $queryParams,
+            ]);
+
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            Log::info('External API Response for Expense clearance list', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            // Log::info('External API Response for Updated Visits', [
+            //     'status' => $response->status(),
+            //     'body'   => $response->body(),
+            // ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'events' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure for Expense clearance list.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch Expense clearance list from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch Expense clearance list from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Expense clearance list from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching Expense clearance list.',
+            ], 500);
+        }
+    }
+
+    public function showExpenseDetails(Request $request)
+    {
+        // Get date and tp_id from the query string
+        $visitDate = $request->query('date');  // Fetch date from the query string
+        $tpId = $request->query('tp_id');      // Fetch tp_id from the query string
+        
+        // Pass them to the view
+        return view('expenses.details', compact('visitDate', 'tpId'));
+    }
+
+    public function expenseStatusFetch(Request $request)
+    {
+        // Retrieve the query parameters
+        $id = $request->query('id');
+        $visitDate = $request->query('visit_date');
+
+        // Log received parameters
+        Log::info('expenseStatusFetch called with params', [
+            'id' => $id,
+            'visit_date' => $visitDate,
+        ]);
+
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define your external API URL for fetching the details
+        $apiUrl = config('auth_api.expense_status_fetch_url');
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Expense Status fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Build the query parameters for the API call
+            $queryParams = [
+                'id' => $id,
+                'visit_date' => $visitDate,
+            ];
+
+            // Make the API call
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+                if (Arr::get($apiResponse, 'success') && !empty(Arr::get($apiResponse, 'data'))) {
+                    // Return the entire API response as JSON
+                    return response()->json($apiResponse);
+                } else {
+                    Log::warning('External API returned failure for Expense Status fetch.', [
+                        'message' => Arr::get($apiResponse, 'message')
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Failed to fetch Expense Status.')
+                    ], 400);
+                }
+            } else {
+                Log::error('Failed to fetch Expense Status via external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch Expense Status via the external API.'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Expense Status Details', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching Expense Status.'
+            ], 500);
+        }
+    }
+
+    public function expenseStatusUpdate(Request $request, $id)
+    {
+        // 1. Validate the incoming request
+        $validatedData = $request->validate([
+            'status' => 'required|in:cleared,rejected',
+            'remarks' => 'nullable|string', // Validate the remarks
+        ]);
+
+         // 2. Retrieve the token from the session
+         $token = session()->get('api_token');
+
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Authentication token missing. Please log in again.'
+             ], 401);
+         }
+
+            // 3. Define the external API URL for updating DCR status
+        $apiUrl = config('auth_api.expense_status_update_url');
+
+        if (!$apiUrl) {
+            Log::error('Expense Update Status URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Expense Update Status URL is not configured.'
+            ], 500);
+        }
+
+          // 4. Prepare the payload for the API request
+          $payload = [
+            'id' => $id,
+            'status' => $validatedData['status'],
+            'remarks' => $validatedData['remarks'],  // Add remarks to the payload
+            'updated_by' => Auth::id(), // Assuming the authenticated user is performing the update
+        ];
+
+        // Log the payload being sent
+        Log::info('Sending DCR Status Update to External API', [
+            'api_url' => $apiUrl,
+            'payload' => $payload,
+        ]);
+
+        try {
+            // Step 7: Make the API call to update the DCR status
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->post($apiUrl, $payload);
+    
+            // Log the API response
+            Log::info('External API Response for DCR Status Update', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+    
+            // Step 8: Handle the API response
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+    
+                if (Arr::get($apiResponse, 'success')) {
+                    return redirect()->back()->with('success', Arr::get($apiResponse, 'message', 'Expense status updated successfully.'));
+                } else {
+                    Log::warning('External API returned failure for Expense Status Update.', [
+                        'message' => Arr::get($apiResponse, 'message'),
+                    ]);
+                    return redirect()->back()->with('error', Arr::get($apiResponse, 'message', 'Failed to update Expense status.'));
+                }
+            } else {
+                Log::error('Failed to update Expense status via external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return redirect()->back()->with('error', 'Failed to update Expense status via the external API.');
+            }
+        } catch (\Exception $e) {
+            // Handle exceptions, such as network issues
+            Log::error('Exception while updating Expense status via external API.', [
+                'error' => $e->getMessage(),
+            ]);
+            return redirect()->back()->with('error', 'An error occurred while updating the Expense status.');
+        }
+    }
 }
