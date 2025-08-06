@@ -62,6 +62,7 @@
                         <thead>
                             <tr>
                                 <th>SI. No.</th>
+                                <th>Executive</th>
                                 <th>TP Type</th>
                                 <th>Visit Date</th>
                                 <th>Blood Bank</th>
@@ -136,6 +137,7 @@
             var table = $('#dcrApprovalsTable').DataTable({
                 "columns": [
                     { "data": null, "orderable": false, "searchable": false },
+                    { "data": "executive" },
                     { "data": "tp_type" },
                     { "data": "visit_date" },
                     { "data": "bank" },
@@ -187,6 +189,11 @@
                                 var typeLabel = event.tour_plan_type ? event.tour_plan_type : '-';
                                 var bankNameDisplay = event.visit_to ? event.visit_to : '-';
 
+                                 var executiveDisplay = event.employee_name 
+                                                        + ' (' 
+                                                        + event.role_name 
+                                                        + ')';
+
                                // Dynamically build the URL with query parameters
                                 var viewInfoUrl = expenseVisitDetailsRoute + '?date=' + encodeURIComponent(event.visit_date) + '&dcr_id=' + encodeURIComponent(event.dcr_id);
 
@@ -195,6 +202,7 @@
 
                                 // Add the row to the DataTable.
                                 table.row.add({
+                                    "executive":   executiveDisplay,      // ← new
                                     "tp_type": typeLabel,  // TP Type column
                                     "visit_date": visitDate,
                                     "bank": bankNameDisplay, // Display the blood bank name

@@ -111,7 +111,7 @@
         @endif
 
          <!-- Expense Claerence - Visible to Role ID 1 and 2 -->
-         @if (in_array(Auth::user()->role_id, [1, 2, 6, 19]))
+         @if (in_array(Auth::user()->role_id, [1, 2, 18]))
          <li>
           <a href="{{ route('expenses.clearance') }}">
             <i class="bi bi-circle"></i><span>Expense Clearance</span>
