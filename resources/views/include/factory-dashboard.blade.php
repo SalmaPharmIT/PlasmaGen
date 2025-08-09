@@ -66,10 +66,10 @@
                             </div>
                             <div class="stat-content mt-4">
                                 <h3 class="stat-value mb-2">0</h3>
-                                <p class="stat-label mb-2">Total Inwards</p>
+                                <p class="stat-label mb-2">Total Plasma Inwards</p>
                                 <div class="stat-trend positive">
                                     <i class="bi bi-arrow-up"></i>
-                                    <span>12.5% increase</span>
+                                    {{-- <span>12.5% increase</span> --}}
                                 </div>
                             </div>
                         </div>
@@ -98,10 +98,10 @@
                             </div>
                             <div class="stat-content mt-4">
                                 <h3 class="stat-value mb-2">0</h3>
-                                <p class="stat-label mb-2">Total Tail Cuttings</p>
+                                <p class="stat-label mb-2">Total Plasma Cuttings</p>
                                 <div class="stat-trend positive">
                                     <i class="bi bi-arrow-up"></i>
-                                    <span>8.2% increase</span>
+                                    {{-- <span>8.2% increase</span> --}}
                                 </div>
                             </div>
                         </div>
@@ -363,7 +363,7 @@
             </div>
 
             <!-- Performance Rankings -->
-  
+
             </div>
         </div>
     </div>
@@ -376,7 +376,7 @@
 .dashboard-container {
     padding: 1.5rem;
     background-color: #f8f9fa;
-    background-image: 
+    background-image:
         radial-gradient(at 90% 10%, rgb(65, 84, 241, 0.1) 0px, transparent 50%),
         radial-gradient(at 10% 90%, rgb(46, 202, 106, 0.1) 0px, transparent 50%);
     min-height: 100vh;
@@ -454,16 +454,16 @@
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .d-flex.align-items-center.gap-3 {
         width: 100%;
         margin-top: 1rem;
     }
-    
+
     .filter-dropdown {
         width: 100%;
     }
-    
+
     .filter-dropdown .btn {
         width: 100%;
         text-align: left;
@@ -551,16 +551,16 @@
     transition: transform 0.6s ease;
 }
 
-.card-icon.blue { 
+.card-icon.blue {
     background: linear-gradient(135deg, #4154f1, #2039c7);
 }
-.card-icon.green { 
+.card-icon.green {
     background: linear-gradient(135deg, #2eca6a, #1b994f);
 }
-.card-icon.orange { 
+.card-icon.orange {
     background: linear-gradient(135deg, #ff771d, #e65c00);
 }
-.card-icon.purple { 
+.card-icon.purple {
     background: linear-gradient(135deg, #7928ca, #5b1e9a);
 }
 
@@ -1138,11 +1138,11 @@
     .dashboard-container {
         padding: 1rem;
     }
-    
+
     .stat-card {
         margin-bottom: 1rem;
     }
-    
+
     .stat-icon-box {
         width: 40px;
         height: 40px;
@@ -1219,7 +1219,7 @@
     .secondary-stats {
         padding: 0.5rem;
     }
-    
+
     .carousel-item {
         padding: 0.25rem;
     }
@@ -1369,12 +1369,12 @@
     .section-container .page-header {
         padding: 1rem;
     }
-    
+
     .section-container .collapse,
     #statsCarousel {
         padding: 1rem;
     }
-    
+
     .section-container .header-wrapper h2 {
         font-size: 1.25rem;
     }
@@ -1393,23 +1393,23 @@
       console.warn('Collection map container not found.');
       return;
     }
-    
+
     var latInput = document.getElementById('collectionLatitude');
     var lngInput = document.getElementById('collectionLongitude');
     if (!latInput || !lngInput || !latInput.value || !lngInput.value) {
       console.log("No collection latitude/longitude data available.");
       return;
     }
-    
+
     var latitude = parseFloat(latInput.value);
     var longitude = parseFloat(lngInput.value);
     var title = document.getElementById('collectionMapTitle') ? document.getElementById('collectionMapTitle').value : 'DCR Location';
-    
+
     var map = new google.maps.Map(collectionMapContainer, {
         center: { lat: latitude, lng: longitude },
         zoom: 15
     });
-    
+
     var marker = new google.maps.Marker({
         position: { lat: latitude, lng: longitude },
         map: map,
@@ -1419,23 +1419,23 @@
           scaledSize: new google.maps.Size(50, 50) // Adjust the width and height as needed
         }
     });
-    
+
     var infoWindow = new google.maps.InfoWindow({
         content: `<strong>${title}</strong>`
     });
-    
+
     marker.addListener('click', function() {
         infoWindow.open(map, marker);
     });
-    
+
     infoWindow.open(map, marker);
   }
-  
+
   // Expose initMap globally so that the Maps API callback finds it
   window.initMap = function() {
     initCollectionMap();
   };
-  
+
   // Expose updateFilter globally if needed in inline HTML onclick attributes
   window.updateFilter = function(value) {
     console.log('updateFilter', value);
@@ -1516,7 +1516,7 @@
                             const data = response.data;
                             // Reverse the array if the API returns months in descending order so that the chart displays in chronological order
                             data.reverse();
-                            
+
                             // Prepare arrays for the chart series and x-axis labels
                             const months = data.map(item => item.month);
                             const bloodBanks = data.map(item => item.blood_bank_count);
@@ -1617,8 +1617,8 @@
            loadDashboardData();
            loadDashboardGraphData();
            loadDashboardBloodBankMap();
-           
-         
+
+
 
           // Function to initialize the blood bank map using the data from the API
           function initBloodBankMap(bloodBanks) {
@@ -1674,7 +1674,7 @@
                       .removeClass("col-lg-12")
                       .addClass("col-lg-8");
                     $("#bloodBankMapsSection .details-container").show();
-                    
+
                       // Build content for the info window (a quick summary)
                       var infoContent = `
                           <div>
@@ -1701,7 +1701,7 @@
                           <p><strong>Address:</strong> ${fullAddress}</p>
                           <h5 class="card-title">Latest Collection Details</h5>
                           `;
-                   
+
 
                       // Define an array of color classes to style each collection entry
                       const collectionColors = ["text-primary", "text-secondary",  "text-warning", "text-success", "text-danger"];
@@ -1718,15 +1718,15 @@
                                       <div class="activity-content">
                                           <strong>Date:</strong> ${collection.start}<br>
                                           <strong>Executive:</strong> ${collection.extendedProps.collecting_agent_name || '-'}<br>
-                                          <strong>Planned:</strong> ${collection.extendedProps.quantity || 0}, 
+                                          <strong>Planned:</strong> ${collection.extendedProps.quantity || 0},
                                           <strong>Collected:</strong> ${collection.extendedProps.available_quantity || 0}<br>
                                            <strong>Warehouse:</strong> ${collection.extendedProps.transport_details.warehouse_name || '-'}<br>
                                           <strong>Plasma Price:</strong> ${collection.extendedProps.price || 0}<br>
-                                          <strong>Part-A:</strong> ${collection.extendedProps.part_a_invoice_price || 0},  
-                                          <strong>Part-B:</strong> ${collection.extendedProps.part_b_invoice_price || 0},  
+                                          <strong>Part-A:</strong> ${collection.extendedProps.part_a_invoice_price || 0},
+                                          <strong>Part-B:</strong> ${collection.extendedProps.part_b_invoice_price || 0},
                                           <strong>Part-C:</strong> ${collection.extendedProps.part_c_invoice_price || 0}<br>
                                           <strong>Total Invoice Price:</strong> ${collection.extendedProps.collection_total_plasma_price || 0}<br>
-                                          <strong>Boxes/Units/Litres:</strong> ${collection.extendedProps.num_boxes || 0} / 
+                                          <strong>Boxes/Units/Litres:</strong> ${collection.extendedProps.num_boxes || 0} /
                                           ${collection.extendedProps.num_units || 0} / ${collection.extendedProps.num_litres || 0}
                                       </div>
                                   </div>
@@ -1753,7 +1753,7 @@
                   google.maps.event.removeListener(listener);
               });
           }
-          
+
         });
     </script>
 
@@ -1761,7 +1761,7 @@
 <!-- Load Google Maps JavaScript API using async & defer -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFwtHIaHQ1J8PKur9RmQy4Z5WsM6kVVPE&callback=initMap" async defer></script>
 
-    
+
 @endpush
 
 <script>
@@ -1776,10 +1776,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Dashboard Data Response:', response); // Debug log
                 if(response.success) {
                     const data = response.data;
-                    
+
                     // Update Primary Stats
                     updatePrimaryStats(data);
-                    
+
                     // Update Secondary Stats
                     updateSecondaryStats(data);
 
@@ -1850,7 +1850,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isPositive = trendValue >= 0;
             const trendIcon = isPositive ? 'bi-arrow-up' : 'bi-arrow-down';
             const trendClass = isPositive ? 'positive' : 'negative';
-            
+
             trendElement.className = `stat-trend ${trendClass}`;
             trendElement.innerHTML = `
                 <i class="bi ${trendIcon}"></i>
@@ -1862,7 +1862,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to update secondary statistics
     function updateSecondaryStats(data) {
         console.log('Updating Secondary Stats with data:', data); // Debug log
-        
+
         // Update each secondary stat card
         updateStatCard('stock-received', data.stock_received || 0, data.stock_received_progress);
         updateStatCard('pending-cutting', data.pending_cutting || 0, data.pending_cutting_progress);

@@ -31,11 +31,11 @@
     .table-bordered > :not(caption) > * > * {
         border-width: 1px;
     }
-    /* Group of 3 styling */
-    .excel-like tr:nth-child(3n) {
+    /* Group of 6 styling instead of 3 */
+    .excel-like tr:nth-child(6n) {
         border-bottom: 2px solid #000;
     }
-    .excel-like tr:nth-child(3n+1) {
+    .excel-like tr:nth-child(6n+1) {
         border-top: 2px solid #000;
     }
 
@@ -48,7 +48,7 @@
         max-width: 180px;
         height: auto;
     }
-    
+
     /* Column Width Styles */
     .excel-like td:nth-child(1) { width: 40px; }
     .excel-like td:nth-child(2) { width: 40px; }
@@ -130,6 +130,7 @@
                         <input type="hidden" name="mini_pool_number" id="mini_pool_number">
                         <input type="hidden" name="sub_mini_pool_no" id="sub_mini_pool_no">
                         <input type="hidden" name="timestamp" id="timestamp">
+                        <input type="hidden" name="tail_cutting_data" id="tail_cutting_data">
 
                         <!-- Report Results Table -->
                         <div class="table-responsive">
@@ -145,13 +146,9 @@
                                         </td>
                                     </tr> --}}
                                     <tr>
-                                        <td colspan="6">
+                                        <td colspan="10">
                                             <strong>Blood Centre Name & City:</strong> <span id="display_blood_centre">-</span>
                                         </td>
-                                        <td colspan="3">
-                                            <strong>Work Station No.:</strong> <span id="work_station_no">-</span>
-                                        </td>
-                                        
                                     </tr>
                                     <tr>
                                         <td colspan="1">
@@ -299,9 +296,9 @@
 <script>
     // Wrap everything in a try-catch to catch any errors
     try {
-        
+
         $(document).ready(function() {
-                        
+
             // Initialize Select2
             $('#mini_pool_id').select2({
                 placeholder: "Search Mini Pool Number",
@@ -335,9 +332,14 @@
                 $('#mini_pool_number').val(selectedText);
 
                 if (selectedValue) {
+                    var urlGetMiniPoolData = "{{ route('factory.report.get-minipool-data', ['mini_pool_id' => '__MINI_POOL_ID__']) }}";
+
+                    var urlGetMiniPoolDataURL = urlGetMiniPoolData.replace('__MINI_POOL_ID__', selectedValue);
+                    console.log("urlGetMiniPoolDataURL URL:", urlGetMiniPoolDataURL);
                     // Fetch mini pool data
                     $.ajax({
-                        url: `/factory/report/get-minipool-data/${selectedValue}`,
+
+                        url: urlGetMiniPoolDataURL,
                         method: 'GET',
                         success: function(response) {
                             console.log('Mini pool data response:', response);
@@ -352,7 +354,7 @@
                                 $('#work_station_no').text(response.data.work_station || '-');
                                 $('#display_grn_no').text(response.data.ref_doc_no || '-');
                                 $('#totalVolume').val(response.data.total_volume || '0.00');
-                                
+
                                 // Update table with donor details
                                 if (response.data.details && response.data.details.length > 0) {
                                     let html = '';
@@ -360,6 +362,20 @@
                                     let subMiniPoolRowspan = 0;
                                     let subMiniPoolCounts = {};
                                     let subMiniPoolNumbers = new Set();
+
+                                    // Ensure we use only 2 sub mini pools
+                                    let uniqueSubMiniPools = [...new Set(response.data.details.map(d => d.sub_mini_pool_number))];
+                                    // If we have more than 2 sub mini pools, only use the first 2
+                                    if (uniqueSubMiniPools.length > 2) {
+                                        uniqueSubMiniPools = uniqueSubMiniPools.slice(0, 2);
+                                    }
+
+                                    // Reassign sub mini pool numbers to ensure 2 pools with 6 bags each
+                                    response.data.details.forEach((detail, idx) => {
+                                        // First 6 bags go to first sub mini pool, next 6 to second
+                                        const poolIndex = Math.floor(idx / 6) % 2;
+                                        detail.sub_mini_pool_number = uniqueSubMiniPools[poolIndex] || detail.sub_mini_pool_number;
+                                    });
 
                                     // Count rows per sub-mini pool
                                     response.data.details.forEach(detail => {
@@ -369,7 +385,7 @@
                                     response.data.details.forEach((detail, index) => {
                                         html += '<tr>';
                                         html += `<td class="p-0 text-center">${detail.row_number}</td>`;
-                                        html += `<td class="p-0 text-center">${detail.bags_in_mini_pool}</td>`;
+                                        html += `<td class="p-0 text-center">${((detail.row_number - 1) % 6) + 1}</td>`;
                                         html += `<td class="p-0 text-center">${detail.donor_id}</td>`;
                                         html += `<td class="p-0 text-center">${detail.donation_date}</td>`;
                                         html += `<td class="p-0 text-center">${detail.blood_group}</td>`;
@@ -378,11 +394,20 @@
                                         // If this is the first row of a sub-mini pool, add the rowspan cells
                                         if (currentSubMiniPool !== detail.sub_mini_pool_number) {
                                             currentSubMiniPool = detail.sub_mini_pool_number;
-                                            subMiniPoolRowspan = subMiniPoolCounts[detail.sub_mini_pool_number];
-                                            
+                                            // Force each sub mini pool to have exactly 6 bags
+                                            subMiniPoolRowspan = 6;
+
                                             html += `<td class="p-0 text-center" rowspan="${subMiniPoolRowspan}">${detail.sub_mini_pool_number}</td>`;
-                                            html += `<td class="p-0 text-center" rowspan="${subMiniPoolRowspan}">Yes</td>`;
                                         }
+
+                                        // Add tail cutting dropdown for each row (not merged)
+                                        html += `<td class="p-0 text-center">
+                                            <select class="form-select form-select-sm" name="tail_cutting_${detail.row_number}" id="tail_cutting_${detail.row_number}">
+                                                <option value="No" selected>No</option>
+                                                <option value="Yes">Yes</option>
+                                            </select>
+                                        </td>`;
+
                                         html += '</tr>';
 
                                         if (detail.sub_mini_pool_number) {
@@ -431,12 +456,22 @@
             // Form submission
             $('#subMiniPoolForm').on('submit', function(e) {
                 e.preventDefault();
-                
+
                 // Validate required fields
                 if (!$('#mini_pool_id').val()) {
                     alert('Please select a Mini Pool Number');
                     return false;
                 }
+
+                // Collect tail cutting values
+                const tailCuttingValues = {};
+                $('select[name^="tail_cutting_"]').each(function() {
+                    const rowNumber = $(this).attr('name').replace('tail_cutting_', '');
+                    tailCuttingValues[rowNumber] = $(this).val();
+                });
+
+                // Set the hidden field value
+                $('#tail_cutting_data').val(JSON.stringify(tailCuttingValues));
 
                 // Submit the form
                 $.ajax({
@@ -456,11 +491,11 @@
                     error: function(xhr, status, error) {
                         console.error('Error details:', {xhr, status, error}); // Debug log
                         let errorMessage = 'Error saving data. Please try again.';
-                        
+
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
                         }
-                        
+
                         alert(errorMessage);
                     }
                 });
@@ -470,4 +505,4 @@
         console.error('Global error caught:', error);
     }
 </script>
-@endpush 
+@endpush

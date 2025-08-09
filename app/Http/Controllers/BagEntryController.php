@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BagEntry;
 use App\Models\Entity;
+use App\Models\EntitySetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -24,8 +25,12 @@ class BagEntryController extends Controller
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
-            
-        return view('factory.newbagentry.bag_entry', compact('bloodCenters'));
+
+        // Get the number of work stations from entity_settings
+        $noOfWorkstations = EntitySetting::where('entity_id', auth()->user()->entity_id)
+            ->value('no_of_work_station') ?? 10; // Default to 10 if not set
+
+        return view('factory.newbagentry.bag_entry', compact('bloodCenters', 'noOfWorkstations'));
     }
 
     /**
@@ -48,7 +53,6 @@ class BagEntryController extends Controller
             // Validate the request
             $validated = $request->validate([
                 'blood_centre_id' => 'required|exists:entities,id',
-                'work_station' => 'required|string',
                 'date' => 'required|date',
                 'pickup_date' => 'required|date',
                 'ar_no' => 'required|string',
@@ -66,7 +70,6 @@ class BagEntryController extends Controller
             // Create the main bag entry
             $bagEntry = BagEntry::create([
                 'blood_bank_id' => $validated['blood_centre_id'], // Map blood_centre_id to blood_bank_id
-                'work_station' => $validated['work_station'],
                 'date' => $validated['date'],
                 'pickup_date' => $validated['pickup_date'],
                 'ar_no' => $validated['ar_no'],
@@ -83,7 +86,7 @@ class BagEntryController extends Controller
             for ($i = 0; $i < count($request->donor_id); $i++) {
                 // Calculate which mini pool group this belongs to (1-6 for 72 entries)
                 $miniPoolGroup = floor($i / 12) + 1;
-                
+
                 // Create bag entry detail
                 $bagDetail = DB::table('bag_entries_details')->insertGetId([
                     'bag_entries_id' => $bagEntry->id,
@@ -105,9 +108,9 @@ class BagEntryController extends Controller
                 // Every 12 entries, create a mini pool entry
                 if (($i + 1) % 12 === 0) {
                     $miniPoolIndex = floor($i / 12);
-                    if (isset($request->mini_pool_bag_volume[$miniPoolIndex]) && 
+                    if (isset($request->mini_pool_bag_volume[$miniPoolIndex]) &&
                         isset($request->segment_number[$miniPoolIndex])) {
-                        
+
                         $miniPoolVolume = floatval($request->mini_pool_bag_volume[$miniPoolIndex]);
                         $totalVolume += $miniPoolVolume;
 
@@ -170,5 +173,14 @@ class BagEntryController extends Controller
     public function subMiniPoolBagEntry()
     {
         return view('factory.newbagentry.sub_mini_pool_bag_entry');
+    }
+
+     /**
+     * Reject Mega mini pool based on Ar while bag entry
+     * @return \Illuminate\View\View
+     */
+    public function rejectPlasmaBagEntry()
+    {
+        return view('factory.newbagentry.reject_plasma_bag_entry');
     }
 }

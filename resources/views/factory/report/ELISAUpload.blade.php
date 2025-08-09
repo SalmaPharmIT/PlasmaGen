@@ -13,23 +13,23 @@
                         @csrf
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="test_type" value="HBV">
-                        
+
                         <div class="row g-2 mb-2">
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="small mb-1">HBV Upload</label>
                                     <div class="input-group">
-                                        <input type="file" 
-                                               class="form-control form-control-sm file-input" 
-                                               name="report_files[]" 
-                                               accept=".res"
+                                        <input type="file"
+                                               class="form-control form-control-sm file-input"
+                                               name="report_files[]"
+                                               accept="application/pdf,.pdf"
                                                multiple
                                                required>
                                         <button class="btn btn-outline-secondary btn-sm browse-btn" type="button">
                                             <i class="fa fa-folder-open"></i> Browse
                                         </button>
                                     </div>
-                                    <small class="text-muted">Allowed file types: RES (.res)</small>
+                                    <small class="text-muted">Allowed file types: PDF (.pdf)</small>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
@@ -37,11 +37,11 @@
 
                         <!-- Progress Bar -->
                         <div class="progress mb-2" style="display: none;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                 role="progressbar" 
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
                                  style="width: 0%"
-                                 aria-valuenow="0" 
-                                 aria-valuemin="0" 
+                                 aria-valuenow="0"
+                                 aria-valuemin="0"
                                  aria-valuemax="100">0%</div>
                         </div>
 
@@ -64,23 +64,23 @@
                 @csrf
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="test_type" value="HCV">
-                
+
                 <div class="row g-2 mb-2">
                             <div class="col-md-12">
                         <div class="form-group">
                                     <label class="small mb-1">HCV Upload</label>
                                     <div class="input-group">
-                                        <input type="file" 
-                                               class="form-control form-control-sm file-input" 
-                                               name="report_files[]" 
-                                               accept=".res"
+                                        <input type="file"
+                                               class="form-control form-control-sm file-input"
+                                               name="report_files[]"
+                                               accept="application/pdf,.pdf"
                                                multiple
                                                required>
                                         <button class="btn btn-outline-secondary btn-sm browse-btn" type="button">
                                             <i class="fa fa-folder-open"></i> Browse
                                         </button>
                                     </div>
-                                    <small class="text-muted">Allowed file types: RES (.res)</small>
+                                    <small class="text-muted">Allowed file types: PDF (.pdf)</small>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
@@ -88,11 +88,11 @@
 
                         <!-- Progress Bar -->
                         <div class="progress mb-2" style="display: none;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                 role="progressbar" 
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
                                  style="width: 0%"
-                                 aria-valuenow="0" 
-                                 aria-valuemin="0" 
+                                 aria-valuenow="0"
+                                 aria-valuemin="0"
                                  aria-valuemax="100">0%</div>
                         </div>
 
@@ -121,17 +121,17 @@
                         <div class="form-group">
                                     <label class="small mb-1">HIV Upload</label>
                                     <div class="input-group">
-                                        <input type="file" 
-                                               class="form-control form-control-sm file-input" 
-                                               name="report_files[]" 
-                                               accept=".res"
+                                        <input type="file"
+                                               class="form-control form-control-sm file-input"
+                                               name="report_files[]"
+                                               accept="application/pdf,.pdf"
                                                multiple
                                                required>
                                         <button class="btn btn-outline-secondary btn-sm browse-btn" type="button">
                                             <i class="fa fa-folder-open"></i> Browse
                                         </button>
                                     </div>
-                                    <small class="text-muted">Allowed file types: RES (.res)</small>
+                                    <small class="text-muted">Allowed file types: PDF (.pdf)</small>
                                     <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -139,11 +139,11 @@
 
                         <!-- Progress Bar -->
                         <div class="progress mb-2" style="display: none;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                 role="progressbar" 
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
                                  style="width: 0%"
-                                 aria-valuenow="0" 
-                                 aria-valuemin="0" 
+                                 aria-valuenow="0"
+                                 aria-valuemin="0"
                                  aria-valuemax="100">0%</div>
                 </div>
 
@@ -160,6 +160,8 @@
             </div>
         </div>
     </div>
+
+
 
     <!-- Results Section -->
     <div id="resultsSection" class="mt-4" style="display: none;">
@@ -216,7 +218,7 @@
                                         <th>MiniPool ID</th>
                                         <th>Well Number</th>
                                         <th>OD Value</th>
-                                        <th>Timestamp</th>
+                                        <th>Ratio</th>
                                         <th>HBV</th>
                                         <th>HCV</th>
                                         <th>HIV</th>
@@ -293,7 +295,7 @@
         border-bottom: 2px solid #0d6efd;
         margin-bottom: -2px;
     }
-    .table-sm th, 
+    .table-sm th,
     .table-sm td {
         padding: 0.25rem;
     }
@@ -334,7 +336,6 @@
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -370,18 +371,18 @@
             return;
         }
 
-        const headers = ['MiniPool ID', 'Well Number', 'OD Value', 'Timestamp', 'HBV', 'HCV', 'HIV', 'Final Result'];
+        const headers = ['MiniPool ID', 'Well Number', 'OD Value', 'Ratio', 'HBV', 'HCV', 'HIV', 'Final Result'];
         const csvContent = [
             headers.join(','),
             ...window.exportData.map(reading => {
                 const finalResult = (reading.hbv === 'reactive' || reading.hcv === 'reactive' || reading.hiv === 'reactive') ? 'Reactive' :
                                   (reading.hbv === 'borderline' || reading.hcv === 'borderline' || reading.hiv === 'borderline') ? 'Borderline' : 'Non-Reactive';
-                
+
                 return [
                     reading.sequence_id,
                     reading.well_label,
                     reading.value,
-                    reading.timestamp,
+                    reading.ratio || '1.0',
                     reading.hbv || '-',
                     reading.hcv || '-',
                     reading.hiv || '-',
@@ -441,7 +442,7 @@
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">MiniPool ID</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Well Number</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">OD Value</th>
-                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Timestamp</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Ratio</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">HBV</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">HCV</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">HIV</th>
@@ -453,10 +454,10 @@
                                 const finalResult = (reading.hbv === 'reactive' || reading.hcv === 'reactive' || reading.hiv === 'reactive') ? 'Reactive' :
                                                   (reading.hbv === 'borderline' || reading.hcv === 'borderline' || reading.hiv === 'borderline') ? 'Borderline' : 'Non-Reactive';
                                 const finalResultClass = finalResult === 'Reactive' ? 'danger' : finalResult === 'Borderline' ? 'info' : 'success';
-                                
+
                                 // Determine HBV badge color based on HCV and HIV results
-                                const hbvBadgeColor = (reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive') ? '#f35c24' : 
-                                                    (reading.hbv === 'nonreactive' ? 'success' : 
+                                const hbvBadgeColor = (reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive') ? '#f35c24' :
+                                                    (reading.hbv === 'nonreactive' ? 'success' :
                                                      reading.hbv === 'borderline' ? 'info' : 'danger');
 
                                 // Determine if we should show HBV badge in final result
@@ -467,7 +468,7 @@
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.sequence_id}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.well_label}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.value}</td>
-                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.timestamp}</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px;">${reading.ratio || '1.0'}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.hbv ? `<span class="badge" style="background-color: ${hbvBadgeColor === '#f35c24' ? '#f35c24' : `var(--bs-${hbvBadgeColor})`}">${reading.hbv.charAt(0).toUpperCase() + reading.hbv.slice(1)}</span>` : '-'}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.hcv ? `<span class="badge bg-${reading.hcv === 'nonreactive' ? 'success' : reading.hcv === 'borderline' ? 'info' : 'danger'}">${reading.hcv.charAt(0).toUpperCase() + reading.hcv.slice(1)}</span>` : '-'}</td>
                                         <td style="border: 1px solid #ddd; padding: 8px;">${reading.hiv ? `<span class="badge bg-${reading.hiv === 'nonreactive' ? 'success' : reading.hiv === 'borderline' ? 'info' : 'danger'}">${reading.hiv.charAt(0).toUpperCase() + reading.hiv.slice(1)}</span>` : '-'}</td>
@@ -532,7 +533,7 @@
 
             // Save the PDF
             pdf.save(`results_${new Date().toISOString().split('T')[0]}.pdf`);
-            
+
             // Clean up
             document.body.removeChild(tempDiv);
         });
@@ -575,7 +576,7 @@
         }
 
         // Get CSRF token from meta tag or form input
-        const token = document.querySelector('meta[name="csrf-token"]')?.content || 
+        const token = document.querySelector('meta[name="csrf-token"]')?.content ||
                      document.querySelector('input[name="_token"]')?.value;
 
         if (!token) {
@@ -659,7 +660,7 @@
             try {
                 // Check for existing files
                 const checkResult = await checkExistingFiles();
-                
+
                 if (checkResult.exists) {
                     const shouldProceed = await showConfirmationDialog();
                     if (!shouldProceed) {
@@ -686,7 +687,7 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (data.success) {
                     isDataSaved = true;
                     // Enable export buttons
@@ -731,7 +732,7 @@
         });
 
         const forms = document.querySelectorAll('.report-upload-form');
-        
+
         forms.forEach(form => {
             const fileInput = form.querySelector('.file-input');
             const browseBtn = form.querySelector('.browse-btn');
@@ -755,7 +756,7 @@
             // Handle form submission
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 if (!form.checkValidity()) {
                     e.stopPropagation();
                     form.classList.add('was-validated');
@@ -790,7 +791,7 @@
 
                     try {
                         const response = JSON.parse(xhr.responseText);
-                        
+
                         if (xhr.status === 200 && response.success) {
                             // Add new results to existing ones
                             if (response.data) {
@@ -828,9 +829,9 @@
 
         function validateFiles(input) {
             const files = input.files;
-            const allowedTypes = ['res'];
+            const allowedTypes = ['pdf'];
             let isValid = true;
-            
+
             for (let i = 0; i < files.length; i++) {
                 const fileType = files[i].name.split('.').pop().toLowerCase();
                 if (!allowedTypes.includes(fileType)) {
@@ -838,12 +839,12 @@
                     break;
                 }
             }
-            
+
             const feedback = input.parentElement.parentElement.querySelector('.invalid-feedback');
-            
+
             if (!isValid) {
-                input.setCustomValidity('Please select valid RES files only');
-                feedback.textContent = 'Please select valid RES files only';
+                input.setCustomValidity('Please select valid PDF files only');
+                feedback.textContent = 'Please select valid PDF files only';
                 input.classList.add('is-invalid');
             } else {
                 input.setCustomValidity('');
@@ -866,7 +867,7 @@
                 const tabContent = document.getElementById(`${type.toLowerCase()}-results-content`);
                 if (results.length > 0) {
                     tabContent.innerHTML = createResultsHTML(results);
-                    createCharts(results, tabContent);
+                    // Chart creation removed as the chart elements no longer exist
                 } else {
                     tabContent.innerHTML = '<div class="alert alert-info">No results available for this test type.</div>';
                 }
@@ -900,18 +901,25 @@
                         sequence_id: reading.sequence_id,
                         well_label: reading.well_label,
                         value: reading.value,
-                        timestamp: reading.timestamp,
-                        hbv: null,
-                        hcv: null,
-                        hiv: null
+                        ratio: reading.ratio || '1.0',
+                        hbv: 'nonreactive', // Default to nonreactive instead of null
+                        hcv: 'nonreactive', // Default to nonreactive instead of null
+                        hiv: 'nonreactive'  // Default to nonreactive instead of null
                     };
                 }
-                groupedReadings[key][reading.testType.toLowerCase()] = reading.category;
+                // Only set the value if it's one of the valid enum values
+                const validValues = ['nonreactive', 'reactive', 'borderline', 'invalid'];
+                const category = reading.category?.toLowerCase() || 'nonreactive';
+                if (validValues.includes(category)) {
+                    groupedReadings[key][reading.testType.toLowerCase()] = category;
+                } else {
+                    groupedReadings[key][reading.testType.toLowerCase()] = 'nonreactive'; // Default to nonreactive for invalid values
+                }
             });
 
-            // Convert to array and sort by timestamp
-            const sortedReadings = Object.values(groupedReadings).sort((a, b) => 
-                new Date(a.timestamp) - new Date(b.timestamp)
+            // Convert to array and sort by sequence_id
+            const sortedReadings = Object.values(groupedReadings).sort((a, b) =>
+                a.sequence_id.localeCompare(b.sequence_id)
             );
 
             // Store readings for export
@@ -922,7 +930,7 @@
                 // Determine final result
                 let finalResult = 'nonreactive';
                 let finalResultClass = 'success';
-                
+
                 // If any test is reactive, final result is reactive
                 if (reading.hbv === 'reactive' || reading.hcv === 'reactive' || reading.hiv === 'reactive') {
                     finalResult = 'Reactive';
@@ -935,8 +943,8 @@
                 }
 
                 // Determine HBV badge color based on HCV and HIV results
-                const hbvBadgeColor = (reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive') ? '#f35c24' : 
-                                    (reading.hbv === 'nonreactive' ? 'success' : 
+                const hbvBadgeColor = (reading.hbv === 'reactive' && reading.hcv === 'nonreactive' && reading.hiv === 'nonreactive') ? '#f35c24' :
+                                    (reading.hbv === 'nonreactive' ? 'success' :
                                      reading.hbv === 'borderline' ? 'info' : 'danger');
 
                 // Determine if we should show HBV badge in final result
@@ -947,7 +955,7 @@
                     <td>${reading.sequence_id}</td>
                     <td>${reading.well_label}</td>
                     <td>${reading.value}</td>
-                    <td>${reading.timestamp}</td>
+                    <td>${reading.ratio || '1.0'}</td>
                     <td>${reading.hbv ? `<span class="badge" style="background-color: ${hbvBadgeColor === '#f35c24' ? '#f35c24' : `var(--bs-${hbvBadgeColor})`}">${reading.hbv.charAt(0).toUpperCase() + reading.hbv.slice(1)}</span>` : '-'}</td>
                     <td>${reading.hcv ? `<span class="badge bg-${reading.hcv === 'nonreactive' ? 'success' : reading.hcv === 'borderline' ? 'info' : 'danger'}">${reading.hcv.charAt(0).toUpperCase() + reading.hcv.slice(1)}</span>` : '-'}</td>
                     <td>${reading.hiv ? `<span class="badge bg-${reading.hiv === 'nonreactive' ? 'success' : reading.hiv === 'borderline' ? 'info' : 'danger'}">${reading.hiv.charAt(0).toUpperCase() + reading.hiv.slice(1)}</span>` : '-'}</td>
@@ -1047,7 +1055,7 @@
 
                         <!-- Results Chart and Table -->
                         <div class="row">
-                            <div class="col-md-4">
+                            <!--  <div class="col-md-4">
                                 <div class="card">
                                     <div class="card-body">
                                         <h6 class="card-title text-center">Results Distribution</h6>
@@ -1056,18 +1064,18 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-8">
+                            </div>-->
+                            <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-bordered table-hover table-sm">
+                                            <table class="table table-bordered table-hover table-striped">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>MiniPool ID</th>
                                                         <th>Well Number</th>
                                                         <th>OD Value</th>
-                                                        <th>Timestamp</th>
+                                                        <th>Ratio</th>
                                                         <th>Result</th>
                                                     </tr>
                                                 </thead>
@@ -1077,7 +1085,7 @@
                                                             <td>${reading.sequence_id}</td>
                                                             <td>${reading.well_label}</td>
                                                             <td>${reading.value}</td>
-                                                            <td>${reading.timestamp}</td>
+                                                            <td>${reading.ratio || '1.0'}</td>
                                                             <td class="${reading.category}">
                                                                 <span class="badge bg-${reading.category === 'nonreactive' ? 'success' : reading.category === 'borderline' ? 'info' : 'danger'}">
                                                                     ${reading.category.charAt(0).toUpperCase() + reading.category.slice(1)}
@@ -1130,7 +1138,9 @@
                 }
             });
         }
+
+
     });
 </script>
 @endpush
-@endsection 
+@endsection

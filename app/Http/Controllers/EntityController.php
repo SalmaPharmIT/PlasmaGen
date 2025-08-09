@@ -770,25 +770,33 @@ class EntityController extends Controller
     public function saveSettings(Request $request)
     {
         $request->validate([
-            'entity_ref_doc' => 'nullable|string|max:255'
+            'entity_ref_doc' => 'nullable|string|max:255',
+            'no_of_work_station' => 'nullable|integer|min:0'
         ]);
 
-        // Only proceed if entity_ref_doc has data
-        if (!empty($request->entity_ref_doc)) {
-            $entityId = Auth::user()->entity->id;
+        $entityId = Auth::user()->entity->id;
 
-            EntitySetting::updateOrCreate(
-                ['entity_id' => $entityId],
-                [
-                    'ref_no' => $request->entity_ref_doc,
-                    'created_by' => Auth::id(),
-                    'updated_by' => Auth::id()
-                ]
-            );
+        // Debug the incoming request data
+        \Log::info('Saving entity settings', [
+            'request_data' => $request->all(),
+            'entity_id' => $entityId
+        ]);
 
-            return redirect()->back()->with('success', 'Settings saved successfully');
-        }
+        $settings = EntitySetting::updateOrCreate(
+            ['entity_id' => $entityId],
+            [
+                'ref_no' => $request->entity_ref_doc,
+                'no_of_work_station' => $request->no_of_work_station,
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id()
+            ]
+        );
 
-        return redirect()->back()->with('warning', 'No data to save');
+        // Debug the saved settings
+        \Log::info('Saved entity settings', [
+            'settings' => $settings->toArray()
+        ]);
+
+        return redirect()->back()->with('success', 'Settings saved successfully');
     }
 }

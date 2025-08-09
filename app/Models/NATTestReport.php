@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\AuditableTrait;
 
 class NATTestReport extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, AuditableTrait;
 
     protected $table = 'nat_test_report';
 
@@ -40,9 +41,14 @@ class NATTestReport extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
-
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
-} 
+
+    // Define the module name for audit trail
+    public function getAuditModule()
+    {
+        return 'Report Upload';
+    }
+}

@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('entity_settings', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('entity_settings', function (Blueprint $table) {
+            $table->integer('no_of_work_station')->nullable()->after('ref_no');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('entity_settings');
+        Schema::table('entity_settings', function (Blueprint $table) {
+            $table->dropColumn('no_of_work_station');
+        });
     }
 };

@@ -59,7 +59,7 @@
                                         <div class="col-12">
                                             <label for="yourUsername" class="form-label">Username</label>
                                             <div class="input-group has-validation">
-                                                <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                                {{-- <span class="input-group-text" id="inputGroupPrepend">@</span> --}}
                                                 <input type="text" name="username" class="form-control @error('username') is-invalid @enderror" id="yourUsername" value="{{ old('username') }}" required>
                                                 @error('username')
                                                     <div class="invalid-feedback">
@@ -95,15 +95,12 @@
 
                                 </div>
                             </div>
-
-                            <div class="credits">
-                                Designed & Developed by <a href="https://pharmit.in/">PharmIT</a>
-                            </div>
-
                         </div>
                     </div>
                 </div>
-
+                {{-- @include('include.footer') <!-- Optional: Include Footer if you have one --> --}}
+                @include('include.footer', ['style' => 'margin-left: 3px;!important'])<!-- Optional: Include Footer if you have one -->
+           
             </section>
 
         </div>

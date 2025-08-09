@@ -15,6 +15,7 @@ use App\Models\Token;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Models\AuditTrail;
 
 class LoginController extends Controller
 {
@@ -113,10 +114,17 @@ class LoginController extends Controller
 
                     // Regenerate session to prevent fixation
                     $request->session()->regenerate();
-
-                    // Log the successful login
-                    Log::info('User logged in', ['username' => $externalUser['username']]);
-                    Log::info('User logged in using token', ['token' => $token]);
+                    
+                    // Log the successful login in audit trail
+                    AuditTrail::log(
+                        'login',
+                        'Authentication',
+                        null,
+                        $user->id,
+                        [],
+                        [],
+                        'User logged in successfully: ' . $user->username
+                    );
 
                     // Save the plain token in the session
                     $request->session()->put('api_token', $token);
@@ -155,6 +163,22 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
+        // Get the user before logging out
+        $user = Auth::user();
+        
+        // Log the logout action in audit trail if user is logged in
+        if ($user) {
+            AuditTrail::log(
+                'logout',
+                'Authentication',
+                null,
+                $user->id,
+                [],
+                [],
+                'User logged out: ' . $user->username
+            );
+        }
+        
         Auth::logout();
 
         $request->session()->invalidate();

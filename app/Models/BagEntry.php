@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\AuditableTrait;
 
 class BagEntry extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, AuditableTrait;
 
     protected $fillable = [
         'blood_bank_id',
@@ -81,5 +82,11 @@ class BagEntry extends Model
         static::updating(function ($model) {
             $model->updated_by = auth()->id();
         });
+    }
+
+    // Define the module name for audit trail
+    public function getAuditModule()
+    {
+        return 'Bag Entry';
     }
 }

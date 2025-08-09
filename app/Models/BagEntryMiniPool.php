@@ -70,4 +70,4 @@ class BagEntryMiniPool extends Model
             $model->updated_by = auth()->id();
         });
     }
-} 
+}

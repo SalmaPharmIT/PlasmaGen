@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth; 
 use App\Models\PlasmaEntry;
 use App\Models\BagEntryDetail;
+use App\Models\AuditTrail;
 
 class DashboardController extends Controller
 {
@@ -19,6 +20,17 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        // Log dashboard access
+        AuditTrail::log(
+            'view',
+            'Dashboard',
+            'Main Dashboard',
+            null,
+            [],
+            [],
+            'User accessed the dashboard'
+        );
+
         $user = Auth::user(); // Retrieve the authenticated user
 
         // Check if user has role_id 12 (factory user)

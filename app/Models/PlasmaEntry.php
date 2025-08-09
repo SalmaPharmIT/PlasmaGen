@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\AuditableTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlasmaEntry extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, AuditableTrait;
 
     protected $fillable = [
         'pickup_date',
@@ -19,6 +20,7 @@ class PlasmaEntry extends Model
         'alloted_ar_no',
         'destruction_no',
         'remarks',
+        'reject_reason',
         'created_by',
         'updated_by',
         'deleted_by'
@@ -32,6 +34,26 @@ class PlasmaEntry extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime'
     ];
+
+    /**
+     * Get the module name for audit logs
+     *
+     * @return string
+     */
+    public function getAuditModule()
+    {
+        return 'Plasma Management';
+    }
+
+    /**
+     * Get the section name for audit logs
+     *
+     * @return string
+     */
+    public function getAuditSection()
+    {
+        return 'Plasma Inward Entry';
+    }
 
     public function bloodBank()
     {

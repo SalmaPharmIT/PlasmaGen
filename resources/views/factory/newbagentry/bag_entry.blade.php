@@ -1,10 +1,12 @@
 @extends('include.dashboardLayout')
 
-@section('title', 'Plasma Mini Pool and Mega Pool Handling Record')
+@section('title', 'New Bag Entry')
 
 @push('styles')
 <!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Font Awesome for icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
 <style>
     .card {
         margin: 0.5rem;
@@ -104,7 +106,7 @@
         border-bottom: none;
         border-top: none;
     }
-    
+
     /* Update the group separator styles for 12-row groups */
     .excel-like tr:nth-child(12n) {
         border-bottom: 2px solid #000;
@@ -112,7 +114,7 @@
     .excel-like tr:nth-child(12n+1) {
         border-top: 2px solid #000;
     }
-    
+
     /* Update the Mini Pool Bag Volume column styles */
     .excel-like tr:nth-child(12n) td:nth-child(7),
     .excel-like tr:nth-child(12n) td:nth-child(8) {
@@ -122,62 +124,6 @@
     .excel-like tr:nth-child(12n+1) td:nth-child(8) {
         border-top: 2px solid #000;
     }
-    
-    .custom-dropdown {
-        position: relative;
-        width: 100%;
-        height: 24px;
-    }
-    
-    .dropdown-display {
-        width: 100%;
-        height: 100%;
-        padding: 0 2px;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        background: transparent;
-        font-size: 0.8rem;
-    }
-    
-    .dropdown-display:focus {
-        outline: none;
-        background: #fff;
-    }
-    
-    .dropdown-options {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #86b7fe;
-        z-index: 1000;
-        max-height: 120px;
-        overflow-y: auto;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transition: none;
-    }
-    
-    .dropdown-options.show {
-        display: block;
-    }
-    
-    .option {
-        padding: 2px 4px;
-        cursor: pointer;
-        font-size: 0.8rem;
-        transition: none;
-    }
-    
-    .option:hover {
-        background-color: #f8f9fa;
-    }
-    
-    .option.selected {
-        background-color: #e9ecef;
-    }
 
     /* Add section separator styles */
     .excel-like tr:nth-child(12n) {
@@ -186,14 +132,14 @@
     .excel-like tr:nth-child(12n+1) {
         border-top: 2px solid #000;
     }
-    
+
     /* Add section headers */
     .section-header {
         background-color: #f8f9fa;
         font-weight: bold;
         text-align: center;
     }
-    
+
     /* Add section number column */
     .section-number {
         width: 30px;
@@ -231,79 +177,67 @@
         color: #0d6efd;
     }
 
-    /* Select2 Custom Styles */
-    .select2-container--classic .select2-selection--single {
-        height: 22px;
-        min-height: 22px;
-        padding: 0 0.2rem;
-        font-size: 0.8rem;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-    }
-
-    .select2-container--classic .select2-selection--single .select2-selection__rendered {
-        line-height: 20px;
-        padding-left: 0;
-        padding-right: 20px;
-        color: #212529;
-    }
-
-    .select2-container--classic .select2-selection--single .select2-selection__arrow {
-        height: 20px;
-    }
-
-    .select2-container--classic .select2-results__option {
-        padding: 4px 8px;
-        font-size: 0.8rem;
-    }
-
-    .select2-container--classic .select2-search--dropdown .select2-search__field {
-        border: 1px solid #ced4da;
-        font-size: 0.8rem;
-        padding: 2px 4px;
-    }
-
-    .select2-container--classic .select2-results__option--highlighted[aria-selected] {
-        background-color: #0d6efd;
-    }
-
-    /* Blood Centre Dropdown Styles */
+    /* Critical Select2 Fixes */
     .select2-container {
-        max-width: 300px !important;
-        display: block !important;
+        z-index: 9999 !important;
+        width: 100% !important;
     }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 2px;
+
+    .select2-dropdown {
+        z-index: 10000 !important;
+        border-color: #80bdff !important;
+        box-shadow: 0 0 5px rgba(0,123,255,.25) !important;
     }
-    
-    .select2-container--default .select2-selection--single {
+
+    .select2-container .select2-selection--single {
         height: 22px !important;
-        padding: 0 !important;
         border: 1px solid #ced4da !important;
+        outline: none !important;
     }
-    
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
+
+    .select2-container .select2-selection--single:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25) !important;
+    }
+
+    .select2-container .select2-selection--single .select2-selection__rendered {
         line-height: 22px !important;
-        padding-left: 0.2rem !important;
-        font-size: 0.8rem !important;
+        padding-left: 8px !important;
+        font-size: 0.8rem;
+        color: #212529 !important;
     }
-    
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
+
+    .select2-container .select2-selection--single .select2-selection__arrow {
         height: 20px !important;
     }
-    
-    .select2-dropdown {
-        font-size: 0.8rem !important;
+
+    .select2-search--dropdown .select2-search__field {
+        padding: 2px;
+        border-color: #ced4da !important;
     }
-    
-    /* Group of 12 styling */
-    .excel-like tr:nth-child(12n) {
-        border-bottom: 2px solid #000;
+
+    .select2-search--dropdown .select2-search__field:focus {
+        border-color: #80bdff !important;
+        outline: none !important;
     }
-    .excel-like tr:nth-child(12n+1) {
-        border-top: 2px solid #000;
+
+    .select2-results__option {
+        padding: 3px 6px;
+        font-size: 0.8rem;
+        cursor: pointer !important;
+    }
+
+    .select2-container--open .select2-dropdown {
+        display: block !important;
+    }
+
+    /* Form group styling */
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group label {
+        margin-bottom: 0.1rem;
     }
 
     /* Mini Pool Volume styling */
@@ -329,10 +263,55 @@
     }
 
     /* Blood Group Dropdown Styles */
-    .excel-like td .form-select-sm {
-        padding-right: 20px !important; /* Space for the dropdown arrow */
-        background-position: right 2px center;
-        background-size: 16px 12px;
+    td select.blood-group-select {
+        width: 100%;
+        height: 22px;
+        padding: 0 0.2rem;
+    }
+
+    td select.blood-group-select[size]:not([size="1"]) {
+        position: absolute !important;
+        height: auto !important;
+        min-width: 100px !important;
+        max-height: 200px !important;
+        z-index: 99999 !important;
+        background: white !important;
+        border: 1px solid #ced4da !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+    }
+
+    td select.blood-group-select option {
+        padding: 2px 5px;
+        background: white;
+    }
+
+    td select.blood-group-select option:hover {
+        background-color: #e9ecef;
+    }
+
+    .excel-like td {
+        padding: 0;
+        height: 24px;
+        vertical-align: middle;
+        position: relative;
+    }
+
+    /* AR Number Search Styles */
+    #arSearchResults {
+        position: absolute;
+        z-index: 1000;
+        background: white;
+        width: 100%;
+        border: 1px solid #ced4da;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .search-result {
+        transition: background-color 0.2s;
+    }
+
+    .search-result:hover {
+        background-color: #f8f9fa;
     }
 </style>
 @endpush
@@ -378,42 +357,40 @@
 
             <form method="POST" action="{{ route('newBag.store') }}">
                 @csrf
-                
+
                 <!-- Header Information -->
                 <div class="row g-2 mb-2">
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label class="small mb-1">A.R. No.</label>
-                            <select class="form-control form-control-sm select2-ar-no" name="ar_no" required>
+                            <label class="small mb-1" for="arNumberSelect">A.R. No.</label>
+                            <select id="arNumberSelect" class="form-select form-select-sm" name="ar_no" required>
                                 <option value="">Select A.R. No.</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label class="small mb-1">Blood Centre Name & City</label>
-                            <div>
-                                <select class="form-control form-control-sm select2" name="blood_centre_id" required>
-                                    <option value="">Select Blood Centre</option>
-                                    @forelse($bloodCenters as $center)
-                                        <option value="{{ $center->id }}">{{ $center->name }} - {{ $center->city }}</option>
-                                    @empty
-                                        <option value="" disabled>No blood centers available</option>
-                                    @endforelse
-                                </select>
-                            </div>
+                            <label class="small mb-1" for="bloodCentreSelect">Blood Centre Name & City</label>
+                            <select id="bloodCentreSelect" class="form-select form-select-sm" name="blood_centre_id" required>
+                                <option value="">Select Blood Centre</option>
+                                @forelse($bloodCenters as $center)
+                                    <option value="{{ $center->id }}">{{ $center->name }} - {{ $center->city }}</option>
+                                @empty
+                                    <option value="" disabled>No blood centers available</option>
+                                @endforelse
+                            </select>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label class="small mb-1">Work Station No.</label>
-                            <input type="text" class="form-control form-control-sm" name="work_station" value="01">
+                            <label class="small mb-1" for="dateInput">Date</label>
+                            <input type="date" id="dateInput" class="form-control form-control-sm" name="date" value="{{ date('Y-m-d') }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label class="small mb-1">Date</label>
-                            <input type="date" class="form-control form-control-sm" name="date" value="{{ date('Y-m-d') }}">
+                            <label class="small mb-1" for="pickupDateInput">Pickup Date</label>
+                            <input type="date" id="pickupDateInput" class="form-control form-control-sm" name="pickup_date" required>
                         </div>
                     </div>
                 </div>
@@ -421,27 +398,19 @@
                 <div class="row g-2 mb-2">
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label class="small mb-1">Pickup Date</label>
-                            <input type="date" class="form-control form-control-sm" name="pickup_date" required>
-                        </div>
-                    </div>
-                
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label class="small mb-1">GRN No.</label>
-                            <input type="text" class="form-control form-control-sm" name="grn_no" required>
+                            <label class="small mb-1" for="grnNoInput">GRN No.</label>
+                            <input type="text" id="grnNoInput" class="form-control form-control-sm" name="grn_no" required>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label class="small mb-1">Mega Pool No.</label>
-                            <select class="form-control form-control-sm" name="mega_pool_no" required>
+                            <label class="small mb-1" for="megaPoolSelect">Mega Pool No.</label>
+                            <select id="megaPoolSelect" class="form-select form-select-sm" name="mega_pool_no" required>
                                 <option value="">Select Mega Pool No.</option>
                             </select>
                         </div>
                     </div>
                 </div>
-
                 <!-- Table Section -->
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm border-dark excel-like">
@@ -464,25 +433,21 @@
                                 <td class="p-0 text-center">{{ $i }}</td>
                                 <td class="p-0 text-center">{{ (($i - 1) % 12) + 1 }}</td>
                                 <td class="p-0"><input type="text" class="form-control form-control-sm border-0 px-1" name="donor_id[]"></td>
-                                <td class="p-0 date-cell"><input type="date" class="form-control form-control-sm border-0 px-1" name="donation_date[]"></td>
+                                <td class="p-0 date-cell">
+                                    <input type="date" class="form-control form-control-sm border-0 px-1 date-input" name="donation_date[]">
+                                </td>
                                 <td class="p-0">
-                                    <div class="custom-dropdown">
-                                        <div class="dropdown-display" tabindex="0">
-                                            <span class="selected-value">{{ old('blood_group.'.$i, '') }}</span>
-                                            <input type="hidden" name="blood_group[]" value="{{ old('blood_group.'.$i, '') }}">
-                                        </div>
-                                        <div class="dropdown-options">
-                                            <div class="option" data-value="">Select</div>
-                                            <div class="option" data-value="A+">A+</div>
-                                            <div class="option" data-value="A-">A-</div>
-                                            <div class="option" data-value="B+">B+</div>
-                                            <div class="option" data-value="B-">B-</div>
-                                            <div class="option" data-value="AB+">AB+</div>
-                                            <div class="option" data-value="AB-">AB-</div>
-                                            <div class="option" data-value="O+">O+</div>
-                                             <div class="option" data-value="O-">O-</div>
-                                        </div>
-                                    </div>
+                                    <select class="form-select form-select-sm border-0 px-1 blood-group-select" name="blood_group[]" style="position: relative;">
+                                        <option value="">Select</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
                                 </td>
                                 <td class="p-0"><input type="number" class="form-control form-control-sm border-0 px-1" name="bag_volume[]"></td>
                                 @if(($i - 1) % 12 === 0)
@@ -496,7 +461,7 @@
                                 <td class="p-0 text-center">
                                     <select class="form-select form-select-sm border-0 px-1" name="tail_cutting[]">
                                         <option value="No">No</option>
-                                        <option value="Yes">Yes</option>  
+                                        <option value="Yes">Yes</option>
                                     </select>
                                 </td>
                             </tr>
@@ -526,35 +491,114 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Load specific versions of jQuery and Select2 known to work well together -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <script>
+    // Execute when document is fully loaded
     $(document).ready(function() {
-        // Initialize Select2 for Blood Centre
-        $('.select2').select2({
-            placeholder: "Select Blood Centre",
-            allowClear: true,
-            width: '100%'
-        });
+        console.log("Document ready, initializing Bag Entry page...");
 
-        // Add event listener for Donor ID inputs
-        $(document).on('input', 'input[name="donor_id[]"]', function() {
-            const donorId = $(this).val().trim();
-            const tailCuttingSelect = $(this).closest('tr').find('select[name="tail_cutting[]"]');
-            
-            if (donorId !== '') {
-                tailCuttingSelect.val('Yes');
-            } else {
-                tailCuttingSelect.val('No');
+        // Function to reset rejection form
+        function resetRejectionForm() {
+            $('#rejectionReason').val('');
+            $('#rejectionRemarks').val('');
+        }
+
+        // Basic Select2 config - initialization will be handled by the global fix
+        var selectElements = ['#bloodCentreSelect', '#megaPoolSelect'];
+
+        // Remove all previous event handlers
+        $('.date-input, .blood-group-select').off();
+
+        // Handle date input navigation
+        $('.date-input').on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === 'Tab') {
+                e.preventDefault();
+                const nextSelect = $(this).closest('td').next().find('select');
+                nextSelect.focus();
+                setTimeout(() => {
+                    nextSelect.attr('size', '8');
+                    nextSelect.css('position', 'absolute');
+                }, 0);
             }
         });
 
-        // Initialize Select2 for AR No.
-        $('.select2-ar-no').select2({
-            placeholder: "Select A.R. No.",
-            allowClear: true,
-            width: '100%',
+        // Handle blood group dropdown
+        $('.blood-group-select').on('focus', function() {
+            $(this).attr('size', '8');
+            $(this).css('position', 'absolute');
+        });
+
+        $('.blood-group-select').on('blur', function() {
+            $(this).attr('size', '1');
+            $(this).css('position', 'relative');
+        });
+
+        $('.blood-group-select').on('keydown', function(e) {
+            const key = e.key.toLowerCase();
+            const select = $(this)[0];
+
+            // Handle arrow keys for dropdown navigation
+            if ($(this).attr('size') !== '1') {
+                if (key === 'arrowup') {
+                    e.preventDefault();
+                    const prevIndex = select.selectedIndex > 0 ? select.selectedIndex - 1 : 0;
+                    select.selectedIndex = prevIndex;
+                    return false;
+                }
+                if (key === 'arrowdown') {
+                    e.preventDefault();
+                    const nextIndex = select.selectedIndex < select.options.length - 1 ?
+                        select.selectedIndex + 1 : select.selectedIndex;
+                    select.selectedIndex = nextIndex;
+                    return false;
+                }
+                if (key === 'arrowleft' || key === 'arrowright') {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
+            // Quick selection for blood groups
+            if (key.match(/[abos]/)) {
+                const options = Array.from(select.options);
+                const match = options.find(opt => opt.text.toLowerCase().startsWith(key));
+                if (match) {
+                    select.value = match.value;
+                    $(this).trigger('change');
+                }
+            }
+
+            // Handle enter key
+            if (key === 'enter') {
+                e.preventDefault();
+                if (select.selectedIndex > 0) {  // If an option is selected (not the first "Select" option)
+                    const selectedValue = select.options[select.selectedIndex].value;
+                    select.value = selectedValue;
+                    $(this).attr('size', '1');
+                    $(this).css('position', 'relative');
+                    $(this).trigger('change');
+                    $(this).closest('td').next().find('input').focus();
+                }
+                return false;
+            }
+        });
+
+        $('.blood-group-select').on('change', function() {
+            if ($(this).val()) {
+                $(this).attr('size', '1');
+                $(this).css('position', 'relative');
+                $(this).closest('td').next().find('input').focus();
+            }
+        });
+
+        console.log("Initializing Select2 elements", selectElements);
+
+        // For AR Number dropdown with AJAX
+        $('#arNumberSelect').select2({
             ajax: {
-                url: '/plasma/get-ar-numbers',
+                url: "{{ route('plasma.get-ar-numbers') }}",
                 dataType: 'json',
                 delay: 250,
                 data: function(params) {
@@ -569,48 +613,71 @@
                     };
                 },
                 cache: true
-            },
-            minimumInputLength: 1
+            }
+        });
+
+        console.log("AR Number Select2 initialized");
+
+        // Initialize mega pool select specifically
+        $('#megaPoolSelect').select2();
+        console.log("Mega Pool Select2 explicitly initialized");
+
+        // Add event listener for Donor ID inputs
+        $(document).on('input', 'input[name="donor_id[]"]', function() {
+            const donorId = $(this).val().trim();
+            const tailCuttingSelect = $(this).closest('tr').find('select[name="tail_cutting[]"]');
+
+            if (donorId !== '') {
+                tailCuttingSelect.val('Yes');
+            } else {
+                tailCuttingSelect.val('No');
+            }
         });
 
         // Handle AR No. change event
-        $('.select2-ar-no').on('select2:select', function(e) {
+        $('#arNumberSelect').on('select2:select', function(e) {
             const data = e.params.data;
             if (!data.id) return;
 
             // Show loader
             $('#loader').show();
 
+            var urlGetByARNum = "{{ route('plasma.get-by-ar-no', ['ar_no' => '__AR_NUM__']) }}";
+            var urlGetByARNumURL = urlGetByARNum.replace('__AR_NUM__', data.id);
+            console.log("Selected AR Number:", data.id);
+            console.log("urlGetByARNumURL URL:", urlGetByARNumURL);
+
             // Fetch plasma entry details
             $.ajax({
-                url: `/plasma/get-by-ar-no/${encodeURIComponent(data.id)}`,
+                url: urlGetByARNumURL,
                 method: 'GET',
                 success: function(response) {
                     console.log('AR No. Response:', response); // Debug log
-                    
+
                     if (response.status === 'success') {
                         // Set blood bank
-                        $('select[name="blood_centre_id"]').val(response.data.blood_bank_id).trigger('change');
-                        
-                        // Set GRN No.
-                        $('input[name="grn_no"]').val(response.data.grn_no);
+                        $('#bloodCentreSelect').val(response.data.blood_bank_id).trigger('change');
 
-                        // Set Work Station No.
-                        $('input[name="work_station"]').val(response.data.work_station || '01');
-                        
+                        // Set GRN No.
+                        if (response.data.grn_no) {
+                            $('input[name="grn_no"]').val(response.data.grn_no);
+                        }
+
                         // Set Pickup Date
                         if (response.data.pickup_date) {
                             $('input[name="pickup_date"]').val(response.data.pickup_date);
                         }
 
                         // Set Mega Pool Numbers dropdown
-                        const megaPoolSelect = $('select[name="mega_pool_no"]');
+                        const megaPoolSelect = $('#megaPoolSelect');
                         megaPoolSelect.empty().append('<option value="">Select Mega Pool No.</option>');
-                        
+
                         if (response.data.mega_pool_numbers && response.data.mega_pool_numbers.length > 0) {
                             response.data.mega_pool_numbers.forEach(megaPoolNo => {
                                 megaPoolSelect.append(`<option value="${megaPoolNo}">${megaPoolNo}</option>`);
                             });
+                            // Refresh Select2 to show the new options
+                            megaPoolSelect.trigger('change');
                         }
 
                         // Debug logs for each field
@@ -621,21 +688,24 @@
                         console.log('Mega Pool Numbers:', response.data.mega_pool_numbers);
                     } else {
                         // Show error message
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message || 'Failed to fetch entry details'
-                        });
+                        alert('Failed to fetch entry details: ' + (response.message || 'Unknown error'));
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('AJAX Error:', {xhr, status, error}); // Debug log
-                    const response = xhr.responseJSON || {};
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message || 'Failed to fetch entry details'
-                    });
+                    console.error('AJAX Error:', {xhr, status, error});
+                    // Log more detailed error information
+                    if (xhr.responseJSON) {
+                        console.error('Response JSON:', xhr.responseJSON);
+                    }
+                    console.error('Status Text:', xhr.statusText);
+                    console.error('Status Code:', xhr.status);
+
+                    // Show more detailed error message if available
+                    let errorMsg = 'Failed to fetch entry details';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg += ': ' + xhr.responseJSON.message;
+                    }
+                    alert(errorMsg);
                 },
                 complete: function() {
                     // Hide loader
@@ -645,54 +715,25 @@
         });
 
         // Handle AR No. clear event
-        $('.select2-ar-no').on('select2:clear', function() {
-            // Clear blood bank and GRN No.
-            $('select[name="blood_centre_id"]').val('').trigger('change');
+        $('#arNumberSelect').on('select2:clear', function() {
+            // Clear all related fields
+            $('#bloodCentreSelect').val('').trigger('change');
             $('input[name="grn_no"]').val('');
+            $('input[name="pickup_date"]').val('');
+            $('#megaPoolSelect').empty().append('<option value="">Select Mega Pool No.</option>');
         });
 
-        // Blood Group Dropdown Functionality
-        document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
-            const display = dropdown.querySelector('.dropdown-display');
-            const options = dropdown.querySelector('.dropdown-options');
-            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
-            const selectedValue = dropdown.querySelector('.selected-value');
+        // Handle Mega Pool selection
+        console.log("Setting up megaPoolSelect event handlers");
 
-            // Toggle dropdown on click
-            display.addEventListener('click', (e) => {
-                e.stopPropagation();
-                options.classList.toggle('show');
-                // Hide other open dropdowns
-                document.querySelectorAll('.dropdown-options.show').forEach(openDropdown => {
-                    if (openDropdown !== options) {
-                        openDropdown.classList.remove('show');
-                    }
-                });
-            });
-
-            // Handle option selection
-            options.querySelectorAll('.option').forEach(option => {
-                option.addEventListener('click', () => {
-                    const value = option.getAttribute('data-value');
-                    selectedValue.textContent = value;
-                    hiddenInput.value = value;
-                    options.classList.remove('show');
-                    
-                    // Remove selected class from all options
-                    options.querySelectorAll('.option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    // Add selected class to clicked option
-                    option.classList.add('selected');
-                });
-            });
-        });
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown-options.show').forEach(dropdown => {
-                dropdown.classList.remove('show');
-            });
+        // Try a different event binding approach
+        $(document).on('select2:select', '#megaPoolSelect', function() {
+            console.log("Mega Pool select event triggered (delegated)");
+            const megaPoolNo = $(this).val();
+            console.log("Mega Pool No (delegated):", megaPoolNo);
+            if (megaPoolNo) {
+                updateMiniPoolNumbers();
+            }
         });
 
         // Calculate mini pool volumes
@@ -741,74 +782,142 @@
             input.addEventListener('input', calculateMiniPoolVolumes);
         });
 
-        // Generate mini pool numbers based on mega pool number
-        const megaPoolInput = document.querySelector('select[name="mega_pool_no"]');
-        const miniPoolInputs = document.querySelectorAll('input[name="segment_number[]"]');
-
+        // Mini pool number updates
         function updateMiniPoolNumbers() {
-            const megaPoolNo = megaPoolInput ? megaPoolInput.value : '';
-            
-            if (megaPoolNo) {
-                // Show loader
-                $('#loader').show();
+            const megaPoolNo = $('#megaPoolSelect').val();
+            console.log("updateMiniPoolNumbers called with mega pool:", megaPoolNo);
 
-                // Fetch mini pool numbers from barcode_entries table
-                $.ajax({
-                    url: '/plasma/get-mini-pool-numbers',
-                    method: 'GET',
-                    data: {
-                        mega_pool_no: megaPoolNo
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Split the comma-separated mini pool numbers
-                            const miniPoolNumbers = response.mini_pool_numbers.split(',');
-                            
-                            // Update mini pool number inputs
-                            miniPoolInputs.forEach((input, index) => {
-                                if (index < miniPoolNumbers.length) {
-                                    input.value = miniPoolNumbers[index];
-                                } else {
-                                    input.value = '';
-                                }
+            if (!megaPoolNo) {
+                console.log("No mega pool selected, returning");
+                return;
+            }
+
+            // Show loader
+            $('#loader').show();
+
+            console.log("Making AJAX request to get mini pool numbers");
+
+            // Fetch mini pool numbers
+            $.ajax({
+                url: "{{ route('plasma.get_mini_pool_numbers') }}",
+                method: 'GET',
+                data: {
+                    mega_pool_no: megaPoolNo
+                },
+                success: function(response) {
+                    console.log("Mini pool numbers response:", response);
+
+                    if (response.success) {
+                        // Split the comma-separated mini pool numbers
+                        const miniPoolNumbers = response.mini_pool_numbers.split(',');
+                        console.log("Mini pool numbers:", miniPoolNumbers);
+
+                        const miniPoolInputs = document.querySelectorAll('input[name="segment_number[]"]');
+                        console.log("Found mini pool inputs:", miniPoolInputs.length);
+
+                        // Update mini pool number inputs
+                        miniPoolInputs.forEach((input, index) => {
+                            if (index < miniPoolNumbers.length) {
+                                input.value = miniPoolNumbers[index];
+                                console.log(`Set mini pool #${index} to ${miniPoolNumbers[index]}`);
+                            } else {
+                                input.value = '';
+                            }
+                        });
+                    } else {
+                        console.error("Failed to fetch mini pool numbers:", response.message);
+                        alert('Failed to fetch mini pool numbers: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', {xhr, status, error});
+                    alert('Failed to fetch mini pool numbers');
+                },
+                complete: function() {
+                    // Hide loader
+                    $('#loader').hide();
+                    console.log("Mini pool numbers update complete");
+                }
+            });
+        }
+         // Handle Rejection confirmation
+        $('#confirmRejection').on('click', function() {
+            const reason = $('#rejectionReason').val();
+            const remarks = $('#rejectionRemarks').val();
+            const megaPoolNo = $('#megaPoolSelect').val();
+            const arNo = $('#arNumberSelect').val();
+
+            if (!reason) {
+                alert('Please select a reason for rejection');
+                return;
+            }
+
+            // Show loader
+            $('#loader').show();
+
+            // Send rejection request
+            $.ajax({
+                url: "{{ route('plasma.reject-mega-pool') }}",
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    mega_pool_no: megaPoolNo,
+                    ar_no: arNo,
+                    reject_reason: reason,
+                    remarks: remarks
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        // Check if SweetAlert2 is available
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: `<span style="font-size: 1.0em">Rejection Number <b>${response.destruction_no}</b> has been generated successfully</span>`,
+                                showConfirmButton: true
                             });
                         } else {
-                            // Show error message
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: response.message || 'Failed to fetch mini pool numbers'
-                            });
+                            // Fallback to regular alert
+                            alert('Mega Pool rejected successfully. Destruction Number: ' + response.destruction_no);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', {xhr, status, error});
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to fetch mini pool numbers'
-                        });
-                    },
-                    complete: function() {
-                        // Hide loader
-                        $('#loader').hide();
+
+                        // Reset rejection form fields directly
+                        resetRejectionForm();
+
+                        // Reload page to reflect changes
+                        window.location.reload();
+                    } else {
+                        alert('Failed to reject mega pool: ' + (response.message || 'Unknown error'));
                     }
-                });
-            } else {
-                // Clear mini pool numbers if mega pool number is empty
-                miniPoolInputs.forEach(input => {
-                    input.value = '';
-                });
-            }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', {xhr, status, error});
+                    // Log more detailed error information
+                    if (xhr.responseJSON) {
+                        console.error('Response JSON:', xhr.responseJSON);
+                    }
+                    console.error('Status Text:', xhr.statusText);
+                    console.error('Status Code:', xhr.status);
+
+                    // Show more detailed error message if available
+                    let errorMsg = 'Failed to reject mega pool';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg += ': ' + xhr.responseJSON.message;
+                    }
+                    alert(errorMsg);
+                },
+                complete: function() {
+                    // Hide loader
+                    $('#loader').hide();
+                }
+            });
+        });
+
+        // Run our global Select2 fix in case it hasn't been applied yet
+        if (typeof window.reinitSelect2 === 'function') {
+            window.reinitSelect2();
         }
 
-        // Update mini pool numbers when mega pool number changes
-        if (megaPoolInput) {
-            megaPoolInput.addEventListener('change', updateMiniPoolNumbers);
-        }
-
-        // Initial update
-        updateMiniPoolNumbers();
+        console.log("Bag Entry page initialization complete");
     });
 </script>
 @endpush

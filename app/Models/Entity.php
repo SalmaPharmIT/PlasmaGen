@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AuditableTrait;
 
 class Entity extends Model
 {
-    use HasFactory;
+    use HasFactory, AuditableTrait;
 
     const STATUS_ACTIVE = 'active';
     const STATUS_INACTIVE = 'inactive';
@@ -103,5 +104,11 @@ class Entity extends Model
     public function modifier()
     {
         return $this->belongsTo(User::class, 'modified_by');
+    }
+
+    // Define the module name for audit trail
+    public function getAuditModule()
+    {
+        return 'Entity Settings';
     }
 }

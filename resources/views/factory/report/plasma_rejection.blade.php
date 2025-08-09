@@ -151,17 +151,39 @@
     .remarks-cell:hover {
         background-color: #f8f9fa;
     }
+
+    /* Dropdown in table cell styles */
+    .remarks-select {
+        width: 100%;
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        height: 100%;
+    }
+    .remarks-select:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    .table td {
+        padding: 0 !important;
+    }
+    .table td .form-control-sm {
+        border-radius: 0;
+        height: 100%;
+        min-height: 100%;
+    }
 </style>
 @endpush
 
 @section('content')
 
 <div class="pagetitle">
-    <h1>Plasma Rejection Sheet</h1>
+    <h1>Plasma Rejection</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-            <li class="breadcrumb-item active">Plasma Rejection Sheet</li>
+            <li class="breadcrumb-item active">Plasma Rejection</li>
         </ol>
     </nav>
 </div>
@@ -171,35 +193,20 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('plasma.rejection.store') }}" id="plasmaRejectionForm">
+                    <form method="POST" action="{{ route('nat.plasma.rejection.store') }}" id="plasmaRejectionForm">
                         @csrf
                         <div class="row g-2 mb-3">
                             <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="small mb-1">Blood Centre Name & City</label>
-                                    <div>
-                                        <select class="form-control-sm select2-bloodbank" name="blood_bank" id="blood_bank" data-placeholder="Select Blood Centre">
-                                            <option></option>
-                                            @foreach($bloodCenters as $center)
-                                                <option value="{{ $center['id'] }}">{{ $center['text'] }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="small mb-1">Pick Date</label>
-                                    <input type="date" class="form-control form-control" id="pickup_date" name="pickup_date">
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group">
-                                    <label class="small mb-1">&nbsp;</label>
-                                    <button type="button" class="btn btn-primary w-100" id="searchBtn">Get Data</button>
-                                </div>
+                                <label for="ar_number" class="form-label">
+                                    <i class="bi bi-hash me-1"></i>A.R. Number
+                                </label>
+                                <select class="form-select" 
+                                       id="ar_number" 
+                                       name="ar_number" 
+                                       required>
+                                    <option value="">Select A.R. Number</option>
+                                </select>
+                                <div class="invalid-feedback">Please select A.R. Number.</div>
                             </div>
                         </div>
 
@@ -216,36 +223,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="4">
-                                        <strong>Type of Rejection:</strong> 
-                                        <div class="d-inline-block ms-2">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input rejection-type" type="checkbox" value="damage" id="rejection_damaged">
-                                                <label class="form-check-label" for="rejection_damaged">Damaged</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input rejection-type" type="checkbox" value="rejection" id="rejection_hemolyzed">
-                                                <label class="form-check-label" for="rejection_hemolyzed">Hemolyzed(Red)</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input rejection-type" type="checkbox" value="expiry" id="rejection_expiry">
-                                                <label class="form-check-label" for="rejection_expiry">Expiry</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input rejection-type" type="checkbox" value="quality" id="rejection_quality">
-                                                <label class="form-check-label" for="rejection_quality">Quality Rejected</label>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td colspan="2">
-                                        <strong>Date:</strong> <span id="display_date"></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4">
                                         <strong>Blood Centre Name & City:</strong> <span id="display_blood_centre"></span>
-                                    </td>
-                                    <td colspan="2">
-                                        <strong>Pickup Date:</strong> <span id="display_pickup_date"></span>
                                     </td>
                                 </tr>
                             </table>
@@ -256,10 +234,8 @@
                                 <thead>
                                     <tr>
                                         <td class="text-center sr-no-col">Sr.No.</td>
-                                        <td class="text-center donor-id-col">DonorID / Mini Pool ID / Mega Pool ID</td>
-                                        <td class="text-center donation-date-col">Donation Date</td>
-                                        <td class="text-center blood-group-col">Blood Group</td>
-                                        <td class="text-center bag-volume-col">Volume</td>
+                                        <td class="text-center donor-id-col">Mini Pool ID / Mega Pool ID</td>
+                                        <td class="text-center blood-group-col">Status</td>
                                         <td class="text-center remarks-col">Remarks</td>
                                     </tr>
                                 </thead>
@@ -319,48 +295,35 @@ $(document).ready(function() {
         }
     });
 
-    // Initialize Select2 for blood bank
-    $('.select2-bloodbank').select2({
-        placeholder: "Select Blood Centre",
+    // Initialize Select2 for AR Number
+    $('#ar_number').select2({
+        placeholder: "Select A.R. Number",
         allowClear: true,
-        width: '100%'
-    });
-
-    // Handle blood bank selection
-    $('#blood_bank').on('change', function() {
-        const selectedText = $(this).find('option:selected').text();
-        $('#display_blood_centre').text(selectedText || '-');
-    });
-
-    // Handle pickup date selection
-    $('#pickup_date').on('change', function() {
-        const selectedDate = $(this).val();
-        if (selectedDate) {
-            const formattedDate = new Date(selectedDate).toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-            $('#display_pickup_date').text(formattedDate);
-            $('#display_date').text(formattedDate);
-        } else {
-            $('#display_pickup_date').text('-');
-            $('#display_date').text('-');
+        width: '100%',
+        ajax: {
+            url: '{{ route("get.ar.numbers") }}',
+            dataType: 'json',
+            delay: 250,
+            processResults: function(data) {
+                return {
+                    results: $.map(data, function(item) {
+                        return {
+                            text: item.ar_no,
+                            id: item.ar_no
+                        }
+                    })
+                };
+            },
+            cache: true
         }
     });
 
-    // Handle search button click
-    $('#searchBtn').on('click', function() {
-        const bloodBank = $('#blood_bank').val();
-        const pickupDate = $('#pickup_date').val();
-
-        if (!bloodBank) {
-            alert('Please select a Blood Centre');
-            return;
-        }
-
-        if (!pickupDate) {
-            alert('Please select a Pickup Date');
+    // Handle AR Number selection
+    $('#ar_number').on('change', function() {
+        const arNumber = $(this).val();
+        
+        if (!arNumber) {
+            $('#reportBody').html('<tr><td colspan="6" class="text-center py-3"><div class="alert alert-info mb-0">Select A.R. Number to view data</div></td></tr>');
             return;
         }
 
@@ -369,30 +332,32 @@ $(document).ready(function() {
 
         // Make AJAX call to get data
         $.ajax({
-            url: '{{ route("mini.pool.details") }}',
+            url: '{{ route("plasma.rejection.details") }}',
             method: 'GET',
             data: {
-                blood_centre_name: bloodBank,
-                pickup_date: pickupDate
+                ar_number: arNumber
             },
             success: function(response) {
-            console.log("response");
-            console.log(response);
                 if (response.status === 'success' && response.data.length > 0) {
+                    // Display blood centre and pickup date
+                    $('#display_blood_centre').text(response.blood_centre || '-');
+                    $('#display_pickup_date').text(response.pickup_date || '-');
+                    $('#display_date').text(new Date().toLocaleDateString('en-GB'));
+
                     let html = '';
                     response.data.forEach((item, index) => {
-                        const testResults = [];
-                        if (item.hiv === 'reactive') testResults.push('HIV');
-                        if (item.hbv === 'reactive') testResults.push('HBV');
-                        if (item.hcv === 'reactive') testResults.push('HCV');
-                        
                         html += `<tr>
                             <td class="text-center">${index + 1}</td>
                             <td class="text-center">${item.mini_pool_id || '-'}</td>
-                            <td class="text-center">${item.donation_date || '-'}</td>
-                            <td class="text-center">${item.blood_group || '-'}</td>
-                            <td class="text-center">${item.bag_volume_ml || '-'}</td>
-                            <td contenteditable="true" class="remarks-cell" data-mini-pool-id="${item.mini_pool_id}" style="min-width: 150px;"></td>
+                            <td class="text-center">${item.status || 'Unknown'}</td>
+                            <td class="text-center">
+                                <select class="form-control form-control-sm remarks-select" name="remarks[${item.id}]">
+                                    <option value="">Select Remarks</option>
+                                    <option value="re-test">Re-test</option>
+                                    <option value="quality-rejected">Quality Rejected</option>
+                                </select>
+                            </td>
+                            <input type="hidden" name="item_ids[]" value="${item.id}">
                         </tr>`;
                     });
                     $('#reportBody').html(html);
@@ -415,48 +380,50 @@ $(document).ready(function() {
         });
     });
 
-    // Handle form submission
+    // Add event listener for remarks header dropdown
+    $('#remarksHeader').on('change', function() {
+        const selectedValue = $(this).val();
+        if (selectedValue) {
+            $('.remarks-select').val(selectedValue);
+        }
+    });
+
+    // Update the form submission code to collect remarks from dropdowns
     $('#plasmaRejectionForm').on('submit', function(e) {
         e.preventDefault();
 
-        const bloodBank = $('#blood_bank').val();
-        const pickupDate = $('#pickup_date').val();
-        const selectedTypes = [];
-        $('.rejection-type:checked').each(function() {
-            selectedTypes.push($(this).val());
-        });
-
-        if (!bloodBank) {
-            alert('Please select a Blood Centre');
+        const arNumber = $('#ar_number').val();
+        
+        if (!arNumber) {
+            alert('Please select an A.R. Number');
             return;
         }
 
-        if (!pickupDate) {
-            alert('Please select a Pickup Date');
-            return;
-        }
-
-        if (selectedTypes.length === 0) {
-            alert('Please select at least one rejection type');
-            return;
-        }
-
-        // Collect mini pool data
-        const miniPools = [];
-        $('#reportBody tr').each(function() {
-            const miniPoolId = $(this).find('td[data-mini-pool-id]').data('mini-pool-id');
-            const remarks = $(this).find('.remarks-cell').text().trim();
+        // Collect items data
+        const items = [];
+        let hasRemarks = false;
+        
+        $('input[name="item_ids[]"]').each(function(index) {
+            const itemId = $(this).val();
+            const remarks = $(`select[name="remarks[${itemId}]"]`).val();
             
-            if (miniPoolId) {
-                miniPools.push({
-                    mini_pool_id: miniPoolId,
-                    remarks: remarks
-                });
+            if (remarks) {
+                hasRemarks = true;
             }
+            
+            items.push({
+                id: itemId,
+                remarks: remarks
+            });
         });
 
-        if (miniPools.length === 0) {
-            alert('No mini pools found to submit');
+        if (!hasRemarks) {
+            alert('Please add remarks for at least one item');
+            return;
+        }
+
+        if (items.length === 0) {
+            alert('No items found to submit');
             return;
         }
 
@@ -469,15 +436,25 @@ $(document).ready(function() {
             }
         });
 
+        // Prepare form data for submission
+        const formData = new FormData();
+        formData.append('ar_number', arNumber);
+        
+        // Add item_ids and remarks
+        items.forEach(item => {
+            formData.append('item_ids[]', item.id);
+            formData.append(`remarks[${item.id}]`, item.remarks);
+        });
+
         // Submit form data
         $.ajax({
             url: $(this).attr('action'),
             method: 'POST',
-            data: {
-                blood_bank: bloodBank,
-                pickup_date: pickupDate,
-                rejection_type: selectedTypes,
-                mini_pools: miniPools
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
                 Swal.fire({

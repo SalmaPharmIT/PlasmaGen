@@ -149,7 +149,7 @@
     <div class="card">
         <div class="card-header text-white" style="background-color: #0c4c90;">
             <div class="d-flex justify-content-between align-items-center">
-                <h4 class="text-center mb-0">Plasma Entry Sheet</h4>
+                <h4 class="text-center mb-0">Plasma Inward Entry</h4>
             </div>
         </div>
         <div class="card-body">
@@ -222,6 +222,12 @@
         // Initialize Select2 for existing rows
         initializeSelect2();
 
+        // Add date validation classes to initial rows
+        $('#plasmaTableBody tr:not(#totalRow)').each(function() {
+            $(this).find('input[name="pickup_date[]"]').addClass('pickup-date');
+            $(this).find('input[name="receipt_date[]"]').addClass('receipt-date');
+        });
+
         // Function to initialize Select2
         function initializeSelect2() {
             $('.select2-bloodbank').each(function() {
@@ -258,6 +264,27 @@
             });
         }
 
+        // Add date validation
+        $(document).on('change', 'input[type="date"]', function() {
+            var row = $(this).closest('tr');
+            var pickupDate = row.find('input[name="pickup_date[]"]').val();
+            var receiptDate = row.find('input[name="receipt_date[]"]').val();
+            
+            if (pickupDate && receiptDate) {
+                var pickup = new Date(pickupDate);
+                var receipt = new Date(receiptDate);
+                
+                if (receipt < pickup) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Date',
+                        text: 'Date of Receipt cannot be before Pickup Date'
+                    });
+                    row.find('input[name="receipt_date[]"]').val('');
+                }
+            }
+        });
+
         // Function to add new row
         $('#addRow').click(function() {
             var lastRow = $('#plasmaTableBody tr:not(#totalRow)').last();
@@ -267,8 +294,8 @@
             var newRow = `
                 <tr>
                     <td><input type="text" class="form-control-sm" name="sl_no[]" readonly value="${nextNumber}"></td>
-                    <td><input type="date" class="form-control-sm" name="pickup_date[]"></td>
-                    <td><input type="date" class="form-control-sm" name="receipt_date[]"></td>
+                    <td><input type="date" class="form-control-sm pickup-date" name="pickup_date[]"></td>
+                    <td><input type="date" class="form-control-sm receipt-date" name="receipt_date[]"></td>
                     <td><input type="text" class="form-control-sm" name="grn_no[]"></td>
                     <td>
                         <select class="form-control-sm select2-bloodbank" name="blood_bank[]" data-placeholder="Select Blood Centre">
@@ -326,7 +353,7 @@
 
             // Submit form via AJAX
             $.ajax({
-                url: '/plasma/store',
+                url: "{{ route('plasma.store') }}",
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {

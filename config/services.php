@@ -35,4 +35,7 @@ return [
         ],
     ],
 
+    'bartender' => [
+        'api_url' => env('BARTENDER_API_URL'),
+    ],
 ];

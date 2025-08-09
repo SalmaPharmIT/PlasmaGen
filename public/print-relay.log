@@ -1,0 +1,15 @@
+[2025-06-23 13:08:40] Received print request: {"remote_addr":"::1","content_length":13}
+[2025-06-23 13:08:40] Missing required fields: {"test":true}
+[2025-06-23 13:12:39] Received print request: {"remote_addr":"127.0.0.1","content_length":3929}
+[2025-06-23 13:12:39] Processing print request: {"printer":"172.16.33.8","format":"PGL","data_length":3651}
+[2025-06-23 13:12:39] Attempting to forward request to remote server: http://172.16.22.75/print-server.php
+[2025-06-23 13:12:44] Remote server error: Remote print server is unreachable
+[2025-06-23 13:12:44] Attempting direct connection to printer: 172.16.33.8:9100
+[2025-06-23 13:12:49] Direct printer connection failed: Failed to connect to printer at 172.16.33.8:9100 - A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond (10060)
+[2025-06-23 13:54:29] Test endpoint accessed: ::1
+[2025-06-23 13:56:08] Received print request: {"remote_addr":"::1","content_length":3929}
+[2025-06-23 13:56:08] Processing print request: {"printer":"172.16.33.8","format":"PGL","data_length":3651}
+[2025-06-23 13:56:08] Attempting to forward request to remote server: http://172.16.22.75/print-server.php
+[2025-06-23 13:56:13] Remote server error: Remote print server is unreachable
+[2025-06-23 13:56:13] Attempting direct connection to printer: 172.16.33.8:9100
+[2025-06-23 13:56:18] Direct printer connection failed: Failed to connect to printer at 172.16.33.8:9100 - A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond (10060)

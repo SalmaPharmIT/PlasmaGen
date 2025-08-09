@@ -1,6 +1,6 @@
 <!-- resources/views/include/footer.blade.php -->
 
-<footer id="footer" class="footer">
+<footer id="footer" class="footer" style="{{ $style ?? '' }}">
     <div class="copyright">
       &copy; Copyright <strong><span>PlasmaGen</span></strong>. All Rights Reserved
     </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AuditTrail;
 
 class BarcodeController extends Controller
 {
@@ -13,12 +14,13 @@ class BarcodeController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access');
         }
 
-        // Get the reference number from entity settings
+        // Get the reference number and number of workstations from entity settings
         $entityId = Auth::user()->entity_id;
         $entitySettings = \App\Models\EntitySetting::where('entity_id', $entityId)->first();
         $refNumber = $entitySettings ? $entitySettings->ref_no : '';
+        $noOfWorkstations = $entitySettings ? $entitySettings->no_of_work_station : 0;
 
-        return view('barcode.generate', compact('refNumber'));
+        return view('barcode.generate', compact('refNumber', 'noOfWorkstations'));
     }
 
     public function generateCodes(Request $request)
@@ -39,7 +41,7 @@ class BarcodeController extends Controller
         $year = date('y');
         $month = date('m');
         $workstation = str_pad($request->workstation_id, 2, '0', STR_PAD_LEFT);
-        
+
         // Get the last mega pool number for the current year, month, and workstation
         $prefix = "MG" . $year . $month . $workstation;
         $lastMegaPool = \DB::table('barcode_entries')
@@ -91,7 +93,7 @@ class BarcodeController extends Controller
         ]);
 
         try {
-            \DB::table('barcode_entries')->insert([
+            $barcodeEntry = \DB::table('barcode_entries')->insert([
                 'work_station' => $request->workstation_id,
                 'ar_no' => $request->ar_number,
                 'ref_doc_no' => $request->ref_number,
@@ -102,6 +104,23 @@ class BarcodeController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
+
+            // Log the barcode generation in audit trail
+            AuditTrail::log(
+                'create',
+                'Generate Barcode',
+                'Barcode Generation',
+                $request->mega_pool,
+                [],
+                [
+                    'mega_pool_no' => $request->mega_pool,
+                    'mini_pool_number' => implode(',', $request->mini_pools),
+                    'ar_no' => $request->ar_number,
+                    'ref_doc_no' => $request->ref_number,
+                    'work_station' => $request->workstation_id
+                ],
+                'Generated barcode: ' . $request->mega_pool . ' with ' . count($request->mini_pools) . ' mini pools'
+            );
 
             return response()->json([
                 'success' => true,
@@ -134,4 +153,93 @@ class BarcodeController extends Controller
             'data' => $arNumbers
         ]);
     }
-} 
+
+    public function reprintBarcodes(Request $request)
+    {
+        if (!in_array(Auth::user()->role_id, [12, 17])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access'
+            ], 403);
+        }
+
+        $request->validate([
+            'mega_pool' => 'required',
+            'ar_number' => 'required',
+            'ref_number' => 'required'
+        ]);
+
+        try {
+            $barcodeEntry = \DB::table('barcode_entries')
+                ->where('mega_pool_no', $request->mega_pool)
+                ->first();
+
+            if (!$barcodeEntry) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No barcodes found for the selected Mega Pool'
+                ], 404);
+            }
+
+            // Get mini pools as array
+            $miniPools = explode(',', $barcodeEntry->mini_pool_number);
+
+            return response()->json([
+                'success' => true,
+                'ar_number' => $barcodeEntry->ar_no,
+                'ref_number' => $barcodeEntry->ref_doc_no,
+                'megapool' => $barcodeEntry->mega_pool_no,
+                'minipools' => $miniPools
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving barcodes: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getMegaPools()
+    {
+        if (!in_array(Auth::user()->role_id, [12, 17])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access'
+            ], 403);
+        }
+
+        $megaPools = \DB::table('barcode_entries')
+            ->select('mega_pool_no', 'ar_no', 'ref_doc_no')
+            ->orderBy('mega_pool_no', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $megaPools
+        ]);
+    }
+
+    public function generateTemplate(Request $request)
+    {
+        if (!in_array(Auth::user()->role_id, [12, 17])) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        $request->validate([
+            'ar_number' => 'required',
+            'ref_number' => 'required',
+            'mega_pool' => 'required',
+            'mini_pools' => 'required|array'
+        ]);
+
+        // Get mini pools from request
+        $miniPools = $request->input('mini_pools', []);
+
+        return view('barcode.template', [
+            'ar_number' => $request->ar_number,
+            'ref_number' => $request->ref_number,
+            'mega_pool' => $request->mega_pool,
+            'mini_pools' => $miniPools
+        ]);
+    }
+}

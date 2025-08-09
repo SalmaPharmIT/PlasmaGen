@@ -1,0 +1,253 @@
+2025-06-09 12:09:26
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "hQoDWZYLb48cRUtrve2EoDQUmadqbMYKZ3E3KgTS",
+    "debug_token": "1749470938",
+    "ar_number": "AR\/RM10001\/0022\/25\/0004",
+    "donor_id": [
+        "1234",
+        "5678"
+    ],
+    "donation_date": [
+        "2025-06-09",
+        "2025-06-09"
+    ],
+    "blood_group": [
+        "A+",
+        "B+"
+    ],
+    "bag_volume": [
+        "100",
+        "100"
+    ],
+    "remarks": [
+        "Damaged",
+        "Hemolyzed (Red)"
+    ]
+}
+
+2025-06-09 12:13:10
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "hQoDWZYLb48cRUtrve2EoDQUmadqbMYKZ3E3KgTS",
+    "debug_token": "1749471154",
+    "ar_number": "AR\/RM10001\/0020\/25\/0028",
+    "donor_id": [
+        "789",
+        "456"
+    ],
+    "donation_date": [
+        "2025-06-09",
+        "2025-06-09"
+    ],
+    "blood_group": [
+        "A-",
+        "A+"
+    ],
+    "bag_volume": [
+        "100",
+        "50"
+    ],
+    "remarks": [
+        "Damaged",
+        "Hemolyzed (Red)"
+    ]
+}
+
+2025-06-09 12:23:03
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "hQoDWZYLb48cRUtrve2EoDQUmadqbMYKZ3E3KgTS",
+    "debug_token": "1749471734",
+    "ar_number": "AR\/RM10001\/0020\/25\/0028",
+    "donor_id": [
+        "1234",
+        "7894"
+    ],
+    "donation_date": [
+        "2025-06-09",
+        "2025-06-09"
+    ],
+    "blood_group": [
+        "A+",
+        "AB+"
+    ],
+    "bag_volume": [
+        "100",
+        "20"
+    ],
+    "remarks": [
+        "Damaged",
+        "Damaged"
+    ]
+}
+
+2025-06-10 14:28:30
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "OtwaKPaQDoSymABg0wYcb04g0It5Eqa6ryWF8DMM",
+    "debug_token": "1749565631",
+    "ar_number": "AR\/RM10001\/0022\/25\/0004",
+    "donor_id": [
+        "11111",
+        null
+    ],
+    "donation_date": [
+        "2025-06-10",
+        null
+    ],
+    "blood_group": [
+        "A+",
+        null
+    ],
+    "bag_volume": [
+        "100",
+        null
+    ],
+    "remarks": [
+        "Damaged",
+        null
+    ]
+}
+
+2025-06-10 14:34:43
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "OtwaKPaQDoSymABg0wYcb04g0It5Eqa6ryWF8DMM",
+    "debug_token": "1749566054",
+    "ar_number": "AR\/RM10001\/0028\/25\/0001",
+    "donor_id": [
+        "11111",
+        null
+    ],
+    "donation_date": [
+        "2025-06-10",
+        null
+    ],
+    "blood_group": [
+        "A+",
+        null
+    ],
+    "bag_volume": [
+        "100",
+        null
+    ],
+    "remarks": [
+        "Damaged",
+        null
+    ]
+}
+
+2025-06-10 15:06:57
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "OtwaKPaQDoSymABg0wYcb04g0It5Eqa6ryWF8DMM",
+    "debug_token": "1749567982",
+    "ar_number": "AR\/RM10001\/0026\/25\/0003",
+    "donor_id": [
+        "121222",
+        "131333"
+    ],
+    "donation_date": [
+        "2025-06-10",
+        "2025-06-10"
+    ],
+    "blood_group": [
+        "A+",
+        "B+"
+    ],
+    "bag_volume": [
+        "100",
+        "100"
+    ],
+    "remarks": [
+        "Damaged",
+        "Damaged"
+    ]
+}
+
+2025-06-11 08:26:36
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "op3b3CRDx2DBH70mpYhANlU1gqgMQEcoUcRwqH5P",
+    "debug_token": "1749630374",
+    "ar_number": "AR\/RM10001\/0026\/25\/0003",
+    "quality_rejected_list": "1",
+    "donor_id": [
+        "MG25059900011"
+    ],
+    "donation_date": [
+        "2025-04-01"
+    ],
+    "blood_group": [
+        "A+"
+    ],
+    "bag_volume": [
+        "199"
+    ],
+    "remarks": [
+        "Quality Rejected"
+    ]
+}
+
+2025-07-18 05:25:06
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "8jBdalq6FE0F12CAnI3DLHqTorjSTUO8YRQubk4o",
+    "debug_token": "1752816264",
+    "ar_number": "AR\/RM10001\/0352\/25\/1309",
+    "quality_rejected_list": "1",
+    "donor_id": [
+        "554645464"
+    ],
+    "donation_date": [
+        "2025-07-18"
+    ],
+    "blood_group": [
+        "A+"
+    ],
+    "bag_volume": [
+        "100"
+    ],
+    "remarks": [
+        "Quality Rejected"
+    ]
+}
+
+2025-07-18 05:41:07
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "8jBdalq6FE0F12CAnI3DLHqTorjSTUO8YRQubk4o",
+    "debug_token": "1752817191",
+    "ar_number": "AR\/RM10001\/0022\/25\/1313",
+    "donor_id": [
+        "2545454",
+        "5454656"
+    ],
+    "donation_date": [
+        "2025-07-18",
+        "2025-07-18"
+    ],
+    "blood_group": [
+        "A+",
+        "AB+"
+    ],
+    "bag_volume": [
+        "100",
+        "50"
+    ],
+    "remarks": [
+        "Quality Rejected",
+        "Quality Rejected"
+    ]
+}
+

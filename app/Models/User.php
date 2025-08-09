@@ -6,10 +6,11 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Traits\AuditableTrait;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, AuditableTrait;
 
     const STATUS_ACTIVE = 'active';
     const STATUS_INACTIVE = 'inactive';
@@ -141,5 +142,11 @@ class User extends Authenticatable
     public function getProfileImage()
     {
         return $this->profile_pic ? $this->profile_pic : '';
+    }
+
+    // Define the module name for audit trail
+    public function getAuditModule()
+    {
+        return 'User Management';
     }
 }

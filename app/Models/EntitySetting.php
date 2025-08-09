@@ -13,6 +13,7 @@ class EntitySetting extends Model
     protected $fillable = [
         'entity_id',
         'ref_no',
+        'no_of_work_station',
         'timestamp',
         'created_by',
         'updated_by',

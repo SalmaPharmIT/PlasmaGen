@@ -21,7 +21,10 @@ use App\Http\Controllers\ReportMiniPoolMegaPoolController;
 use App\Http\Controllers\SubMiniPoolEntryController;
 use App\Http\Controllers\PlasmaManagementController;
 use App\Http\Controllers\BagStatusController;
-
+use App\Http\Controllers\PlasmaRejectionController;
+use App\Http\Controllers\PrinterLabelController;
+use App\Http\Controllers\AuditTrailController;
+use Illuminate\Http\Request;
 // Redirect root to login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -46,10 +49,10 @@ Route::group(['middleware' => ['auth']], function () {
     /* *********************  Entity Starts ********************************* */
     // View Entities Page
     Route::get('/entities', [EntityController::class, 'index'])->name('entities.index');
-    
+
     // API Endpoint to Fetch Entities
     Route::get('/api/entities', [EntityController::class, 'getEntities'])->name('api.entities');
-    
+
     // Edit Entity starts ***********
     // Route to display the edit form - view
     Route::get('/entity/{id}', [EntityController::class, 'edit'])->name('entity.edit');
@@ -160,7 +163,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/tpCollectionRequests', [TourPlannerController::class, 'getTPCollectionIncomingRequests'])->name('tourplanner.tpCollectionRequests');
     Route::get('/tourplanner/markTPAdded', [TourPlannerController::class, 'markTPAdded'])->name('tourplanner.markTPAdded');
     Route::get('/tourplanner/getAllActiveWarehouses', [TourPlannerController::class, 'getAllActiveWarehouses'])->name('tourplanner.getAllActiveWarehouses');  // Get All Acive Warehouses
-    Route::get('/tourplanner/getAllActiveTransportPartners', [TourPlannerController::class, 'getAllActiveTransportPartners'])->name('tourplanner.getAllActiveTransportPartners'); 
+    Route::get('/tourplanner/getAllActiveTransportPartners', [TourPlannerController::class, 'getAllActiveTransportPartners'])->name('tourplanner.getAllActiveTransportPartners');
     /* *********************  Tour Planner Ends ********************************* */
 
     /* *********************  Manage Tour Planner Starts ********************************* */
@@ -238,24 +241,44 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('/barcode/generate/codes', [BarcodeController::class, 'generateCodes'])->name('barcode.generate.codes');
         Route::post('/barcode/save', [BarcodeController::class, 'saveBarcodes'])->name('barcode.save');
         Route::get('/barcode/ar-numbers', [BarcodeController::class, 'getArNumbers'])->name('barcode.ar-numbers');
+        Route::post('/barcode/reprint', [BarcodeController::class, 'reprintBarcodes'])->name('barcode.reprint');
+        Route::get('/barcode/mega-pools', [BarcodeController::class, 'getMegaPools'])->name('barcode.mega-pools');
+        Route::get('/barcode/template', [BarcodeController::class, 'generateTemplate'])->name('barcode.template');
+
+        // BarTender Integration Route
+        Route::post('/bartender/print', [PrinterLabelController::class, 'printWithBarTender'])->name('bartender.print');
+
+        // Download barcode data as CSV
+        Route::post('/bartender/download-csv', [PrinterLabelController::class, 'downloadCsv'])->name('bartender.download-csv');
     });
     /* ********************* Barcode Generator Routes Ends ********************************* */
+
+    // Mini Pool Numbers Route - Moved outside middleware group
+    Route::get('/subminipool/get-mini-pool-numbers', [SubMiniPoolEntryController::class, 'getMiniPoolNumbers'])
+        ->name('subminipool.get-mini-pool-numbers')
+        ->middleware('auth');
+
+    // Sub Mini Pool Numbers Route
+    Route::get('/subminipool/get-sub-mini-pool-numbers', [SubMiniPoolEntryController::class, 'getSubMiniPoolNumbers'])
+        ->name('subminipool.get-sub-mini-pool-numbers')
+        ->middleware('auth');
 
     /* ********************* Expenses Starts ********************************* */
     Route::get('/expenses', [ExpensesController::class, 'index'])->name('expenses.index');
     Route::get('/expenses/getUpdatedVisits', [ExpensesController::class, 'getUpdatedVisits'])->name('expenses.getUpdatedVisits');
     Route::get('/expenses/view', [ExpensesController::class, 'showExpenseView'])->name('expenses.view');
     Route::get('/expenses/fetchVisits', [ExpensesController::class, 'fetchVisitsExpenses'])->name('expenses.fetchVisits');
-    Route::post('/expenses/submit', [ExpensesController::class, 'submitExpenses'])->name('expenses.submit');  
+    Route::post('/expenses/submit', [ExpensesController::class, 'submitExpenses'])->name('expenses.submit');
     Route::get('expenses/fetchExpenses/{tp_id}', [ExpensesController::class, 'fetchExpenses'])->name('expenses.fetchExpenses');
     Route::delete('/expenses/delete/{id}', [ExpensesController::class, 'deleteExpense'])->name('expenses.delete');
-    /* *********************  Report Visits Ends ********************************* */
+    /* *********************  Expenses Ends ********************************* */
 
     /* ********************* New Bag Entry Routes ********************************* */
     Route::get('/newBagEntry', [BagEntryController::class, 'index'])->name('newBag.index')->middleware('auth');
     Route::get('/factory/newbagentry/sub-mini-pool-bag-entry', [BagEntryController::class, 'subMiniPoolBagEntry'])->name('factory.newbagentry.sub_mini_pool_bag_entry')->middleware('auth');
     Route::post('/newBagEntry', [BagEntryController::class, 'store'])->name('newBag.store')->middleware('auth');
     Route::get('/check-mega-pool/{megaPoolNo}', [BagEntryController::class, 'checkMegaPool'])->name('check.mega.pool')->middleware('auth');
+    Route::get('/bagEntryReject', [BagEntryController::class, 'rejectPlasmaBagEntry'])->name('rejectPlasmaBagEntry')->middleware('auth');
     /* ********************* New Bag Entry Routes Ends ********************************* */
 
     // Plasma Management Routes
@@ -263,16 +286,28 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/entry', [PlasmaController::class, 'plasmaEntry'])->name('entry');
         Route::post('/store', [PlasmaController::class, 'store'])->name('store');
         Route::get('/dispensing', [PlasmaController::class, 'dispensing'])->name('dispensing');
-        Route::get('/rejection', [PlasmaController::class, 'rejection'])->name('rejection');
+        Route::get('/dispensing/print', [PlasmaController::class, 'printDispensing'])->name('dispensing.print');
+        Route::get('/rejection', [PlasmaController::class, 'rejectionList'])->name('rejection');
         Route::post('/dispensing/get-bag-status', [PlasmaController::class, 'getBagStatusDetails'])->name('dispensing.get-bag-status');
         Route::post('/rejection/get-bag-status', [PlasmaController::class, 'getBagStatusForRejection'])->name('rejection.get-bag-status');
         Route::get('/generate-ar-no', [PlasmaController::class, 'generateArNo'])->name('generate-ar-no');
         Route::post('/update-ar-no', [PlasmaController::class, 'updateArNo'])->name('update-ar-no');
         Route::get('/get-by-ar-no/{ar_no}', [PlasmaController::class, 'getByArNo'])->name('get-by-ar-no')->where('ar_no', '.*');
+        Route::get('/get-by-ar-no_release/{ar_no}', [PlasmaController::class, 'getReleaseArNo'])->name('get-by-ar-no_release')->where('ar_no', '.*');
+        Route::get('/get-by-batch-number/{batch_number}', [PlasmaController::class, 'getBatchNumbers'])->name('get-by-batch-number')->where('batch_number', '.*');
         Route::get('/get-ar-numbers', [PlasmaController::class, 'getArNumbers'])->name('get-ar-numbers');
         Route::get('/get-mini-pool-numbers', [PlasmaController::class, 'getMiniPoolNumbers'])
             ->name('get_mini_pool_numbers');
         Route::post('/get-bag-status-details', [PlasmaController::class, 'getBagStatusDetails'])->name('getBagStatusDetails');
+        Route::get('/ar-list', [PlasmaController::class, 'arList'])->name('ar-list');
+        Route::get('/ar-list/print', [PlasmaController::class, 'printArList'])->name('ar-list.print');
+        Route::post('/get-ar-list', [PlasmaController::class, 'getArList'])->name('get-ar-list');
+        Route::get('/destruction-list', [PlasmaController::class, 'destructionList'])->name('destruction-list');
+        Route::get('/destruction-list/print', [PlasmaController::class, 'printDestructionList'])->name('destruction-list.print');
+        Route::post('/get-destruction-list', [PlasmaController::class, 'getDestructionList'])->name('get-destruction-list');
+        Route::post('/reject-mega-pool', [PlasmaController::class, 'rejectMegaPool'])->name('reject-mega-pool');
+        Route::get('/ar-details', [PlasmaController::class, 'getArDetails'])->name('ar-details');
+        Route::get('/quality-rejected', [PlasmaController::class, 'getQualityRejectedEntries'])->name('quality-rejected');
     });
 
     // Add the API route for blood banks
@@ -303,6 +338,10 @@ Route::get('/factory/generate-report/mega-pool-mini-pool', [ReportMiniPoolMegaPo
     ->name('factory.generate_report.mega_pool_mini_pool');
 Route::post('/factory/generate-report/fetch-mega-pool-data', [ReportMiniPoolMegaPoolController::class, 'fetchMegaPoolData'])
     ->name('factory.generate_report.fetch_mega_pool_data');
+Route::post('/factory/generate-report/print-mega-pool-report', [ReportMiniPoolMegaPoolController::class, 'printMegaPoolReport'])
+    ->name('factory.generate_report.print_mega_pool_report');
+Route::get('/factory/generate-report/fetch-ar-numbers', [ReportMiniPoolMegaPoolController::class, 'fetchARNumbers'])
+    ->name('factory.generate_report.fetch_ar_numbers');
 
 Route::get('/factory/generate-report/sub-mini-pool', function () {
     return view('factory.generate_report.sub_mini_pool');
@@ -312,10 +351,26 @@ Route::get('/factory/generate-report/plasma_dispensing', function () {
     return view('factory.generate_report.plasma_dispensing');
 })->name('factory.generate_report.plasma_dispensing');
 
+// Tail Cutting Report Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/factory/generate-report/tail-cutting', [ReportMiniPoolMegaPoolController::class, 'tailCuttingReport'])
+        ->name('factory.generate_report.tail_cutting');
+    Route::post('/factory/generate-report/tail-cutting', [ReportMiniPoolMegaPoolController::class, 'tailCuttingReport'])
+        ->name('factory.generate_report.tail_cutting.fetch');
+    Route::get('/factory/generate-report/tail-cutting/print', [ReportMiniPoolMegaPoolController::class, 'tailCuttingPrintTemplate'])
+        ->name('factory.generate_report.tail_cutting.print');
+});
+
 /* *********************  Factory Report Routes Start ********************************* */
 Route::get('/factory/report/plasma-despense', [PlasmaController::class, 'despense'])->name('factory.report.plasma_despense');
+Route::get('/factory/report/plasma-release', [PlasmaController::class, 'release'])->name('factory.report.plasma_release');
+Route::post('/factory/report/plasma-submit', [PlasmaController::class, 'submitPlasma'])->name('factory.report.plasma_submit');
 Route::get('/factory/report/plasma-rejection', [PlasmaController::class, 'rejection'])->name('factory.report.plasma_rejection');
 Route::post('/factory/report/plasma-rejection', [BagStatusController::class, 'storePlasmaRejection'])->name('plasma.rejection.store');
+Route::post('/factory/report/nat-plasma-rejection', [BagStatusController::class, 'storeNatRejection'])->name('nat.plasma.rejection.store');
+Route::get('/plasma/rejection/details', [BagStatusController::class, 'getPlasmaRejectionDetails'])->name('plasma.rejection.details');
+Route::get('/get-ar-numbers', [BagStatusController::class, 'getArNumbers'])->name('get.ar.numbers');
+
 /* *********************  Factory Report Routes Ends ********************************* */
 
 /* ********************* Factory Report Routes ********************************* */
@@ -328,7 +383,147 @@ Route::post('/sub-mini-pool-entries', [SubMiniPoolEntryController::class, 'store
 /* *********************  Expenses Ends ********************************* */
 
 /* *********************  Plasma Despense Starts ********************************* */
-Route::get('/plasma-despense', [BagStatusController::class, 'showPlasmaDespense'])->name('plasma.despense');
+Route::get('/plasma/despense', [BagStatusController::class, 'showPlasmaDespense'])->name('plasma.despense');
+Route::post('/plasma/despense/store', [BagStatusController::class, 'storePlasmaDespense'])->name('plasma.despense.store');
+Route::get('/mini-pool-details', [BagStatusController::class, 'getMiniPoolDetails'])->name('mini.pool.details');
 Route::get('/mini-pool-nonreactive-details', [BagStatusController::class, 'getNonReactiveMiniPoolDetails'])->name('mini.pool.nonreactive.details');
-Route::post('/plasma-despense', [BagStatusController::class, 'storePlasmaDespense'])->name('plasma.despense.store');
 /* *********************  Plasma Despense Ends ********************************* */
+
+// Route::post('/plasma/rejection/print', [PlasmaRejectionController::class, 'print'])->name('plasma.rejection.print');
+Route::post('/plasma/rejection/print', [PlasmaRejectionController::class, 'print'])->name('plasma.rejection.print');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/print/bartender', [PrinterLabelController::class, 'printWithBarTender'])->name('labels.bartender');
+    Route::post('/labels/preview', [PrinterLabelController::class, 'preview'])->name('labels.preview');
+    Route::post('/labels/browser-print', [PrinterLabelController::class, 'browserPrint'])->name('labels.browser-print');
+    Route::get('/labels/system-printers', [PrinterLabelController::class, 'getSystemPrinters'])->name('labels.system-printers');
+    Route::post('/labels/print', [PrinterLabelController::class, 'printLabels'])->name('labels.print');
+    Route::post('/labels/download-pgl', [PrinterLabelController::class, 'downloadPgl'])->name('labels.download-pgl');
+});
+
+// Simple Print Server API endpoint - typically would be in a separate application
+// This route doesn't require authentication for demo purposes only
+Route::post('/print-server', function (Request $request) {
+    // Log the incoming print request
+    \Illuminate\Support\Facades\Log::info('Print server request received', [
+        'data' => $request->all(),
+        'ip' => $request->ip()
+    ]);
+
+    // Validate the request
+    $validated = $request->validate([
+        'zpl_data' => 'required|string',
+        'printer_path' => 'required|string',
+    ]);
+
+    // In a real print server, you would:
+    // 1. Save the ZPL data to a file
+    // 2. Send it to a printer directly using system commands
+    // 3. Return success/failure status
+
+    // For demo purposes, just write to a file in storage
+    $filename = 'print_job_' . time() . '.zpl';
+    $path = storage_path('print_jobs/' . $filename);
+
+    // Ensure the directory exists
+    if (!file_exists(storage_path('print_jobs'))) {
+        mkdir(storage_path('print_jobs'), 0777, true);
+    }
+
+    // Write the ZPL data to the file
+    file_put_contents($path, $validated['zpl_data']);
+
+    // Return a success response
+    return response()->json([
+        'success' => true,
+        'message' => 'Print job received and saved',
+        'file' => $filename,
+        'printer_path' => $validated['printer_path'],
+        'bytes_received' => strlen($validated['zpl_data'])
+    ]);
+});
+
+/* *********************  Audit Trail Routes ********************************* */
+Route::middleware(['auth'])->group(function () {
+    // Main audit trail report page
+    Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit.index');
+
+    // API route to get audit trail data (for AJAX)
+    Route::get('/audit-trail/data', [AuditTrailController::class, 'getAuditTrailData'])->name('audit.data');
+
+    // View details of a specific audit record
+    Route::get('/audit-trail/{id}', [AuditTrailController::class, 'show'])->name('audit.show');
+
+    // Export audit trail to CSV
+    Route::get('/audit-trail/export/csv', [AuditTrailController::class, 'export'])->name('audit.export');
+});
+/* *********************  Audit Trail Routes Ends ********************************* */
+
+// Test route for audit trail
+Route::get('/test-audit', function() {
+    // Test different modules
+    \App\Models\AuditTrail::log(
+        'test',
+        'Test Module',
+        'Test Section',
+        null,
+        [],
+        [],
+        'This is a test audit entry'
+    );
+
+    \App\Models\AuditTrail::log(
+        'view',
+        'User Management',
+        'User Profile',
+        null,
+        [],
+        [],
+        'Viewed user profile'
+    );
+
+    \App\Models\AuditTrail::log(
+        'update',
+        'Plasma Management',
+        'Plasma Entry',
+        null,
+        ['status' => 'pending'],
+        ['status' => 'approved'],
+        'Updated plasma status'
+    );
+
+    \App\Models\AuditTrail::log(
+        'create',
+        'Bag Entry',
+        'New Bag',
+        null,
+        [],
+        ['bag_id' => 'BAG123', 'volume' => '250ml'],
+        'Created new bag entry'
+    );
+
+    \App\Models\AuditTrail::log(
+        'delete',
+        'Report Upload',
+        'ELISA Report',
+        null,
+        ['report_id' => 'RPT456'],
+        [],
+        'Deleted ELISA report'
+    );
+
+    return "Audit test entries created with various modules. Please check the audit trail.";
+})->middleware('auth');
+
+// Include profile routes
+require __DIR__.'/profile.php';
+
+/* *********************  BarTender Integration Starts ********************************* */
+// This route will handle the print request from your form.
+Route::post('/bartender/print', [PrinterLabelController::class, 'printWithBarTender'])->name('bartender.print');
+
+// You will also need a route to display the form itself.
+Route::get('/print-labels', function () {
+    return view('generate'); // Assuming your blade file is named generate.blade.php
+})->name('labels.generate');
+/* *********************  BarTender Integration Ends ********************************* */

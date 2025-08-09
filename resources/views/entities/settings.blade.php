@@ -51,6 +51,19 @@
                             @enderror
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="no_of_work_station">No of Work Station</label>
+                            <input type="number" class="form-control @error('no_of_work_station') is-invalid @enderror" 
+                                value="{{ $settings->no_of_work_station ?? old('no_of_work_station') }}" 
+                                name="no_of_work_station" 
+                                id="no_of_work_station"
+                                min="0">
+                            @error('no_of_work_station')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-12 text-end">
