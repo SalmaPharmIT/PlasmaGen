@@ -278,7 +278,7 @@
 
                     // If you only want to show “Both:” when it’s > 0, wrap it in an if statement:
                     if (both && both > 0) {
-                        detailsHtml += `<p><strong>Both:</strong> ${both}</p>`;
+                        detailsHtml += `<p><strong>Assigned Collections:</strong> ${both}</p>`;
                     }
 
                     // Inject details into the modal body
@@ -456,7 +456,7 @@
                                     }
                                     if (counts.both > 0) {
                                         // ADDED FOR type === 3 (Both)
-                                        titleParts.push('Both: ' + counts.both);
+                                        titleParts.push('Assigned Collections: ' + counts.both);
                                     }
 
                                     var title = titleParts.join('<br>'); // Use <br> for line breaks

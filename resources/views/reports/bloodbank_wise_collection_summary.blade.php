@@ -331,6 +331,9 @@
                     
                         // Clear the dropdown and add "Select All" as the first option
                         bloodBankDropdown.empty();
+                        bloodBankDropdown.append('<option value="">Choose Blood Banks</option>')
+                        bloodBankDropdown.append('<option value="all">SELECT ALL</option>');
+
                         
                         if (data.success) {
                             data.data.forEach(bloodBank => {
@@ -348,6 +351,24 @@
                     }
                 });
         }
+
+        // Blood-Banks “Select All” behavior
+        $('#bloodBankDropdown').on('change', function() {
+        const sel = $(this).val() || [];
+
+        if (sel.includes('all')) {
+            // grab every real ID (skip empty + “all”)
+            const allIds = $('#bloodBankDropdown option')
+            .map(function() { return this.value; })
+            .get()
+            .filter(v => v && v !== 'all');
+
+            // replace selection with the full list
+            $(this)
+            .val(allIds)
+            .trigger('change.select2');
+        }
+        });
 
 
         // Load States on page load

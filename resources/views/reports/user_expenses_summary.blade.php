@@ -96,6 +96,7 @@
                     <th class="text-center">Sundry</th>
                     <th class="text-center">Total Price</th>
                     <th class="text-center">Attachments</th>
+                    <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -154,6 +155,8 @@
 <script>
     $(document).ready(function() {
 
+        var baseImageUrl = "{{ config('auth_api.base_image_url') }}";
+
         // Initialize the date range picker
         $('#dateRangePicker').daterangepicker({
             locale: {
@@ -183,6 +186,7 @@
                         var agents = response.data;
                         var dropdown = $('#collectingAgentDropdown');
                         dropdown.empty().append('<option value="">Choose Collecting Agent</option>');
+                        dropdown.append('<option value="all">SELECT ALL</option>');
                         $.each(agents, function(index, agent) {
                           //  var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
                             var option = '<option value="' + agent.id + '" data-role-id="' + agent.role_id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
@@ -199,6 +203,26 @@
                 }
             });
         }
+
+        // --------------------
+        // Select-All behavior
+        // --------------------
+        $('#collectingAgentDropdown').on('change', function() {
+            const sel = $(this).val() || [];
+
+            // if user clicked “Select All”
+            if (sel.includes('all')) {
+                // grab every real ID (skip empty + “all”)
+                const allIds = $('#collectingAgentDropdown option')
+                .map(function() { return this.value; })
+                .get()
+                .filter(v => v && v !== 'all');
+
+                // replace selection with the full list
+                $(this).val(allIds)
+                    .trigger('change.select2');
+            }
+        });
 
         // Load Collecting Agents on page load
         loadCollectingAgents();
@@ -258,6 +282,16 @@
                         return html;
                     }
                 },
+                {
+                    data: null,
+                    className: "text-center",
+                    orderable: false,
+                    render: function(_data, _type, row, _meta) {
+                        return ` <button class="btn btn-sm btn-primary print‐btn" data‐row="${_meta.row}">
+                                <i class="bi bi-printer"></i> Print
+                                </button>`;
+                    }
+                }
             ],
             order: [[0, 'asc']],
             pageLength: 10,
@@ -295,6 +329,59 @@
                 }
                 }
             ]
+        });
+
+
+        // 3) When a Print button is clicked…
+        $('#userWiseCollectionSummaryTable tbody').on('click', '.print‐btn', function(){
+            const idx  = $(this).data('row');
+            const docs = table.row(idx).data().documents || [];
+            if (!docs.length) {
+                return Swal.fire('Info','No attachments to print','info');
+            }
+
+            // Open a single print window
+            const printWindow = window.open('','_blank');
+
+            printWindow.document.write(`
+                <html><head>
+                <title>Print Attachments</title>
+                <style>
+                    @page { margin: 0 }
+                    body  { margin:0; padding:0 }
+                    img, embed {
+                        display:block;
+                        width:100%;
+                        margin:0;
+                        padding:0;
+                    }
+                    img + img, embed + embed {
+                        page-break-after: auto !important;
+                    }
+                </style>
+                </head><body>
+            `);
+
+            // Inline each attachment, with a page‐break after
+            docs.forEach(doc => {
+                const url = baseImageUrl + doc.attachments;
+                if (url.match(/\.(jpg|jpeg|png|gif|svg)$/i)) {
+                printWindow.document.write(
+                    `<img src="${url}" alt="Attachment">`
+                );
+                } else {
+                // assume PDF or other; embed
+                printWindow.document.write(
+                    `<embed src="${url}" type="application/pdf">`
+                );
+                }
+            });
+            printWindow.document.write(`</body></html>`);
+            printWindow.document.close();
+            printWindow.focus();
+            // Once everything’s loaded, trigger print
+            printWindow.print();
+            // optional: printWindow.close();
         });
 
       

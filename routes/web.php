@@ -154,6 +154,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/getCalendarEvents', [TourPlannerController::class, 'getCalendarEvents'])->name('tourplanner.getCalendarEvents');
     Route::post('/tourplanner/saveTourPlan', [TourPlannerController::class, 'saveTourPlan'])->name('tourplanner.saveTourPlan');
     Route::delete('/tourplanner/deleteTourPlan', [TourPlannerController::class, 'deleteTourPlan'])->name('tourplanner.deleteTourPlan');
+        Route::delete('/tourplanner/cancelTourPlan', [TourPlannerController::class, 'cancelTourPlan'])->name('tourplanner.cancelTourPlan');
 
     Route::get('/tourplanner/sourcingCreateTourPlan', [TourPlannerController::class, 'showSourcingCreateTourPlan'])->name('tourplanner.sourcingCreateTourPlan');
     Route::post('/tourplanner/submit_monthly_tour_plan', [TourPlannerController::class, 'submitMonthlyTourPlan'])->name('tourplanner.submitMonthlyTourPlan');

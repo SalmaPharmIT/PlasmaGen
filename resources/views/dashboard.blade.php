@@ -58,7 +58,11 @@
 
           <!-- Sales Card -->
           <div class="col-xxl-3 col-md-6">
-            <a href="{{ route('bloodbank.index') }}" style="text-decoration: none; color: inherit;">
+              @if(Auth::check() && (Auth::user()->role_id == 2 || Auth::user()->role_id == 18))
+                <a href="{{ route('bloodbank.index') }}" style="text-decoration: none; color: inherit;">
+              @else 
+               <a style="text-decoration: none; color: inherit;">
+              @endif
               <div class="card info-card sales-card">
               
                 <div class="card-body">
@@ -81,7 +85,11 @@
 
           <!-- Revenue Card -->
           <div class="col-xxl-3 col-md-6">
-            <a href="{{ route('warehouse.index') }}" style="text-decoration: none; color: inherit;">
+              @if(Auth::check() && (Auth::user()->role_id == 2 || Auth::user()->role_id == 18))
+                <a href="{{ route('warehouse.index') }}" style="text-decoration: none; color: inherit;">
+              @else 
+               <a style="text-decoration: none; color: inherit;">
+              @endif
               <div class="card info-card revenue-card">
 
                 <div class="card-body">
@@ -127,7 +135,11 @@
 
           <!-- Customers Card -->
           <div class="col-xxl-3 col-xl-12">
-            <a href="{{ route('users.index') }}" style="text-decoration: none; color: inherit;">
+              @if(Auth::check() && (Auth::user()->role_id == 2 || Auth::user()->role_id == 18))
+                <a href="{{ route('users.index') }}" style="text-decoration: none; color: inherit;">
+              @else 
+               <a style="text-decoration: none; color: inherit;">
+              @endif
               <div class="card info-card customers-card">
 
                 <div class="card-body">
@@ -634,7 +646,7 @@
                       var detailsContent = `
                           <h5 class="card-title">${bank.blood_bank_name}</h5>
                           <p><strong>Total Collections:</strong> ${bank.total_number_of_collections || 0}</p>
-                          <p><strong>Total Collected Qty:</strong> ${bank.sum_of_available_quantity || 0}</p>
+                          <p><strong>Total Collected Qty (Ltr):</strong> ${bank.sum_of_available_quantity || 0}</p>
                            <p><strong>Contact Person:</strong> ${bank.contact_person ? bank.contact_person : '-'}</p>
                           <p><strong>Email:</strong> ${bank.email ? bank.email : '-'}</p>
                           <p><strong>Mobile:</strong> ${bank.mobile_no ? bank.mobile_no : '-'}</p>
@@ -660,7 +672,7 @@
                                           <strong>Executive:</strong> ${collection.extendedProps.collecting_agent_name || '-'}<br>
                                           <strong>Planned:</strong> ${collection.extendedProps.quantity || 0}, 
                                           <strong>Collected:</strong> ${collection.extendedProps.available_quantity || 0}<br>
-                                           <strong>Warehouse:</strong> ${collection.extendedProps.transport_details.warehouse_name || '-'}<br>
+                                           <strong>Warehouse:</strong> ${collection.extendedProps.transport_details?.warehouse_name || '-'}<br>
                                           <strong>Plasma Price:</strong> ${collection.extendedProps.price || 0}<br>
                                           <strong>Part-A:</strong> ${collection.extendedProps.part_a_invoice_price || 0},  
                                           <strong>Part-B:</strong> ${collection.extendedProps.part_b_invoice_price || 0},  

@@ -56,8 +56,9 @@
                                 <th>TP Type</th>
                                 <th>Visit Date</th>
                                 <th>Blood Bank</th>
-                                <th>TP Status</th>
                                 <th>DCR Status</th>
+                                <th>Mgr Status</th>
+                                <th>CA Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -129,8 +130,9 @@
                     { "data": "tp_type" },
                     { "data": "visit_date" },
                     { "data": "bank" },
-                    { "data": "tp_status" },
-                    { "data": "tp_dcr_status" },
+                    { "data": "dcr_status" },
+                    { "data": "mgr_status" },
+                    { "data": "ca_status" },
                     { "data": "actions", "orderable": false, "searchable": false }
                 ],
                 "order": [[2, "desc"]], // Order by Visit Date descending
@@ -168,44 +170,46 @@
                             table.clear();
                             $.each(events, function(index, event) {
                                 // Format visit_date or use '-' if not available
-                                var visitDate = event.tp_visit_date ? event.tp_visit_date : '-';
-                                var tpStatus = event.tp_status ? event.tp_status : '-';
-                                var tpDCRStatus = event.tp_dcr_status ? event.tp_dcr_status : '-';
-                                
+                                var visitDate = event.visit_date ? event.visit_date : '-';
+                                var dcrStatus = event.visit_status ? event.visit_status : '-';
+                                var mgrStatus = event.manager_status ? event.manager_status : '-';
+                                var caStatus = event.ca_status ? event.ca_status : '-';
+                                var typeLabel = event.tour_plan_type ? event.tour_plan_type : '-';
+                                var bankNameDisplay = event.visit_to ? event.visit_to : '-';
 
-                                // Determine the TP Type label based on tp_tour_plan_type
-                                var typeLabel = '';
-                                if (event.tp_tour_plan_type == 1) {
-                                    typeLabel = 'Collection';
-                                } else if (event.tp_tour_plan_type == 2) {
-                                    typeLabel = 'Sourcing';
-                                } else if (event.tp_tour_plan_type == 3) {
-                                    typeLabel = 'Both';
-                                } else {
-                                    typeLabel = 'Other';
-                                }
+                                // // Determine the TP Type label based on tp_tour_plan_type
+                                // var typeLabel = '';
+                                // if (event.tp_tour_plan_type == 1) {
+                                //     typeLabel = 'Collection';
+                                // } else if (event.tp_tour_plan_type == 2) {
+                                //     typeLabel = 'Sourcing';
+                                // } else if (event.tp_tour_plan_type == 3) {
+                                //     typeLabel = 'Assigned Collections';
+                                // } else {
+                                //     typeLabel = 'Other';
+                                // }
 
                                 // Determine the blood bank name to display.
                                 // For Collection (type 1), use the top-level field provided by the API.
                                 // For Sourcing (type 2), loop through visits and take the visit_sourcing_blood_bank_name.
-                                var bankNameDisplay = '-';
-                                if (event.tp_tour_plan_type == 1) {
-                                    bankNameDisplay = event.visit_collection_blood_bank_name ? event.visit_collection_blood_bank_name : '-';
-                                } else {
-                                    var bankNames = [];
-                                    if (event.visits && event.visits.length > 0) {
-                                        $.each(event.visits, function(i, visit) {
-                                            if (visit.visit_sourcing_blood_bank_name) {
-                                                bankNames.push(visit.visit_sourcing_blood_bank_name);
-                                            }
-                                        });
-                                    }
-                                    bankNameDisplay = bankNames.length > 0 ? bankNames.join(', ') : '-';
-                                }
-                                console.log('bankNameDisplay', bankNameDisplay);
+                                // var bankNameDisplay = '-';
+                                // if (event.tp_tour_plan_type == 1 || event.tp_tour_plan_type == 3) {
+                                //     bankNameDisplay = event.visit_collection_blood_bank_name ? event.visit_collection_blood_bank_name : '-';
+                                // } else {
+                                //     var bankNames = [];
+                                //     if (event.visits && event.visits.length > 0) {
+                                //         $.each(event.visits, function(i, visit) {
+                                //             if (visit.visit_sourcing_blood_bank_name) {
+                                //                 bankNames.push(visit.visit_sourcing_blood_bank_name);
+                                //             }
+                                //         });
+                                //     }
+                                //     bankNameDisplay = bankNames.length > 0 ? bankNames.join(', ') : '-';
+                                // }
+                                // console.log('bankNameDisplay', bankNameDisplay);
 
                                // Dynamically build the URL with query parameters
-                                var viewInfoUrl = expenseVisitDetailsRoute + '?date=' + encodeURIComponent(event.tp_visit_date) + '&tp_id=' + encodeURIComponent(event.tp_id);
+                                var viewInfoUrl = expenseVisitDetailsRoute + '?date=' + encodeURIComponent(event.visit_date) + '&dcr_id=' + encodeURIComponent(event.dcr_id);
 
                                 // Create the "View Info" button
                                 var actions = `<a href="${viewInfoUrl}" class="btn btn-sm btn-primary mb-1">Add Expense</a>`;
@@ -215,8 +219,9 @@
                                     "tp_type": typeLabel,  // TP Type column
                                     "visit_date": visitDate,
                                     "bank": bankNameDisplay, // Display the blood bank name
-                                    "tp_status": capitalizeFirstLetter(tpStatus),
-                                    "tp_dcr_status": capitalizeFirstLetter(tpDCRStatus),
+                                    "dcr_status": capitalizeFirstLetter(dcrStatus).toUpperCase(),
+                                    "mgr_status": capitalizeFirstLetter(mgrStatus).toUpperCase(),
+                                    "ca_status": capitalizeFirstLetter(caStatus).toUpperCase(),
                                     "actions": actions
                                 });
                             });

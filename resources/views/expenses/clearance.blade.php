@@ -1,15 +1,15 @@
 @extends('include.dashboardLayout')
 
-@section('title', 'DCR Approvals')
+@section('title', 'Expense Clearance')
 
 @section('content')
 
 <div class="pagetitle">
-    <h1>DCR Approvals</h1>
+    <h1>Expense Clearance</h1>
     <nav>
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('tourplanner.manage') }}">Manage Tour Plan</a></li>
-        <li class="breadcrumb-item active">DCR Approvals</li>
+        <li class="breadcrumb-item"><a href="{{ route('expenses.clearance') }}">Expenses Clearance</a></li>
+        <li class="breadcrumb-item active">Views</li>
       </ol>
     </nav>
 </div><!-- End Page Title -->
@@ -23,15 +23,16 @@
 
             <!-- Filters Row -->
             <div class="row mb-4 mt-2 align-items-end">
+
                 <!-- Collecting Agent Dropdown -->
                 <div class="col-md-4">
                     <label for="collectingAgentDropdown" class="form-label">Collecting/Sourcing Executives</label>
-                    <select id="collectingAgentDropdown" class="form-select select2">
+                    <select id="collectingAgentDropdown" class="form-select select2" name="collecting_agent_id[]" multiple>
                         <option value="">Choose Collecting/Sourcing Executives</option>
                         <!-- Options will be populated via AJAX -->
                     </select>
                 </div>
-
+              
                 <!-- Month Picker -->
                 <div class="col-md-4">
                     <label for="monthPicker" class="form-label">Select Month</label>
@@ -61,9 +62,11 @@
                         <thead>
                             <tr>
                                 <th>SI. No.</th>
-                                <th>Employee</th>
+                                <th>Executive</th>
+                                <th>TP Type</th>
                                 <th>Visit Date</th>
-                                <th>TP Status</th>
+                                <th>Blood Bank</th>
+                                <th>DCR Status</th>
                                 <th>Mgr Status</th>
                                 <th>CA Status</th>
                                 <th>Actions</th>
@@ -126,29 +129,24 @@
        $(document).ready(function() {
 
             // Define route URLs with placeholders
-            var dcrDetailsRoute = "{{ route('tourplanner.dcr-details', ['id' => ':id']) }}";
-            var bloodBankRegisterRoute = "{{ route('bloodbank.register') }}"; // Ensure this route exists
-            var dcrVisitDetailsRoute = "{{ route('tourplanner.dcrVisit-details', ['id' => ':id']) }}";
+            var expenseVisitDetailsRoute = "{{ route('expenses.details') }}"; // Use base route without placeholders
 
-            // Initialize DataTable
+
+            initializeFilters();
+            // Initialize DataTable with updated column definitions:
             var table = $('#dcrApprovalsTable').DataTable({
                 "columns": [
-                    { 
-                        "data": null, 
-                        "orderable": true, 
-                        "searchable": false,
-                        "render": function (data, type, row, meta) {
-                            return meta.row + 1;
-                        }
-                    },
-                    { "data": "employee_name" },
+                    { "data": null, "orderable": false, "searchable": false },
+                    { "data": "executive" },
+                    { "data": "tp_type" },
                     { "data": "visit_date" },
-                    { "data": "visit_status" },
-                    { "data": "manager_status" },
+                    { "data": "bank" },
+                    { "data": "dcr_status" },
+                    { "data": "mgr_status" },
                     { "data": "ca_status" },
                     { "data": "actions", "orderable": false, "searchable": false }
                 ],
-                order: [[0, 'asc']],
+                "order": [[2, "desc"]], // Order by Visit Date descending
                 "responsive": true,
                 "drawCallback": function(settings) {
                     // Update the SI. No. column after each draw
@@ -159,43 +157,16 @@
                 }
             });
 
-            // Function to populate Collecting Agents Dropdown
-            function loadCollectingAgents(callback) {
-                $.ajax({
-                    url: "{{ route('tourplanner.getDCRApprovalsCollectingAgents') }}",
-                    type: 'GET',
-                    success: function(response) {
-                        if(response.success) {
-                            var agents = response.data;
-                            var dropdown = $('#collectingAgentDropdown');
-                            dropdown.empty().append('<option value="">Choose Collecting Executives</option>');
-                            $.each(agents, function(index, agent) {
-                                //var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
-                                var option = '<option value="' + agent.id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
-                                dropdown.append(option);
-                            });
-                            // Trigger Select2 to reinitialize with new options
-                            dropdown.trigger('change');
-                            if (callback) callback();
-                        } else {
-                            Swal.fire('Error', response.message, 'error');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error fetching collecting agents:", error);
-                        Swal.fire('Error', 'An error occurred while fetching collecting agents.', 'error');
-                    }
-                });
-            }
+        
 
             // Function to load DCR Approvals based on filters
-            function loadDCRApprovals(agentId, selectedMonth) {
+            function loadUpdatedVisitsLists(selectedMonth, selectedAgentId) {
                 $.ajax({
-                    url: "{{ route('tourplanner.getFinalDCRApprovals') }}",
+                    url: "{{ route('expenses.getAllExpenses') }}",
                     type: 'GET',
                     data: {
-                        agent_id: agentId,
-                        month: selectedMonth
+                        month: selectedMonth,
+                        agent_id: selectedAgentId
                     },
                     beforeSend: function() {
                         Swal.fire({
@@ -210,30 +181,34 @@
                             var events = response.events;
                             table.clear();
                             $.each(events, function(index, event) {
-                               
+                                // Format visit_date or use '-' if not available
                                 var visitDate = event.visit_date ? event.visit_date : '-';
-                                var tp_status = event.visit_status ? capitalizeFirstLetter(event.visit_status.replace('_', ' ')) : '-';
-                                var mgr_status = event.manager_status ? capitalizeFirstLetter(event.manager_status.replace('_', ' ')) : '-';
-                                var ca_status = event.ca_status ? capitalizeFirstLetter(event.ca_status.replace('_', ' ')) : '-';
+                                var dcrStatus = event.visit_status ? event.visit_status : '-';
+                                var mgrStatus = event.manager_status ? event.manager_status : '-';
+                                var caStatus = event.ca_status ? event.ca_status : '-';
+                                var typeLabel = event.tour_plan_type ? event.tour_plan_type : '-';
+                                var bankNameDisplay = event.visit_to ? event.visit_to : '-';
 
-                                var viewInfoUrl = dcrVisitDetailsRoute.replace(':id', event.id);
-                                // Append visit_date and emp_id as query parameters (using encodeURIComponent to handle special characters)
-                                viewInfoUrl += '?visit_date=' + encodeURIComponent(event.visit_date) + '&emp_id=' + encodeURIComponent(event.emp_id);
+                                 var executiveDisplay = event.employee_name 
+                                                        + ' (' 
+                                                        + event.role_name 
+                                                        + ')';
 
-                                var actions = `<a href="${viewInfoUrl}" class="btn btn-sm btn-primary mb-1">View Info</a>`;
+                               // Dynamically build the URL with query parameters
+                                var viewInfoUrl = expenseVisitDetailsRoute + '?date=' + encodeURIComponent(event.visit_date) + '&dcr_id=' + encodeURIComponent(event.dcr_id);
 
-                                // if (event.extendedProps.tour_plan_type === 2 && 
-                                //     event.extendedProps.manager_status.toLowerCase() === 'accepted') {
-                                //     var registerUrl = bloodBankRegisterRoute + '?id=' + event.id;
-                                //     actions += `<a href="${registerUrl}" class="btn btn-sm btn-success">Register</a>`;
-                                // }
+                                // Create the "View Info" button
+                                var actions = `<a href="${viewInfoUrl}" class="btn btn-sm btn-primary mb-1">View</a>`;
 
+                                // Add the row to the DataTable.
                                 table.row.add({
-                                    "employee_name": event.employee_name,
+                                    "executive":   executiveDisplay,      // ← new
+                                    "tp_type": typeLabel,  // TP Type column
                                     "visit_date": visitDate,
-                                    "visit_status": tp_status,
-                                    "manager_status": mgr_status,
-                                    "ca_status": ca_status,
+                                    "bank": bankNameDisplay, // Display the blood bank name
+                                    "dcr_status": capitalizeFirstLetter(dcrStatus).toUpperCase(),
+                                    "mgr_status": capitalizeFirstLetter(mgrStatus).toUpperCase(),
+                                    "ca_status": capitalizeFirstLetter(caStatus).toUpperCase(),
                                     "actions": actions
                                 });
                             });
@@ -243,6 +218,7 @@
                             Swal.fire('Error', response.message, 'error');
                         }
                     },
+
                     error: function(xhr, status, error) {
                         console.error("Error fetching DCR Approvals:", error);
                         Swal.fire('Error', 'An error occurred while fetching DCR Approvals.', 'error');
@@ -252,7 +228,7 @@
 
             // Function to initialize the page with saved filters or defaults
             function initializeFilters() {
-                var savedAgentId = sessionStorage.getItem('dcrFilterAgentId');
+                 var savedAgentId = sessionStorage.getItem('dcrFilterAgentId');
                 var savedMonth = sessionStorage.getItem('dcrFilterMonth');
 
                 // If no saved month, default to current month (from the monthPicker input)
@@ -262,14 +238,15 @@
                     $('#monthPicker').val(savedMonth);
                 }
 
-                if (savedAgentId) {
+                 if (savedAgentId) {
                     $('#collectingAgentDropdown').val(savedAgentId).trigger('change');
                 }
 
                 // Load DCR Approvals with the filters (or defaults)
-                loadDCRApprovals(savedAgentId, savedMonth);
+                loadUpdatedVisitsLists(savedMonth, savedAgentId);
             }
 
+          
             // Load Collecting Agents on page load and initialize filters in the callback
             loadCollectingAgents(initializeFilters);
 
@@ -287,7 +264,10 @@
 
             // Handle Filter Button Click
             $('#filterButton').on('click', function() {
-                var agentId = $('#collectingAgentDropdown').val();
+                var agentIds = $('#collectingAgentDropdown').val() || [];  // always an array
+                // (no need to check for 'all': our select-all code already expanded it)
+                var agentParam = Array.isArray(agentIds) ? agentIds.join(',') : agentIds;
+
                 var selectedMonth = $('#monthPicker').val();
 
                 if (!selectedMonth) {
@@ -295,11 +275,11 @@
                     return;
                 }
 
-                // Save filters to sessionStorage
-                sessionStorage.setItem('dcrFilterAgentId', agentId);
+                 // Save filters to sessionStorage
+                sessionStorage.setItem('dcrFilterAgentId', agentParam);
                 sessionStorage.setItem('dcrFilterMonth', selectedMonth);
 
-                loadDCRApprovals(agentId, selectedMonth);
+                loadUpdatedVisitsLists(selectedMonth, agentParam);
             });
 
             // Handle Reset Button Click
@@ -317,7 +297,50 @@
                     initializeFilters();
                 }
             });
+
+
+             // 2. Load executives dropdown
+            function loadCollectingAgents(){
+                $.get("{{ route('tourplanner.getCollectingAgents') }}", res => {
+                // if(res.success){
+                //   const dd = $('#collectingAgentDropdown').empty().append('<option value="">Choose Executives</option>');
+                //   res.data.forEach(a => dd.append(`<option value="${a.id}">${a.name} (${a.role.role_name})</option>`));
+                // } else {
+                //   Swal.fire('Error', res.message, 'error');
+                // }
+                if(!res.success) return Swal.fire('Error', res.message,'error');
+
+                const dd = $('#collectingAgentDropdown').empty();
+                // 2.1 add the "Select All" first
+                dd.append(new Option('Select All','all'));
+                // 2.2 then all the real agents
+                res.data.forEach(a => {
+                    dd.append(new Option(`${a.name} (${a.role.role_name})`, a.id));
+                });
+                // notify select2 of the change
+                dd.trigger('change');
+                });
+            }
+
+            
+            // 3. When the user picks "Select All", grab every real option and select it
+            $('#collectingAgentDropdown').on('select2:select', function(e) {
+                if (e.params.data.id === 'all') {
+                const allIds = $(this).find('option')
+                    .map((_,opt) => opt.value)
+                    .get()
+                    .filter(v => v && v !== 'all');
+                // overwrite the selection with all real IDs
+                $(this).val(allIds).trigger('change');
+                }
             });
 
+
+        });
+
+              // Helper function to capitalize the first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
     </script>
 @endpush

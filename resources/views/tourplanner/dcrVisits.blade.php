@@ -121,6 +121,15 @@
           width: 100%;
           height: 400px;
       }
+
+    /* overrides for cancelled cards */
+    .dcr-card.cancelled {
+        border-color: red !important;
+    }
+    .dcr-card.cancelled .status-cancelled {
+        color: red !important;
+        font-weight: bold;
+    }
     </style>
 @endpush
 
@@ -129,6 +138,7 @@
 <script>
         // Pass the PHP data (from the controller) to a JavaScript variable
         var dcrData = @json($dcrData);
+        console.log('dcrData', dcrData);
 
         $(document).ready(function() {
 
@@ -148,19 +158,31 @@
                     } else if (event.extendedProps.tour_plan_type === 2) {
                         tourPlanType = 'Sourcing';
                     } else if (event.extendedProps.tour_plan_type === 3) {
-                        tourPlanType = 'Both';
+                        tourPlanType = 'Assigned Collections';
                     }
 
                     var visitDate = event.visit_date ? event.visit_date : '-';
                     var time = event.time ? formatTime(event.time) : '-';
-                    var tp_status = event.extendedProps.status ? capitalizeFirstLetter(event.extendedProps.status.replace('_', ' ')) : '-';
+                  //  var tp_status = event.extendedProps.status ? capitalizeFirstLetter(event.extendedProps.status.replace('_', ' ')) : '-';
                     
+                    var rawStatus = event.extendedProps.status;
+                    var tp_status = rawStatus
+                                    ? rawStatus.replace('_', ' ').toUpperCase()
+                                    : '-';
+
+                    // flag cancelled
+                    var isCancelled = rawStatus === 'cancel_requested' || rawStatus === 'cancel_approved';
+
+                    // CSS classes if cancelled
+                    var cardClasses   = isCancelled ? 'dcr-card cancelled' : 'dcr-card';
+                    var statusClasses = isCancelled ? 'status-cancelled' : '';
+
                     // Optionally, if you have an "end_time" field, set it:
                     var endTime = event.end_time ? formatTime(event.end_time) : '-';
 
                     // Build the card HTML with a two/three row layout:
                     var cardHtml = `
-                        <div class="dcr-card" data-id="${event.id}">
+                        <div class="${cardClasses}" data-id="${event.id}">
                             <div class="row">
                                 <div class="col-12">
                                     <h5>${event.title}</h5>
@@ -189,6 +211,103 @@
                     `;
                     $cardsContainer.append(cardHtml);
                 });
+
+                 // now that all cards are appended, render your expenses section once:
+                // after all cards appended…
+                if (dcrData.expenses && dcrData.expenses.length) {
+                // mapping type→label
+                const billLabels = {
+                    1: 'Food',
+                    2: 'Conveyance',
+                    3: 'Tel/Fax',
+                    4: 'Lodging',
+                    5: 'Sundry'
+                };
+
+                // build the expenses section
+                let html = `
+                    <div class="row mt-5">
+                    <div class="col-12"><h4><strong>Expenses</strong></h4></div>
+                    </div>`;
+
+                dcrData.expenses.forEach(exp => {
+                    html += `
+                    <div class="card mb-4">
+                        <div class="card-body">
+                        <div class="row mb-3 mt-2">
+                            <div class="col-md-3"><strong>Date:</strong> ${exp.date}</div>
+                            <div class="col-md-9"><strong>Description:</strong> ${exp.description}</div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-sm-4 col-md-2">
+                            <label class="form-label">Food</label>
+                            <input type="text" class="form-control form-control-sm" value="${parseFloat(exp.food).toFixed(2)}" readonly>
+                            </div>
+                            <div class="col-sm-4 col-md-2">
+                            <label class="form-label">Conveyance</label>
+                            <input type="text" class="form-control form-control-sm" value="${parseFloat(exp.convention).toFixed(2)}" readonly>
+                            </div>
+                            <div class="col-sm-4 col-md-2">
+                            <label class="form-label">Tel/Fax</label>
+                            <input type="text" class="form-control form-control-sm" value="${parseFloat(exp.tel_fax).toFixed(2)}" readonly>
+                            </div>
+                            <div class="col-sm-4 col-md-2">
+                            <label class="form-label">Lodging</label>
+                            <input type="text" class="form-control form-control-sm" value="${parseFloat(exp.lodging).toFixed(2)}" readonly>
+                            </div>
+                            <div class="col-sm-4 col-md-2">
+                            <label class="form-label">Sundry</label>
+                            <input type="text" class="form-control form-control-sm" value="${parseFloat(exp.sundry).toFixed(2)}" readonly>
+                            </div>
+                            <div class="col-sm-4 col-md-2">
+                            <label class="form-label">Total</label>
+                            <input type="text" class="form-control form-control-sm fw-bold" value="${parseFloat(exp.total_price).toFixed(2)}" readonly>
+                            </div>
+                        </div>
+                        ${exp.remarks ? `
+                        <div class="mb-3">
+                            <label class="form-label">Remarks</label>
+                            <textarea class="form-control form-control-sm" rows="2" readonly>${exp.remarks}</textarea>
+                        </div>` : ''}
+                    `;
+
+                    // group docs by type
+                    const groups = {};
+                    exp.documents.forEach(doc => {
+                    const lbl = billLabels[doc.type] || 'Other';
+                    (groups[lbl] = groups[lbl]||[]).push(doc);
+                    });
+
+                    Object.entries(groups).forEach(([label, docs]) => {
+                    html += `<h6>${label} Attachments:</h6><div class="d-flex flex-wrap mb-3">`;
+
+                    docs.forEach(doc => {
+                        const url = `{{ config('auth_api.base_image_url') }}` + doc.attachments;
+                        if (/\.(jpe?g|png|gif|svg)$/i.test(doc.attachments)) {
+                        html += `
+                            <a href="${url}" target="_blank" class="me-2 mb-2">
+                            <img src="${url}" class="img-thumbnail" style="width:60px;height:60px">
+                            </a>`;
+                        } else {
+                        const name = doc.attachments.split('/').pop();
+                        html += `
+                            <a href="${url}" target="_blank" class="d-flex align-items-center me-4 mb-2 text-decoration-none">
+                            <i class="bi bi-file-earmark-fill fs-4 me-1"></i>
+                            <small>${name}</small>
+                            </a>`;
+                        }
+                    });
+
+                    html += `</div>`;
+                    });
+
+                    html += `</div></div>`;
+                });
+
+                // insert it right after your two-column row
+                $('section.section > .row').first().after(html);
+                }
+                
             }
 
             // Utility function: Format time (e.g., "14:30:00" to "14:30")
@@ -216,6 +335,7 @@
                     url: url,
                     type: 'GET',
                     success: function(html) {
+                          console.log('html', html);
                         $('#dcrDetailsContainer').html(html);
                         // Reinitialize the map for the newly loaded content
                         if (typeof initMap === 'function') {

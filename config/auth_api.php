@@ -119,4 +119,11 @@ return [
     'transport_partners_fetch_all_active_url' =>  $base_url . 'transport_partners_fetch_all_active.php',
     'vehicle_details_update_url' =>  $base_url . 'vehicle_details_update.php',
     'reports_user_dcr_summary_url' =>  $base_url . 'reports_user_dcr_summary.php',
+    'collecting_agents_fetch_by_managerId_url' =>  $base_url . 'collecting_agents_fetch_by_managerId.php',
+    'tour_plan_cancel_url' =>  $base_url . 'tour_plan_cancel.php',
+    'dcr_approvals_collecting_agents_fetch_by_managerId_url' =>  $base_url . 'dcr_approvals_collecting_agents_fetch_by_managerId.php',
+    'dcr_expenses_details_url' =>  $base_url . 'dcr_expenses_details.php',
+    'expense_clearance_fetch_url' =>  $base_url . 'expense_clearance_fetch.php',
+    'expense_status_fetch_url' =>  $base_url . 'expense_status_fetch.php',
+    'expense_status_update_url' =>  $base_url . 'expense_status_update.php',
 ];
