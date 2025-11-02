@@ -58,7 +58,7 @@
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>
               @endif
-  
+
               <!-- Display Error Messages -->
               @if($errors->any())
               <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -71,12 +71,12 @@
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>
               @endif
-  
+
 
           </div>
         </div>
       </div>
-      
+
       <div class="col-lg-8">
         <div class="card">
           <div class="card-body" id="visitDetails">
@@ -108,7 +108,7 @@
             <hr> --}}
              <!-- Two-Column Layout -->
              <div class="row">
-               
+
                 <!-- Right Column: Read-Only Driver Information -->
                 <div class="col-md-6">
                     <h5><strong>Transport Information</strong></h5>
@@ -185,9 +185,9 @@
                 <label for="quantityPrice" class="form-label">Price</label>
                 <input type="number" class="form-control" id="quantityPrice" name="quantity_price" min="0">
             </div>
-            
+
             <!-- Attachment Sections -->
-          
+
           <!-- Certificate of Quality -->
           <div class="mb-3">
             <label for="certificate_of_quality" class="form-label">Certificate of Quality</label>
@@ -196,7 +196,7 @@
                 <!-- Previews will appear here -->
             </div>
           </div>
-          
+
           <!-- Donor Report -->
           <div class="mb-3">
             <label for="donor_report" class="form-label">Donor Report</label>
@@ -205,7 +205,7 @@
               <!-- Previews will appear here -->
             </div>
           </div>
-          
+
           <!-- Invoice Copy -->
           <div class="mb-3">
             <label for="invoice_copy" class="form-label">Invoice Copy</label>
@@ -214,7 +214,7 @@
               <!-- Previews will appear here -->
             </div>
           </div>
-          
+
           <!-- Pending Documents -->
           <div class="mb-3" id="pending_documents_section" style="display: none;">
             <label for="pending_documents" class="form-label">Pending Documents</label>
@@ -305,7 +305,7 @@
                     <input type="number" class="form-control" id="numLitresCollected" name="litres_collected" min="0" required>
                 </div>
             </div>
-            
+
             <!-- New Row: Checkbox for Different Transportation Partner -->
             <div class="row mb-3">
                 <div class="col-md-12">
@@ -317,7 +317,7 @@
                 </div>
                 </div>
             </div>
-            
+
             <!-- New Row: Extra Textboxes (initially hidden) -->
             <div class="row mb-3" id="differentTransportDetailsRow" style="display: none;">
                 <div class="col-md-4">
@@ -333,7 +333,7 @@
                     <input type="text" class="form-control" id="transportationContactNumber" name="transportation_contact_number">
                 </div>
             </div>
-        
+
             </div>
             <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -428,7 +428,7 @@
                 <!-- Attachments Section -->
                 <div id="view_dcrAttachmentsSection">
                     <h5><strong>DCR Attachments</strong></h5>
-                    
+
                     <!-- Certificate of Quality -->
                     <div class="mb-3">
                         <h6>1. Certificate of Quality</h6>
@@ -436,7 +436,7 @@
                             <!-- Attachments will be loaded here -->
                         </div>
                     </div>
-                    
+
                     <!-- Donor Report -->
                     <div class="mb-3">
                         <h6>2. Donor Report</h6>
@@ -444,7 +444,7 @@
                             <!-- Attachments will be loaded here -->
                         </div>
                     </div>
-                    
+
                     <!-- Invoice Copy -->
                     <div class="mb-3">
                         <h6>3. Invoice Copy</h6>
@@ -452,7 +452,7 @@
                             <!-- Attachments will be loaded here -->
                         </div>
                     </div>
-                    
+
                     <!-- Pending Documents -->
                     <div class="mb-3">
                         <h6>4. Pending Documents</h6>
@@ -617,7 +617,7 @@
 
                 <!-- Transport Information Card -->
                 <div class="card">
-                   
+
                     <div class="card-header text-black">
                         <h5 class="mb-0"><strong>Transport Information</strong></h6>
                     </div>
@@ -765,7 +765,7 @@
                         </tbody>
                     </table>
                     <hr>
-                    
+
                     <!-- Form to Add Additional Blood Bank Information -->
                     <h5><strong>Add Blood Bank Information</strong></h5>
                     <input type="hidden" name="visit_id" id="sourcingVisitId">
@@ -773,7 +773,7 @@
                     <input type="hidden" name="sourcing_city_longitude" id="sourcing_city_longitude">
                     <input type="hidden" name="sourcing_user_latitude" id="sourcing_user_latitude">
                     <input type="hidden" name="sourcing_user_longitude" id="sourcing_user_longitude">
-                    
+
                     <!-- Checkbox to Import from Master -->
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" value="1" id="importFromMaster" name="import_from_master">
@@ -781,7 +781,7 @@
                             Import from master
                         </label>
                     </div>
-                    
+
                     <!-- Manual Blood Bank Section (default visible) -->
                     <div id="manualBloodBankSection">
                         <div class="mb-3">
@@ -789,7 +789,7 @@
                             <input type="text" class="form-control" id="bloodBankName" name="blood_bank_name" required>
                         </div>
                     </div>
-                    
+
                     <!-- Master Blood Bank Section (hidden by default) -->
                     <div id="masterBloodBankSection" style="display: none;">
                         <div class="mb-3">
@@ -800,7 +800,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- Auto-filled Fields (visible by default and editable) -->
                     <div id="autoFillFieldsSection">
                         <div class="mb-3">
@@ -875,7 +875,7 @@
                             <label for="totalPlasmaPrice" class="form-label">Total Plasma Price</label>
                             <input type="text" class="form-control" id="totalPlasmaPrice" name="total_plasma_price" readonly>
                         </div>
-  
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -916,9 +916,9 @@
                                 <strong>Added By:</strong>
                                 <p id="sourcing_added_by_display">N/A</p>
                             </div>
-                           
+
                         </div>
-                      
+
                     </div>
                 </div>
 
@@ -947,7 +947,7 @@
             <input type="hidden" id="editVisitId" name="visit_id">
              <!-- Hidden input to hold existing attachment data -->
             <input type="hidden" id="editRemainingAttachments" name="existing_attachments">
-  
+
             <!-- Basic Visit Information -->
             <div class="row mb-3">
                 <input type="hidden" class="form-control" id="editPlannedQuantity" name="quantity_planned" required>
@@ -964,7 +964,7 @@
                 <input type="number" class="form-control" id="editPrice" name="editPrice">
               </div>
             </div>
-                          
+
             <!-- GST and Pricing Details -->
             <div class="row mb-3">
                 <div class="col-md-4">
@@ -1036,7 +1036,7 @@
                     <input type="text" class="form-control" id="editTransportContactNumber" name="edit_transport_contact_number" >
                 </div>
             </div>
-  
+
             <!-- Attachments Section -->
             <h5 class="mb-3">Attachments</h5>
             <!-- Certificate of Quality -->
@@ -1120,7 +1120,7 @@
           <div class="modal-body">
             <!-- Hidden field for sourcing visit id -->
             <input type="hidden" id="editSourcingVisitId" name="sourcing_visit_id">
-            
+
             <!-- Basic Information -->
             <div class="mb-3">
               <label for="editBloodBankName" class="form-label">Blood Bank Name</label>
@@ -1146,7 +1146,7 @@
               <label for="editFFPCompany" class="form-label">FFP Procurement Company</label>
               <input type="text" class="form-control" id="editFFPCompany" name="FFPProcurementCompany">
             </div>
-            
+
             <!-- New Fields -->
             <div class="mb-3">
               <label for="editPlasmaPrice" class="form-label">Plasma Price/Ltr</label>
@@ -1164,7 +1164,7 @@
               <label for="editRemarks" class="form-label">Remarks</label>
               <textarea class="form-control" id="editRemarks" name="remarks" rows="2"></textarea>
             </div>
-            
+
             <!-- Part Prices and GST Section -->
             <div class="row mb-3">
               <div class="col-md-4">
@@ -1199,7 +1199,7 @@
                 <input type="text" class="form-control" id="editTotalPlasmaPrice" name="total_plasma_price" readonly>
               </div>
             </div>
-            
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1209,8 +1209,8 @@
       </form>
     </div>
 </div>
-  
-  
+
+
 
 
 @endsection
@@ -1331,7 +1331,7 @@
         function initializeFilePreview(inputId, previewId) {
             const inputElement = document.getElementById(inputId);
             const previewContainer = document.getElementById(previewId);
-            
+
             // Initialize a DataTransfer object to manage files
             const dt = new DataTransfer();
 
@@ -1476,7 +1476,7 @@
         function initializeFilePreviewEdit(inputId, previewId) {
             const inputElement = document.getElementById(inputId);
             const previewContainer = document.getElementById(previewId);
-            
+
             // Initialize a DataTransfer object to manage files
             const dt = new DataTransfer();
 
@@ -1624,7 +1624,7 @@
         initializeFilePreview('collectionPartAInvoice_copy', 'collectionPartAInvoice_copyPreview');
         initializeFilePreview('collectionPartBInvoice_copy', 'collectionPartBInvoice_copyPreview');
         initializeFilePreview('collectionPartCInvoice_copy', 'collectionPartCInvoice_copyPreview');
-        
+
         initializeFilePreviewEdit('edit_certificate_of_quality', 'edit_certificate_of_qualityPreview');
         initializeFilePreviewEdit('edit_donor_report', 'edit_donor_reportPreview');
         initializeFilePreviewEdit('edit_invoice_copy', 'edit_invoice_copyPreview');
@@ -1699,7 +1699,7 @@
                                 return true;
                             }
                             return false;
-                        }); 
+                        });
 
                         if(anyUpdated) {
                             $("#finalDcrSubmitForm").show();
@@ -1716,8 +1716,8 @@
 
                             const tourPlanType = Number(extendedProps.tour_plan_type);
                           //  const visitType = tourPlanType === 1 ? 'Collection' : (tourPlanType === 2 ? 'Sourcing' : 'Unknown');
-                            const status = extendedProps.status 
-                                ? extendedProps.status.charAt(0).toUpperCase() + extendedProps.status.slice(1) 
+                            const status = extendedProps.status
+                                ? extendedProps.status.charAt(0).toUpperCase() + extendedProps.status.slice(1)
                                 : 'Unknown';
 
                             var visitType = 'Unknown';
@@ -1729,7 +1729,7 @@
                                 visitType = 'Both';
                             }
                             else {
-                                visitType = 'Unknown'; 
+                                visitType = 'Unknown';
                             }
 
                             // const visitItem = $(`
@@ -1738,9 +1738,9 @@
                             //         <div>Type: ${visitType}</div>
                             //          <div class="mt-2">
                             //             ${extendedProps.status === 'dcr_submitted' ? (
-                            //                 tourPlanType === 1 ? 
+                            //                 tourPlanType === 1 ?
                             //                 `<button type="button" class="btn btn-info btn-sm view-dcr-btn" data-visit='${JSON.stringify(visit)}'>View DCR Details</button>` :
-                            //                 tourPlanType === 2 ? 
+                            //                 tourPlanType === 2 ?
                             //                 `<button type="button" class="btn btn-info btn-sm view-sourcing-dcr-btn" data-visit='${JSON.stringify(visit)}'>View DCR Details</button>` :
                             //                 ''
                             //             ) : ''}
@@ -1754,12 +1754,12 @@
                             //         <div>Type: ${visitType}</div>
                             //         <div class="mt-2">
                             //             ${
-                            //                 ['dcr_submitted', 'accepted', 'rejected', 'approved'].includes(extendedProps.status) 
+                            //                 ['dcr_submitted', 'accepted', 'rejected', 'approved'].includes(extendedProps.status)
                             //                 ? (
-                            //                     tourPlanType === 1 
-                            //                     ? `<button type="button" class="btn btn-info btn-sm view-dcr-btn" data-visit='${JSON.stringify(visit)}'>View DCR Details</button>` 
-                            //                     : tourPlanType === 2 
-                            //                         ? `<button type="button" class="btn btn-info btn-sm view-sourcing-dcr-btn" data-visit='${JSON.stringify(visit)}'>View DCR Details</button>` 
+                            //                     tourPlanType === 1
+                            //                     ? `<button type="button" class="btn btn-info btn-sm view-dcr-btn" data-visit='${JSON.stringify(visit)}'>View DCR Details</button>`
+                            //                     : tourPlanType === 2
+                            //                         ? `<button type="button" class="btn btn-info btn-sm view-sourcing-dcr-btn" data-visit='${JSON.stringify(visit)}'>View DCR Details</button>`
                             //                         : ''
                             //                 )
                             //                 : ''
@@ -1777,15 +1777,15 @@
                             if (showViewButton) {
                             if (tourPlanType === 1) {
                                 buttonsHtml = `
-                                <button type="button" 
-                                        class="btn btn-info btn-sm view-dcr-btn" 
+                                <button type="button"
+                                        class="btn btn-info btn-sm view-dcr-btn"
                                         data-visit='${JSON.stringify(visit)}'>
                                     View Visit Details
                                 </button>`;
                             } else if (tourPlanType === 2) {
                                 buttonsHtml = `
-                                <button type="button" 
-                                        class="btn btn-info btn-sm view-sourcing-dcr-btn" 
+                                <button type="button"
+                                        class="btn btn-info btn-sm view-sourcing-dcr-btn"
                                         data-visit='${JSON.stringify(visit)}'>
                                     View Visit Details
                                 </button>`;
@@ -1793,13 +1793,13 @@
                                 // Show two buttons: "View Collection DCR Details" & "View Sourcing DCR Details"
                                 const encodedVisit = JSON.stringify(visit);
                                 buttonsHtml = `
-                                <button type="button" 
-                                        class="btn btn-info btn-sm view-dcr-btn me-2 mb-2" 
+                                <button type="button"
+                                        class="btn btn-info btn-sm view-dcr-btn me-2 mb-2"
                                         data-visit='${encodedVisit}'>
                                     View Collection Details
                                 </button>
-                                <button type="button" 
-                                        class="btn btn-info btn-sm view-sourcing-dcr-btn" 
+                                <button type="button"
+                                        class="btn btn-info btn-sm view-sourcing-dcr-btn"
                                         data-visit='${encodedVisit}'>
                                     View Sourcing Details
                                 </button>
@@ -1857,7 +1857,7 @@
                 visitType = 'Both';
             }
             else {
-                visitType = 'Unknown'; 
+                visitType = 'Unknown';
             }
 
 
@@ -1977,10 +1977,10 @@
 
                 // Create the button with the encoded data
                 const submitButton = `
-                    <button 
-                        type="button" 
-                        class="btn btn-primary submit-sourcing-dcr-btn" 
-                        data-visit-id="${visit.id}" 
+                    <button
+                        type="button"
+                        class="btn btn-primary submit-sourcing-dcr-btn"
+                        data-visit-id="${visit.id}"
                         data-visit="${encodedVisit}">
                         Update Visit
                     </button>
@@ -1989,26 +1989,26 @@
             }
 
             if(visitDate && visitDate === currentDate && tourPlanType === 3  && visit.extendedProps.tp_status == 'accepted') {
-        
 
-                // Collection Submit - For Both 
+
+                // Collection Submit - For Both
                 const updateCollectionButton = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateVisitModal" data-visit-id="${visit.id}" data-visit='${JSON.stringify(visit)}'>Update Collection Visits</button>`;
-                
-                
-                // Sourcing Submit - For Both 
+
+
+                // Sourcing Submit - For Both
                 const encodedVisit = encodeURIComponent(JSON.stringify(visit));
 
                 // Create the button with the encoded data
                 const updateSourcingButton = `
-                    <button 
-                        type="button" 
-                        class="btn btn-primary submit-sourcing-dcr-btn" 
-                        data-visit-id="${visit.id}" 
+                    <button
+                        type="button"
+                        class="btn btn-primary submit-sourcing-dcr-btn"
+                        data-visit-id="${visit.id}"
                         data-visit="${encodedVisit}">
                         Update Sourcing Visits
                     </button>
                 `;
-                
+
              //   detailsHtml += `<div class="mt-3 text-center">${updateCollectionButton} ${updateSourcingButton}</div>`;
 
                // Decide which button(s) to show based on status
@@ -2092,7 +2092,7 @@
                                     };
                                     console.log('User Location:', userLocation);
 
-                                    
+
                                     // modal.find('#user_latitude').val(userLocation.latitude || '');
                                     // modal.find('#user_longitude').val(userLocation.longitude || '');
 
@@ -2179,7 +2179,7 @@
             modal.find('#visitId').val(visitData.id || '');
             modal.find('#blood_bank_latitude').val(visitData.extendedProps.latitude || '');
             modal.find('#blood_bank_longitude').val(visitData.extendedProps.longitude || '');
-  
+
 
             // Reset the form fields for file inputs
             $('#updateVisitForm')[0].reset();
@@ -2229,12 +2229,12 @@
             // Safely access 'extendedProps'
             const extendedProps = visitData.extendedProps || {};
 
-     
+
             modal.find('#sourcingRemarksDisplay').text(escapeHtml(extendedProps.remarks) || 'N/A');
             modal.find('#sourcingCityDisplay').text(escapeHtml(extendedProps.sourcing_city_name) || 'N/A');
             modal.find('#sourcingAddedByDisplay').text(escapeHtml(extendedProps.created_by_name) || 'N/A');
 
-            
+
             modal.find('#sourcing_city_latitude').val(extendedProps.city_latitude || '');
             modal.find('#sourcing_city_longitude').val(extendedProps.city_longitude || '');
 
@@ -2243,7 +2243,7 @@
 
             // Reset the form fields
             modal.find('#updateSourcingVisitForm')[0].reset();
-            
+
 
             // Fetch Entity Features and handle location
             fetchEntityFeatures(modal, 'sourcing_user_latitude', 'sourcing_user_longitude');
@@ -2475,7 +2475,7 @@
             // Show the modal
             $('#viewDCRVisitModal').modal('show');
 
-        
+
         });
 
           // Event listener for "View DCR Details" button
@@ -2489,7 +2489,7 @@
             // Show the modal
             $('#viewSourcingDCRVisitModal').modal('show');
 
-        
+
         });
 
         // Function to populate the View DCR Details Modal
@@ -2799,7 +2799,7 @@
 
              // If location is enabled, show a loading modal while fetching/calculating location data
              if (entityFeatures.location_enabled.toLowerCase() === 'yes') {
-             
+
                 // Check if user's location is available
                 if (!userLocation) {
                     Swal.close(); // Close loading alert
@@ -2938,7 +2938,7 @@
         //                 coreBloodBanks = response.data;
         //                 console.log('coreBloodBanks:', coreBloodBanks);
 
-                       
+
         //             } else {
         //                 Swal.fire('Error', response.message, 'error');
         //             }
@@ -2961,7 +2961,7 @@
                         coreBloodBanks = response.data;
                         console.log('coreBloodBanks:', coreBloodBanks);
 
-                        
+
                     } else {
                         Swal.fire('Error', response.message, 'error');
                     }
@@ -2984,7 +2984,7 @@
                         GSTRates = response.data;
                         console.log('GST Rates:', GSTRates);
 
-                       
+
                     } else {
                         Swal.fire('Error', response.message, 'error');
                     }
@@ -3046,7 +3046,7 @@
             }
 
             $(this).select2('close');
-        }); 
+        });
 
 
         $('#updateSourcingVisitModal').on('change', '#masterBloodBankSelect', function(){
@@ -3073,7 +3073,7 @@
                 $('#updateSourcingVisitModal #contactPersonName, #updateSourcingVisitModal #mobileNo, #updateSourcingVisitModal #email, #updateSourcingVisitModal #address, #updateSourcingVisitModal #FFPProcurementCompany, #updateSourcingVisitModal #currentPlasmaPrice, #updateSourcingVisitModal #potentialPerMonth, #updateSourcingVisitModal #paymentTerms, #updateSourcingVisitModal #remarks').val('');
             }
 
-        
+
         });
 
 
@@ -3127,7 +3127,7 @@
         fetchGSTRates().done(function(response) {
             if(response.success){
                 populateGSTRates(response.data);
-                populateCollectionGSTRates(response.data); 
+                populateCollectionGSTRates(response.data);
                 populateEditCollectionGSTRates(response.data);
                 populateEditSourcingGSTRates(response.data);
             }
@@ -3182,14 +3182,14 @@
             var partB = parseFloat($('#collectionUpdatePartBPrice').val()) || 0;
             var partC = parseFloat($('#collectionUpdatePartCPrice').val()) || 0;
             var sum = partA + partB + partC;
-            
+
             // If GST is included, calculate GST amount
             if($('#includeCollectionGST').is(':checked')){
                 var gstRate = parseFloat($('#collectionGSTRate').val()) || 0;
                 var gstAmount = sum * (gstRate / 100);
                 sum += gstAmount;
             }
-            
+
             // Set the readonly total field (fixed to 2 decimals)
             $('#totalCollectionPrice').val(sum.toFixed(2));
         }
@@ -3226,15 +3226,15 @@
         window.deleteExistingAttachment = function(button) {
             var previewItem = $(button).closest('.preview-item');
             var attachmentId = previewItem.data('attachment-id');
-            
+
             // Remove this attachment from the global array
             existingAttachments = existingAttachments.filter(function(item) {
                 return item !== attachmentId;
             });
-            
+
             // Update the hidden input field with the final list
             updateRemainingAttachmentsField();
-            
+
             // Remove the preview from the UI
             previewItem.remove();
         };
@@ -3250,7 +3250,7 @@
         }
         var extended = visit.extendedProps || {};
 
-     
+
         // Fetch GST Rates Details
         var modal = $('#editCollectionVisitModal');
         fetchGSTRates(modal);
@@ -3264,7 +3264,7 @@
         $('#editRemarks').val(extended.remarks || '');
         $('#editQuantityCollected').val(extended.available_quantity || '');
         $('#editRemainingQuantity').val(extended.remaining_quantity || '0');
-        
+
 
         // Populate GST section (example):
         if (extended.include_gst == 1) {
@@ -3298,14 +3298,14 @@
             $('#editTransportContactPerson').val('');
             $('#editTransportContactNumber').val('');
         }
-        
-        
-        
+
+
+
         // (You can also compute and set total price if needed.)
 
         // Clear existing previews in all attachment preview containers.
         $('#edit_certificate_of_qualityPreview, #edit_donor_reportPreview, #edit_invoice_copyPreview, #edit_pending_documentsPreview, #edit_part_a_invoicePreview, #edit_part_b_invoicePreview, #edit_part_c_invoicePreview').empty();
-        
+
         // Reset the global array.
         existingAttachments = [];
 
@@ -3338,7 +3338,7 @@
             }
             return previewElement;
         }
-    
+
             // Loop through existing attachments and render them
             if (extended.dcr_attachments && extended.dcr_attachments.length > 0) {
                 extended.dcr_attachments.forEach(function(att) {
@@ -3372,7 +3372,7 @@
             } else {
                 $('#edit_certificate_of_qualityPreview').html('<p>No attachments found.</p>');
             }
-    
+
             // Update the hidden field with the initial list of attachments
             updateRemainingAttachmentsField();
 
@@ -3392,7 +3392,7 @@
         function deleteExistingAttachment(button) {
             var previewItem = $(button).closest('.preview-item');
             var attachmentId = previewItem.data('attachment-id');
-            
+
             // Remove the attachmentId from the existingAttachments array.
             existingAttachments = existingAttachments.filter(function(item) {
                 return item !== attachmentId;
@@ -3417,7 +3417,7 @@
                     Swal.showLoading();
                 }
             });
-          
+
             // Create FormData from the form
             var formData = new FormData(this);
 
@@ -3458,13 +3458,13 @@
                 var partB = parseFloat($('#editPartBPrice').val()) || 0;
                 var partC = parseFloat($('#editPartCPrice').val()) || 0;
                 var total = partA + partB + partC;
-                
+
                 // If GST is included, add GST to the total
                 if ($('#editIncludeGST').is(':checked')) {
                     var gstRate = parseFloat($('#editGSTRateSelect').val()) || 0;
                     total += total * (gstRate / 100);
                 }
-                
+
                 // Update the total price field with the calculated value (2 decimal places)
                 $('#editTotalPrice').val(total.toFixed(2));
             }
@@ -3528,7 +3528,7 @@
               // Fetch GST Rates Details
             var modal = $('#editSourcingVisitModal');
             fetchGSTRates(modal);
-            
+
             // Basic Fields
             $('#editSourcingVisitId').val(svData.id || '');
             $('#editBloodBankName').val(svData.blood_bank_name || '');
@@ -3537,7 +3537,7 @@
             $('#editEmail').val(svData.sourcing_email || '');
             $('#editAddress').val(svData.sourcing_address || '');
             $('#editFFPCompany').val(svData.sourcing_ffp_company || '');
-            
+
             // Additional auto-filled fields
             $('#editPlasmaPrice').val(svData.sourcing_plasma_price || '');
             $('#editPotentialPerMonth').val(svData.sourcing_potential_per_month || '');
@@ -3546,8 +3546,8 @@
             $('#editSourcingPartAPrice').val(svData.sourcing_part_a_price || 0);
             $('#editSourcingPartBPrice').val(svData.sourcing_part_b_price || 0);
             $('#editSourcingPartCPrice').val(svData.sourcing_part_c_price || 0);
-            
-           
+
+
             // Populate GST section (example):
             if (svData.include_gst == 1) {
                 $('#editSourcingIncludeGST').prop('checked', true);
@@ -3559,10 +3559,10 @@
                 $('#editSourcingGSTRateSelect').val('');
             }
             $('#editSourcingGSTRateSelect').val(svData.gst_rate || '');
-            
+
             // Set the Total Plasma Price (should be readonly)
             $('#editTotalPlasmaPrice').val(svData.sourcing_total_plasma_price || '');
-            
+
             // Finally, show the modal.
             $('#editSourcingVisitModal').modal('show');
         });
@@ -3574,13 +3574,13 @@
         var partB = parseFloat($('#editSourcingPartBPrice').val()) || 0;
         var partC = parseFloat($('#editSourcingPartCPrice').val()) || 0;
         var total = partA + partB + partC;
-        
+
         // If GST is included, add GST percentage to total
         if ($('#editSourcingIncludeGST').is(':checked')) {
             var gstRate = parseFloat($('#editSourcingGSTRateSelect').val()) || 0;
             total += total * (gstRate / 100);
         }
-        
+
         // Set the Total Plasma Price field to the calculated value (fixed to 2 decimals)
         $('#editTotalPlasmaPrice').val(total.toFixed(2));
         }
@@ -3603,7 +3603,7 @@
 
         // Listen for changes on the GST rate dropdown
         $('#editSourcingGSTRateSelect').on('change', calculateEditTotalPlasmaPrice);
-    
+
         $('#editSourcingVisitForm').on('submit', function(e){
             e.preventDefault();
 
@@ -3618,7 +3618,7 @@
             });
 
             var formData = new FormData(this);
-            
+
             $.ajax({
                 url: "{{ route('visits.sourcing_edit_submit') }}", // change to your route
                 type: 'POST',
