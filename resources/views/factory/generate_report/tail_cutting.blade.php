@@ -266,6 +266,17 @@
                                             </td>
                                         </tr>
                                     </tbody>
+                                    <tfoot>
+                                        <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                            <td colspan="6" class="text-end" style="padding: 10px;">
+                                                <strong>Total Volume in Liters:</strong>
+                                            </td>
+                                            <td class="text-center" id="totalVolume" style="padding: 10px;">
+                                                0.00
+                                            </td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -378,6 +389,13 @@
                 return;
             }
 
+            // Calculate total volume
+            let totalVolumeML = 0;
+            allData.forEach(item => {
+                totalVolumeML += parseFloat(item.bag_volume_ml) || 0;
+            });
+            const totalVolumeLiters = (totalVolumeML / 1000).toFixed(2);
+
             // Prepare data for Excel
             const excelData = allData.map((item, index) => ({
                 'No.': index + 1,
@@ -390,6 +408,19 @@
                 'Tail Cutting': item.tail_cutting,
                 'Prepared By': item.prepared_by
             }));
+
+            // Add total row
+            excelData.push({
+                'No.': '',
+                'Mega Pool No.': '',
+                'Mini Pool No.': '',
+                'Donor ID': '',
+                'Donation Date': '',
+                'Blood Group': 'Total Volume in Liters:',
+                'Bag Volume (ML)': totalVolumeLiters,
+                'Tail Cutting': '',
+                'Prepared By': ''
+            });
 
             // Create worksheet
             const ws = XLSX.utils.json_to_sheet(excelData);
@@ -448,6 +479,7 @@
                         `);
                         updatePaginationInfo(0, 0, 0);
                         $('#recordCount').text('0 Records');
+                        $('#totalVolume').text('0.00');
                         allData = []; // Clear data
                     }
                 },
@@ -462,6 +494,7 @@
                     `);
                     updatePaginationInfo(0, 0, 0);
                     $('#recordCount').text('0 Records');
+                    $('#totalVolume').text('0.00');
                     allData = []; // Clear data
                 },
                 complete: function() {
@@ -490,6 +523,14 @@
                         </tr>
                     `;
                 });
+
+                // Calculate total volume in liters from all data
+                let totalVolumeML = 0;
+                allData.forEach(item => {
+                    totalVolumeML += parseFloat(item.bag_volume_ml) || 0;
+                });
+                const totalVolumeLiters = (totalVolumeML / 1000).toFixed(2);
+                $('#totalVolume').text(totalVolumeLiters);
             } else {
                 html = `
                     <tr>
@@ -498,6 +539,7 @@
                         </td>
                     </tr>
                 `;
+                $('#totalVolume').text('0.00');
             }
             $('#reportBody').html(html);
             updatePaginationInfo(data.length, totalRecords);

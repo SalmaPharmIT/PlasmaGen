@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('nat_test_report', function (Blueprint $table) {
+        // Create nat_re_test_report table (same structure as nat_test_report)
+        Schema::create('nat_re_test_report', function (Blueprint $table) {
             $table->id();
             $table->string('mini_pool_id')->nullable();
             $table->enum('hiv', ['nonreactive', 'reactive', 'borderline', 'invalid'])->nullable();
@@ -23,16 +24,20 @@ return new class extends Migration
             $table->string('operator')->nullable();
             $table->string('flags')->nullable();
             $table->timestamp('timestamp')->nullable();
-            $table->timestamps(); // This adds created_at and updated_at
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
-            $table->timestamp('deleted_at')->nullable();
+            $table->boolean('is_retest')->default(true); // Always true for retest records
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->unsignedBigInteger('deleted_by')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
 
             // Foreign key constraints for user references
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
+
+            // Add indexes for better performance
+            $table->index('mini_pool_id');
+            $table->index('is_retest');
+            $table->index('created_at');
         });
     }
 
@@ -41,6 +46,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('nat_test_report');
+        Schema::dropIfExists('nat_re_test_report');
     }
-}; 
+};

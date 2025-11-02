@@ -5,7 +5,7 @@
       &copy; Copyright <strong><span>PlasmaGen</span></strong>. All Rights Reserved
     </div>
     <div class="credits">
-      Designed & Developed by <a href="https://pharmit.co.in/">PharmIT</a>
+      Designed & Developed by <a href="https://pharmit.in/">PharmIT</a>
     </div>
   </footer><!-- End Footer -->
   

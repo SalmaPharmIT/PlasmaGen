@@ -11,27 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('elisa_test_report', function (Blueprint $table) {
+        Schema::create('sub_mini_pool_elisa_test_report', function (Blueprint $table) {
             $table->id();
-            $table->string('mini_pool_id')->nullable();
+            $table->string('sub_mini_pool_id')->nullable()->index();
+            $table->string('mini_pool_number')->nullable();
             $table->string('well_num')->nullable();
-            $table->decimal('od_value', 10, 2)->default(0.00);
+            $table->string('od_value')->nullable();
+            $table->string('ratio')->nullable();
             $table->string('result_time')->nullable();
             $table->enum('hbv', ['nonreactive', 'reactive', 'borderline', 'invalid'])->nullable();
             $table->enum('hcv', ['nonreactive', 'reactive', 'borderline', 'invalid'])->nullable();
             $table->enum('hiv', ['nonreactive', 'reactive', 'borderline', 'invalid'])->nullable();
-            $table->enum('final_result', ['nonreactive', 'reactive', 'borderline', 'invalid'])->nullable();
+            $table->enum('final_result', ['Nonreactive', 'Reactive', 'Borderline', 'Invalid'])->nullable();
             $table->timestamp('timestamp')->nullable();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             // Foreign key constraints for user references
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
+
+            // Indexes for better performance
+            $table->index('mini_pool_number');
+            $table->index('final_result');
         });
     }
 
@@ -40,6 +44,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('elisa_test_report');
+        Schema::dropIfExists('sub_mini_pool_elisa_test_report');
     }
 };
+

@@ -179,6 +179,17 @@
         background-color: #e9ecef;
     }
 
+    /* Readonly dropdown styles */
+    .custom-dropdown.readonly .dropdown-display {
+        cursor: default;
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .custom-dropdown.readonly .dropdown-options {
+        display: none !important;
+    }
+
     /* Add section separator styles */
     .excel-like tr:nth-child(12n) {
         border-bottom: 2px solid #000;
@@ -376,7 +387,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('newBag.store') }}">
+            <form method="POST" action="{{ route('sub-mini-pool-entries.store') }}">
                 @csrf
                 <!-- Header Information -->
 
@@ -444,16 +455,22 @@
         }).on('change', function() {
             const selectedMiniPool = $(this).val();
             if (selectedMiniPool) {
-                loadSubMiniPoolNumbers(selectedMiniPool);
+                // Show loader
+                $('#loader').show();
+
+                // First load bag details
+                loadMiniPoolBagDetails(selectedMiniPool);
             } else {
                 $('input[name="segment_number[]"]').val('');
+                clearTableData();
             }
         });
 
         // Function to load sub mini pool numbers
         function loadSubMiniPoolNumbers(miniPoolNumber) {
+
             $.ajax({
-                url: '/subminipool/get-sub-mini-pool-numbers',
+                url: "{{ route('subminipool.get-sub-mini-pool-numbers') }}",
                 method: 'GET',
                 data: {
                     mini_pool_number: miniPoolNumber
@@ -498,7 +515,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="p-0"><input type="number" class="form-control form-control-sm border-0 px-1" name="bag_volume[]"></td>
+                                    <td class="p-0"><input type="number" class="form-control form-control-sm border-0 px-1 bag-volume-input" name="bag_volume[]"></td>
                                     ${isFirstRowInGroup ? '<td class="p-0 text-center" rowspan="12" style="vertical-align: middle;"><input type="number" class="form-control form-control-sm border-0 px-1 volume-input" name="mini_pool_bag_volume[]" readonly style="text-align: center; height: 100%;"></td>' : ''}
                                     <td class="p-0 text-center">
                                         <input type="text" class="form-control form-control-sm border-0 px-1" name="segment_number[]" value="" readonly style="text-align: center;">
@@ -579,9 +596,214 @@
             });
         }
 
+        // Function to load mini pool bag details
+        function loadMiniPoolBagDetails(miniPoolNumber) {
+            $.ajax({
+                url: "{{ route('subminipool.get-mini-pool-bag-details') }}",
+                method: 'GET',
+                data: {
+                    mini_pool_number: miniPoolNumber
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        const bagDetails = response.data.bag_details;
+                        const subMiniPoolNumbers = response.data.sub_mini_pool_numbers;
+                        const rowCount = response.data.row_count;
+
+                        // Update the table with bag details
+                        updateTableWithBagDetails(bagDetails, subMiniPoolNumbers, rowCount);
+                    } else {
+                        console.error('Invalid response format:', response);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'Failed to load mini pool bag details'
+                        });
+
+                        // Don't try to load sub mini pool numbers as fallback - handle error gracefully
+                        handleMiniPoolError(miniPoolNumber);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading mini pool bag details:', error);
+                    console.error('Response:', xhr.responseText);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to load mini pool bag details'
+                    });
+
+                    // Don't try to load sub mini pool numbers as fallback - handle error gracefully
+                    handleMiniPoolError(miniPoolNumber);
+                },
+                complete: function() {
+                    // Hide loader
+                    $('#loader').hide();
+                }
+            });
+        }
+
+        // Function to update table with bag details
+        function updateTableWithBagDetails(bagDetails, subMiniPoolNumbers, rowCount) {
+            // Update the table rows based on row count
+            const tbody = $('tbody');
+            tbody.empty();
+
+            // Generate rows based on row count or bag details length
+            const totalRows = Math.max(rowCount, bagDetails.length);
+
+            for (let i = 1; i <= totalRows; i++) {
+                const isFirstRowInGroup = (i - 1) % 12 === 0;
+                const bagDetail = bagDetails[i-1] || {}; // Get bag detail if available
+
+                const row = `
+                    <tr>
+                        <td class="p-0 text-center">${i}</td>
+                        <td class="p-0 text-center">${((i - 1) % 6) + 1}</td>
+                        <td class="p-0"><input type="text" class="form-control form-control-sm border-0 px-1" name="donor_id[]" value="${bagDetail.donor_id || ''}" readonly style="background-color: #f8f9fa;"></td>
+                        <td class="p-0 date-cell"><input type="date" class="form-control form-control-sm border-0 px-1" name="donation_date[]" value="${bagDetail.donation_date || ''}" readonly style="background-color: #f8f9fa;"></td>
+                        <td class="p-0">
+                            <div class="custom-dropdown readonly">
+                                <div class="dropdown-display" tabindex="-1" style="background-color: #f8f9fa; cursor: default;">
+                                    <span class="selected-value">${bagDetail.blood_group || ''}</span>
+                                    <input type="hidden" name="blood_group[]" value="${bagDetail.blood_group || ''}">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-0"><input type="number" class="form-control form-control-sm border-0 px-1 bag-volume-input" name="bag_volume[]" value="${bagDetail.bag_volume || ''}"></td>
+                        ${isFirstRowInGroup ? '<td class="p-0 text-center" rowspan="12" style="vertical-align: middle;"><input type="number" class="form-control form-control-sm border-0 px-1 volume-input" name="mini_pool_bag_volume[]" readonly style="text-align: center; height: 100%;"></td>' : ''}
+                        <td class="p-0 text-center">
+                            <input type="text" class="form-control form-control-sm border-0 px-1" name="segment_number[]" value="" style="text-align: center;">
+                        </td>
+                        <td class="p-0 text-center">
+                            <select class="form-select form-select-sm border-0 px-1" name="tail_cutting[]">
+                                <option value="No" ${(bagDetail.tail_cutting === 'No' || !bagDetail.tail_cutting) ? 'selected' : ''}>No</option>
+                                <option value="Yes" ${bagDetail.tail_cutting === 'Yes' ? 'selected' : ''}>Yes</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            }
+
+            // Add total row
+            const totalRow = `
+                <tr>
+                    <td colspan="6" class="text-end pe-2">
+                        <span class="fw-bold">Total Volume in Liters:</span>
+                    </td>
+                    <td class="p-0">
+                        <input type="text" class="form-control form-control-sm border-0 px-1 text-end" id="totalVolume" readonly>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            `;
+            tbody.append(totalRow);
+
+            // Reinitialize custom dropdowns
+            initializeCustomDropdowns();
+
+            // Ensure we always have exactly 2 sub mini pools for every 12 rows
+            // If we don't have 2 sub mini pools, create them with prefix format
+            if (subMiniPoolNumbers.length < 2) {
+                const miniPoolNumber = $('select[name="mini_pool_no"]').val();
+                subMiniPoolNumbers = [
+                    miniPoolNumber+'-01',
+                    miniPoolNumber+'-02'
+                ];
+            }
+
+            // Always use only the first 2 sub mini pools
+            const firstTwoSubMiniPools = subMiniPoolNumbers.slice(0, 2);
+
+            // Distribute sub mini pool numbers across rows - 6 rows per sub mini pool
+            const rowsPerSubMiniPool = 6;
+
+            // First sub mini pool (rows 0-5)
+            if (firstTwoSubMiniPools[0]) {
+                const row = $(tbody.find('tr')[0]);
+                const segmentInput = row.find('input[name="segment_number[]"]');
+                if (segmentInput.length) {
+                    segmentInput.closest('td').attr('rowspan', rowsPerSubMiniPool);
+                    // Set default value but allow editing
+                    if (!segmentInput.val()) {
+                        segmentInput.val(firstTwoSubMiniPools[0].trim());
+                    }
+                }
+            }
+
+            // Second sub mini pool (rows 6-11)
+            if (firstTwoSubMiniPools[1] && totalRows > rowsPerSubMiniPool) {
+                const row = $(tbody.find('tr')[rowsPerSubMiniPool]);
+                const segmentInput = row.find('input[name="segment_number[]"]');
+                if (segmentInput.length) {
+                    segmentInput.closest('td').attr('rowspan', rowsPerSubMiniPool);
+                    // Set default value but allow editing
+                    if (!segmentInput.val()) {
+                        segmentInput.val(firstTwoSubMiniPools[1].trim());
+                    }
+                }
+            }
+
+            // Strip out every extra segment_number cell
+            $('input[name="segment_number[]"]').each(function(){
+                const $td = $(this).closest('td');
+                if (!$td.attr('rowspan')) {
+                    $td.remove();
+                }
+            });
+
+            // Calculate volumes after data is loaded
+            calculateMiniPoolVolumes();
+
+            // Add event listeners to newly created bag volume inputs
+            $('input[name="bag_volume[]"]').off('input').on('input', function() {
+                calculateMiniPoolVolumes();
+            });
+        }
+
+        // Function to handle mini pool error by creating default structure
+        function handleMiniPoolError(miniPoolNumber) {
+            // Create default sub mini pool numbers with prefix format - always exactly 2 for 12 rows
+            const subMiniPoolNumbers = [
+                miniPoolNumber+'-01',
+                miniPoolNumber+'-02',
+            ];
+
+            // Create empty bag details
+            const bagDetails = [];
+
+            // Always use exactly 12 rows (6 per sub-mini pool)
+            const rowCount = 12;
+
+            // Update table with default structure
+            updateTableWithBagDetails(bagDetails, subMiniPoolNumbers, rowCount);
+        }
+
+        // Function to clear table data
+        function clearTableData() {
+            $('input[name="donor_id[]"]').val('');
+            $('input[name="donation_date[]"]').val('');
+            $('input[name="blood_group[]"]').val('');
+            $('.selected-value').text('');
+            $('input[name="bag_volume[]"]').val('');
+            $('input[name="mini_pool_bag_volume[]"]').val('');
+            $('select[name="tail_cutting[]"]').val('No');
+            $('#totalVolume').val('');
+        }
+
         // Function to initialize custom dropdowns
         function initializeCustomDropdowns() {
         document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+            // Skip readonly dropdowns
+            if (dropdown.classList.contains('readonly')) {
+                return;
+            }
+
             const display = dropdown.querySelector('.dropdown-display');
             const options = dropdown.querySelector('.dropdown-options');
             const hiddenInput = dropdown.querySelector('input[type="hidden"]');
@@ -614,15 +836,26 @@
 
         // Load mini pool numbers on page load
         $.ajax({
-            url: '/subminipool/get-mini-pool-numbers',
+            url: "{{ route('subminipool.get-mini-pool-numbers') }}",
             method: 'GET',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
+                console.log('Mini Pool Numbers Response:', response); // Debug log
                 if (response.status === 'success' && Array.isArray(response.data)) {
                     const miniPoolSelect = $('select[name="mini_pool_no"]');
                     miniPoolSelect.empty().append('<option value="">Select Mini Pool No.</option>');
+
+                    if (response.data.length === 0) {
+                        console.warn('No mini pool numbers found. Make sure there are records in elisa_test_report table with final_result = "Reactive"');
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Data Found',
+                            text: 'No Mini Pool numbers found with Reactive ELISA test results.',
+                            confirmButtonText: 'OK'
+                        });
+                    }
 
                     response.data.forEach(function(item) {
                         if (item) {  // Only add non-empty values
@@ -633,16 +866,29 @@
                     miniPoolSelect.trigger('change');
                 } else {
                     console.error('Invalid response format:', response);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Invalid response format from server',
+                        confirmButtonText: 'OK'
+                    });
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Error loading mini pool numbers:', error);
                 console.error('Response:', xhr.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load Mini Pool numbers: ' + error,
+                    confirmButtonText: 'OK'
+                });
             }
         });
 
-        // Add event listener for Donor ID inputs
-        $(document).on('input', 'input[name="donor_id[]"]', function() {
+        // Add event listener for Donor ID inputs - disabled since donor IDs are readonly
+        // We keep this in case we need to re-enable editing in the future
+        $(document).on('input', 'input[name="donor_id[]"]:not([readonly])', function() {
             const donorId = $(this).val().trim();
             const tailCuttingSelect = $(this).closest('tr').find('select[name="tail_cutting[]"]');
 
@@ -694,9 +940,9 @@
             document.getElementById('totalVolume').value = totalVolume.toFixed(2);
         }
 
-        // Add event listeners for volume calculations
-        document.querySelectorAll('input[name="bag_volume[]"]').forEach(input => {
-            input.addEventListener('input', calculateMiniPoolVolumes);
+        // Add event listeners for volume calculations when bag volume changes
+        $(document).on('input', 'input[name="bag_volume[]"]', function() {
+            calculateMiniPoolVolumes();
         });
     });
 </script>

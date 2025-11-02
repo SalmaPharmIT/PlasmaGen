@@ -37,8 +37,46 @@ class PlasmaController extends Controller
                 $arNo = trim($item['arNo']);
                 $megaPool = trim($item['megaPool']);
                 $action = $item['action']; // 'release' or 'reject'
+                $status = $item['status'] ?? 'non-reactive'; // Get status from request
 
                 try {
+                    // Check if this mega pool is already released
+                    $alreadyReleased = DB::table('bag_status_details')
+                        ->where('mini_pool_id', $megaPool)
+                        ->where('ar_no', $arNo)
+                        ->where('status_type', 'release')
+                        ->exists();
+
+                    if ($alreadyReleased) {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => "Mega Pool {$megaPool} for AR No {$arNo} has already been released or rejected."
+                        ], 400);
+                    }
+
+                    // VALIDATION: Cannot release reactive mega pools
+                    if ($action === 'release' && $status === 'reactive') {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => "Cannot release reactive mega pool: {$megaPool}. Reactive pools can only be rejected."
+                        ], 400);
+                    }
+
+                    // Verify status from database
+                    $testReport = DB::table('nat_test_report')
+                        ->where('mini_pool_id', $megaPool)
+                        ->first();
+
+                    if ($testReport && $action === 'release' && $testReport->status === 'reactive') {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => "Validation failed: Mega Pool {$megaPool} is reactive and cannot be released."
+                        ], 400);
+                    }
+
                     // Create a new record
                     $bagStatus = new BagStatusDetail();
                     $bagStatus->ar_no = $arNo;
@@ -46,15 +84,15 @@ class PlasmaController extends Controller
                     $bagStatus->date = now()->format('Y-m-d');
                     $bagStatus->created_by = Auth::id();
                     $bagStatus->created_at = now();
-                    $bagStatus->status_type = 'release'; // Set status_type to draft
+                    $bagStatus->status_type = 'release';
 
                     // Set release and reject status based on action
                     if ($action === 'release') {
-                        $bagStatus->release_status = 'approved'; // 1 for release
+                        $bagStatus->release_status = 'approved';
                         $bagStatus->reject_status = 'rejected';
                     } else if ($action === 'reject') {
                         $bagStatus->release_status = 'rejected';
-                        $bagStatus->reject_status = 'approved'; // 1 for reject
+                        $bagStatus->reject_status = 'approved';
                     }
 
                     $bagStatus->save();
@@ -63,6 +101,7 @@ class PlasmaController extends Controller
                         'ar_no' => $arNo,
                         'mini_pool_id' => $megaPool,
                         'action' => $action,
+                        'status' => $status,
                         'id' => $bagStatus->id
                     ]);
                 } catch (\Exception $e) {
@@ -825,6 +864,13 @@ class PlasmaController extends Controller
                     DB::raw('GROUP_CONCAT(CONCAT(be.mega_pool_no, "::", ntr.status) ORDER BY be.mega_pool_no) as mega_pool_data'))
                 ->distinct()
                 ->join('nat_test_report as ntr', 'be.mega_pool_no', '=', 'ntr.mini_pool_id')
+                // Exclude mega pools that are already released (status_type = 'release')
+                ->whereNotExists(function($query) {
+                    $query->select(DB::raw(1))
+                        ->from('bag_status_details')
+                        ->whereRaw('bag_status_details.mini_pool_id = be.mega_pool_no')
+                        ->where('bag_status_details.status_type', 'release');
+                })
                 ->groupBy('be.ar_no');
 
             // Get paginated results

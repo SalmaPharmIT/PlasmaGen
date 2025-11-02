@@ -152,10 +152,10 @@
                         var agents = response.data;
                         var dropdown = $('#collectingAgentDropdown');
                         dropdown.empty().append('<option value="">Choose Collecting Agent</option>');
-                        dropdown.append('<option value="all">SELECT ALL</option>');
                         $.each(agents, function(index, agent) {
                            // var option = '<option value="' + agent.id + '">' + agent.name + '</option>';
                             var option = '<option value="' + agent.id + '" data-role-id="' + agent.role_id + '">' + agent.name + ' (' + agent.role.role_name + ')</option>';
+                            dropdown.append(option);
                             dropdown.append(option);
                         });
                         dropdown.trigger('change');
@@ -169,26 +169,6 @@
                 }
             });
         }
-
-        // --------------------
-        // Select-All behavior
-        // --------------------
-        $('#collectingAgentDropdown').on('change', function() {
-            const sel = $(this).val() || [];
-
-            // if user clicked “Select All”
-            if (sel.includes('all')) {
-                // grab every real ID (skip empty + “all”)
-                const allIds = $('#collectingAgentDropdown option')
-                .map(function() { return this.value; })
-                .get()
-                .filter(v => v && v !== 'all');
-
-                // replace selection with the full list
-                $(this).val(allIds)
-                    .trigger('change.select2');
-            }
-        });
 
         // Load Collecting Agents on page load
         loadCollectingAgents();

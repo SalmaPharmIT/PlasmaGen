@@ -54,7 +54,7 @@
         height: auto;
         display: block;
     }
-    
+
     /* Column Width Styles */
     .excel-like .sr-no-col { width: 30px !important; min-width: 30px !important; max-width: 30px !important; }
     .excel-like .donor-id-col { width: 200px !important; min-width: 200px !important; }
@@ -200,9 +200,9 @@
                                 <label for="ar_number" class="form-label">
                                     <i class="bi bi-hash me-1"></i>A.R. Number
                                 </label>
-                                <select class="form-select" 
-                                       id="ar_number" 
-                                       name="ar_number" 
+                                <select class="form-select"
+                                       id="ar_number"
+                                       name="ar_number"
                                        required>
                                     <option value="">Select A.R. Number</option>
                                 </select>
@@ -321,7 +321,7 @@ $(document).ready(function() {
     // Handle AR Number selection
     $('#ar_number').on('change', function() {
         const arNumber = $(this).val();
-        
+
         if (!arNumber) {
             $('#reportBody').html('<tr><td colspan="6" class="text-center py-3"><div class="alert alert-info mb-0">Select A.R. Number to view data</div></td></tr>');
             return;
@@ -358,6 +358,8 @@ $(document).ready(function() {
                                 </select>
                             </td>
                             <input type="hidden" name="item_ids[]" value="${item.id}">
+                            <input type="hidden" name="source_types[${item.id}]" value="${item.source_type || 'unknown'}">
+                            <input type="hidden" name="mini_pool_ids[${item.id}]" value="${item.mini_pool_id || ''}">
                         </tr>`;
                     });
                     $('#reportBody').html(html);
@@ -393,7 +395,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         const arNumber = $('#ar_number').val();
-        
+
         if (!arNumber) {
             alert('Please select an A.R. Number');
             return;
@@ -402,18 +404,22 @@ $(document).ready(function() {
         // Collect items data
         const items = [];
         let hasRemarks = false;
-        
+
         $('input[name="item_ids[]"]').each(function(index) {
             const itemId = $(this).val();
             const remarks = $(`select[name="remarks[${itemId}]"]`).val();
-            
+            const sourceType = $(`input[name="source_types[${itemId}]"]`).val();
+            const miniPoolId = $(`input[name="mini_pool_ids[${itemId}]"]`).val();
+
             if (remarks) {
                 hasRemarks = true;
             }
-            
+
             items.push({
                 id: itemId,
-                remarks: remarks
+                remarks: remarks,
+                source_type: sourceType,
+                mini_pool_id: miniPoolId
             });
         });
 
@@ -436,23 +442,19 @@ $(document).ready(function() {
             }
         });
 
-        // Prepare form data for submission
-        const formData = new FormData();
-        formData.append('ar_number', arNumber);
-        
-        // Add item_ids and remarks
-        items.forEach(item => {
-            formData.append('item_ids[]', item.id);
-            formData.append(`remarks[${item.id}]`, item.remarks);
-        });
+        // Prepare data for submission as JSON
+        const submissionData = {
+            ar_number: arNumber,
+            items: items,
+            _token: $('meta[name="csrf-token"]').attr('content')
+        };
 
         // Submit form data
         $.ajax({
             url: $(this).attr('action'),
             method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+            data: JSON.stringify(submissionData),
+            contentType: 'application/json',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
@@ -478,4 +480,4 @@ $(document).ready(function() {
     });
 });
 </script>
-@endpush 
+@endpush

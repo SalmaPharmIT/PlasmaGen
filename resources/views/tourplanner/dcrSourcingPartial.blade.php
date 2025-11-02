@@ -15,7 +15,7 @@
                     </div>
                     <div class="col-md-4 mt-2">
                         <strong>Status:</strong>
-                        <p>{{ strtoupper(str_replace('_', ' ', $dcr['extendedProps']['status'])) ?? 'N/A' }}</p>
+                        <p>{{ ucfirst(str_replace('_', ' ', $dcr['extendedProps']['status'])) ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-4 mt-2">
                         <strong>Added By:</strong>
@@ -111,12 +111,6 @@
                                         <p><strong>Total Plasma Price:</strong> {{ $visit['sourcing_total_plasma_price'] ?? 'N/A' }}</p>
                                     </div>
                                 </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-6">
-                                        <p><strong>Reporting Time:</strong> {{ $visit['reporting_time'] ?? 'N/A' }}</p>
-                                    </div>
-                                   
-                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -127,7 +121,7 @@
         @endif
 
         <!-- In sourcing partial (dcrSourcingPartial.blade.php) -->
-        {{-- @if(isset($dcr['extendedProps']['latitude']) && isset($dcr['extendedProps']['longitude']))
+        @if(isset($dcr['extendedProps']['latitude']) && isset($dcr['extendedProps']['longitude']))
         <div class="card mb-4">
             <!-- Hidden inputs for lat & lng -->
             <input type="hidden" id="sourcingLatitude" value="{{ $dcr['extendedProps']['latitude'] }}">
@@ -140,41 +134,11 @@
                 <div id="sourcingMap" style="width: 100%; height: 300px;"></div>
             </div>
         </div>
-        @endif --}}
-
-      @php
-          // parse coordinates as floats (default to 0)
-          $lat = floatval($dcr['extendedProps']['latitude'] ?? 0);
-          $lng = floatval($dcr['extendedProps']['longitude'] ?? 0);
-      @endphp
-
-      <!-- Collection Map -->
-      @if($lat && $lng)
-        <div class="card mb-4">
-            <input type="hidden" id="sourcingLatitude"  value="{{ $lat }}">
-            <input type="hidden" id="sourcingLongitude" value="{{ $lng }}">
-            <input type="hidden" id="sourcingMapTitle" value="{{ 'Visit Location: ' . $dcr['title'] ?? 'DCR Location' }}">
-            <div class="card-header text-black">
-                <h5 class="mb-0"><strong>View Map (Sourcing)</strong></h5>
-            </div>
-            <div class="card-body">
-                <div id="collectionMap" style="width: 100%; height: 300px;"></div>
-            </div>
-        </div>
-      @else
-        <div class="card mb-4">
-            <div class="card-header text-black">
-                <h5 class="mb-0"><strong>View Map (Sourcing)</strong></h5>
-            </div>
-            <div class="card-body mt-2">
-                <p class="text-muted">Location not captured.</p>
-            </div>
-        </div>
-      @endif
+        @endif
 
 
               <!-- Expenses Information Card -->
-       {{-- @if(isset($dcr['extendedProps']['expenses']) && count($dcr['extendedProps']['expenses']) > 0)
+       @if(isset($dcr['extendedProps']['expenses']) && count($dcr['extendedProps']['expenses']) > 0)
        <div class="card mb-4 mt-4">
            <div class="card-header text-black">
                <h5 class="mb-0"><strong>Expenses Information</strong></h5>
@@ -244,7 +208,7 @@
                <p>No expenses have been recorded for this DCR.</p>
            </div>
        </div>
-       @endif --}}
+       @endif
 
     </div>
 </div>

@@ -162,7 +162,7 @@
             // Function to populate Collecting Agents Dropdown
             function loadCollectingAgents(callback) {
                 $.ajax({
-                    url: "{{ route('tourplanner.getDCRApprovalsCollectingAgents') }}",
+                    url: "{{ route('tourplanner.getCollectingAgents') }}",
                     type: 'GET',
                     success: function(response) {
                         if(response.success) {

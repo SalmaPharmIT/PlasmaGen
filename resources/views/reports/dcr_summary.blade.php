@@ -5,13 +5,13 @@
 @section('content')
 
 <div class="pagetitle">
-  <h1>DCR Summary</h1>
-  <nav>
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ route('reports.dcr_summary') }}">Reports</a></li>
-      <li class="breadcrumb-item active">View</li>
-    </ol>
-  </nav>
+    <h1>DCR Summary</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ route('reports.dcr_summary') }}">Reports</a></li>
+        <li class="breadcrumb-item active">View</li>
+      </ol>
+    </nav>
 </div><!-- End Page Title -->
 
 <section class="section">
@@ -23,7 +23,7 @@
 
           <!-- Filters -->
           <div class="row mb-4 align-items-end">
-            <div class="col-md-8">
+            <div class="col-md-4">
               <label for="collectingAgentDropdown" class="form-label">Executives</label>
               <select id="collectingAgentDropdown" class="form-select select2" name="collecting_agent_id[]" multiple>
                 <option value="">Choose Executives</option>
@@ -44,7 +44,25 @@
           <!-- Table -->
           <div class="table-responsive">
             <table id="userWiseDCRSummaryTable" class="table table-striped table-bordered">
-              <thead></thead>
+              <thead>
+                <tr>
+                  <th>SI.No.</th>
+                  <th>Executive</th>
+                  <th>TP</th>
+                  <th>Date</th>
+                  <th>TP Type</th>
+                  <th>Tour Plan</th>
+                  <th>Qty</th>
+                  <th>Remarks</th>
+                  <th>TP Status</th>
+                  <th>Mgr Status</th>
+                  <th>CA Status</th>
+                  <th>Avail Qty.</th>
+                  <th>Price</th>
+                  <th>Transport Info</th>
+                  <th>Sourcing-1</th>
+                </tr>
+              </thead>
               <tbody></tbody>
             </table>
           </div>
@@ -75,192 +93,156 @@
 
 <script>
 $(function() {
-  // 1. Date range picker
+  // Date range picker
   $('#dateRangePicker').daterangepicker({
-    locale: { format:'YYYY-MM-DD' },
+    locale: { format: 'YYYY-MM-DD' },
     autoUpdateInput: false,
     opens: 'right'
   })
-  .on('apply.daterangepicker', (ev, picker) => {
-    $('#dateRangePicker').val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+  .on('apply.daterangepicker', function(ev, picker) {
+    $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
   })
-  .on('cancel.daterangepicker', () => {
-    $('#dateRangePicker').val('');
+  .on('cancel.daterangepicker', function() {
+    $(this).val('');
   });
 
-  // 2. Load executives dropdown
-  function loadCollectingAgents(){
-    $.get("{{ route('tourplanner.getCollectingAgents') }}", res => {
-      // if(res.success){
-      //   const dd = $('#collectingAgentDropdown').empty().append('<option value="">Choose Executives</option>');
-      //   res.data.forEach(a => dd.append(`<option value="${a.id}">${a.name} (${a.role.role_name})</option>`));
-      // } else {
-      //   Swal.fire('Error', res.message, 'error');
-      // }
-      if(!res.success) return Swal.fire('Error', res.message,'error');
-
-      const dd = $('#collectingAgentDropdown').empty();
-      // 2.1 add the "Select All" first
-      dd.append(new Option('Select All','all'));
-      // 2.2 then all the real agents
-      res.data.forEach(a => {
-        dd.append(new Option(`${a.name} (${a.role.role_name})`, a.id));
-      });
-      // notify select2 of the change
-      dd.trigger('change');
+  // Load executives
+  function loadCollectingAgents() {
+    $.get("{{ route('tourplanner.getCollectingAgents') }}", function(res) {
+      if (res.success) {
+        const dd = $('#collectingAgentDropdown').empty().append('<option value="">Choose Executives</option>');
+        res.data.forEach(a => dd.append(`<option value="${a.id}">${a.name} (${a.role.role_name})</option>`));
+      } else {
+        Swal.fire('Error', res.message, 'error');
+      }
     });
   }
   loadCollectingAgents();
 
-  // 3. When the user picks "Select All", grab every real option and select it
-  $('#collectingAgentDropdown').on('select2:select', function(e) {
-    if (e.params.data.id === 'all') {
-      const allIds = $(this).find('option')
-        .map((_,opt) => opt.value)
-        .get()
-        .filter(v => v && v !== 'all');
-      // overwrite the selection with all real IDs
-      $(this).val(allIds).trigger('change');
+  // Clear any existing table when executives change
+  $('#collectingAgentDropdown').on('change', function() {
+    if ($.fn.DataTable.isDataTable('#userWiseDCRSummaryTable')) {
+      $('#userWiseDCRSummaryTable').DataTable().destroy();
+      $('#userWiseDCRSummaryTable tbody').empty();
+      $('#userWiseDCRSummaryTable thead tr').html(
+        '<th>SI.No.</th>' +
+        '<th>Executive</th>' +
+        '<th>TP</th>' +
+        '<th>Date</th>' +
+        '<th>TP Type</th>' +
+        '<th>Tour Plan</th>' +
+        '<th>Qty</th>' +
+        '<th>Remarks</th>' +
+        '<th>TP Status</th>' +
+        '<th>Mgr Status</th>' +
+        '<th>CA Status</th>' +
+        '<th>Avail Qty.</th>' +
+        '<th>Price</th>' +
+        '<th>Transport Info</th>' +
+        '<th>Sourcing-1</th>'
+      );
     }
   });
 
-  // 3. Shared column‐header definitions
-  const staticHeaders   = ['SI.No.','Executive','TP','Date','TP Type','Tour Plan','Qty','Remarks','TP Status','Mgr Status','CA Status','Avail Qty.','Price'];
-  const transportTitles = ['Vehicle','Driver','Contact1','Contact2','Email','Remarks'];
-  const transportFields = ['vehicle_number','driver_name','contact_number','alternative_contact_number','email','remarks'];
-  const visitTitles     = ['Blood Bank','Contact Person','Mobile No.','Email','Address','FFP Company','Plasma Price','Potential/Month','Payment Terms','Remarks','Part A Price','Part B Price','Part C Price','Include GST','GST Rate','Total Plasma Price'];
-  const visitFields     = ['blood_bank_name','sourcing_contact_person','sourcing_mobile_number','sourcing_email','sourcing_address','sourcing_ffp_company','sourcing_plasma_price','sourcing_potential_per_month','sourcing_payment_terms','sourcing_remarks','sourcing_part_a_price','sourcing_part_b_price','sourcing_part_c_price','include_gst','gst_rate','sourcing_total_plasma_price'];
-
-  // 4. On filter click: fetch & build table
   let table;
-  $('#filterButton').click(() => {
+
+  // Handle filter submit
+  $('#filterButton').click(function() {
     const dateRange = $('#dateRangePicker').val();
-    const agents    = $('#collectingAgentDropdown').val();
-    if(!dateRange || !agents?.length){
-      return Swal.fire('Warning','Date range & executive required','warning');
+    const agents = $('#collectingAgentDropdown').val();
+    if (!dateRange || !agents || !agents.length) {
+      return Swal.fire('Warning', 'Date range & executive required', 'warning');
     }
 
     $.post("{{ route('reports.getUserDCRSummary') }}", {
       _token: '{{ csrf_token() }}',
-      dateRange,
+      dateRange: dateRange,
       collectingAgent: agents
-    }, ({ success, data, message }) => {
-      if(!success) return Swal.fire('Error', message, 'error');
-
-      // compute visits count
-      const maxVisits = Math.max(0, ...data.map(r => (r.extendedProps.tour_plan_visits||[]).length));
-
-      // 5. Build the on‐screen two‐row header
-      const $thead = $('#userWiseDCRSummaryTable thead').empty();
-      const $r1 = $('<tr>');
-      staticHeaders.forEach(h => {
-        $r1.append($('<th>').text(h).attr('rowspan', 2));
-      });
-      // Transport group
-      $r1.append($('<th>')
-        .text('Transport Info')
-        .attr('colspan', transportTitles.length)
-      );
-      // Sourcing groups
-      for(let i=1; i<=maxVisits; i++){
-        $r1.append($('<th>')
-          .text(`Sourcing-${i}`)
-          .attr('colspan', visitTitles.length)
-        );
+    }, function(json) {
+      if (!json.success) {
+        return Swal.fire('Error', json.message, 'error');
       }
-      $thead.append($r1);
 
-      const $r2 = $('<tr>');
-      transportTitles.forEach(t => $r2.append($('<th>').text(t)));
-      for(let i=0; i<maxVisits; i++){
-        visitTitles.forEach(t => $r2.append($('<th>').text(t)));
-      }
-      $thead.append($r2);
+      const data = json.data;
+      const maxVisits = data.reduce((m, r) => Math.max(m, (r.extendedProps.tour_plan_visits || []).length), 0);
 
-      // 6. Define the columns array
-      const cols = [];
-      // static cols
-      cols.push(
-        { data:null, className:'text-center', render:(_d,_t,_r,meta)=>meta.row+1 },
-        { data:null, className:'text-center', render:r=>r.extendedProps.collecting_agent_name||'' },
-        { data:'title', className:'text-center' },
-        { data:'visit_date', className:'text-center' },
-        { data:null, className:'text-center', render:r=>({1:'Collection',2:'Sourcing',3:'Both'}[r.extendedProps.tour_plan_type]||'') },
-        { data:'title', className:'text-center' },
-        { data:null, className:'text-center', render:r=>r.extendedProps.quantity||'' },
-        { data:null, className:'text-center', render:r=>r.extendedProps.remarks||'' },
-        { data:null, className:'text-center', render:r=>r.extendedProps.status||'' },
-        { data:null, className:'text-center', render:r=>r.extendedProps.manager_status||'' },
-        { data:null, className:'text-center', render:r=>r.extendedProps.ca_status||'' },
-        { data:null, className:'text-center', render:r=>r.extendedProps.available_quantity||'' },
-        { data:null, className:'text-center', render:r=>r.extendedProps.price||'' }
-      );
-      // transport subs
-      transportFields.forEach(f => {
+      // Build columns
+      const cols = [
+        { title: 'SI.No.', data: null, className: 'text-center', render: (_d, _t, _r, m) => m.row + 1 },
+        { title: 'Executive', data: null, className: 'text-center', render: r => r.extendedProps.collecting_agent_name || '' },
+        { title: 'TP', data: 'title', className: 'text-center' },
+        { title: 'Date', data: 'visit_date', className: 'text-center' },
+        { title: 'TP Type', data: null, className: 'text-center', render: r => ({1: 'Collection', 2: 'Sourcing', 3: 'Both'}[r.extendedProps.tour_plan_type] || '') },
+        { title: 'Tour Plan', data: 'title', className: 'text-center' },
+        { title: 'Qty', data: null, className: 'text-center', render: r => r.extendedProps.quantity || '' },
+        { title: 'Remarks', data: null, className: 'text-center', render: r => r.extendedProps.remarks || '' },
+        { title: 'TP Status', data: null, className: 'text-center', render: r => r.extendedProps.status || '' },
+        { title: 'Mgr Status', data: null, className: 'text-center', render: r => r.extendedProps.manager_status || '' },
+        { title: 'CA Status', data: null, className: 'text-center', render: r => r.extendedProps.ca_status || '' },
+        { title: 'Avail Qty.', data: null, className: 'text-center', render: r => r.extendedProps.available_quantity || '' },
+        { title: 'Price', data: null, className: 'text-center', render: r => r.extendedProps.price || '' },
+        { title: 'Transport Info', data: null, className: 'text-left', render: r => {
+          const t = r.extendedProps.transport_details; if (!t) return 'N/A';
+          const parts = [];
+          t.vehicle_number && parts.push('Vehicle: ' + t.vehicle_number);
+          t.driver_name && parts.push('Driver: ' + t.driver_name);
+          t.contact_number && parts.push('Contact1: ' + t.contact_number);
+          t.alternative_contact_number && parts.push('Contact2: ' + t.alternative_contact_number);
+          t.email && parts.push('Email: ' + t.email);
+          t.remarks && parts.push('Remarks: ' + t.remarks);
+          return parts.join('<br>');
+        }}
+      ];
+
+      // Dynamic Sourcing-n columns
+      for (let i = 0; i < maxVisits; i++) {
         cols.push({
+          title: `Sourcing-${i+1}`,
           data: null,
           className: 'text-left',
-          render: r => (r.extendedProps.transport_details||{})[f]||''
-        });
-      });
-      // sourcing subs
-      for(let i=0; i<maxVisits; i++){
-        visitFields.forEach(f => {
-          cols.push({
-            data: null,
-            className: 'text-left',
-            render: r => {
-              const v = (r.extendedProps.tour_plan_visits||[])[i]||{};
-              let val = v[f];
-              if(f==='include_gst') val=val==1?'Yes':'No';
-              return val!=null?val:'';
-            }
-          });
+          render: function(r) {
+            const v = (r.extendedProps.tour_plan_visits || [])[i];
+            if (!v) return 'N/A';
+            const skip = ['id','created_by','modified_by','created_at','updated_at'];
+            const labelMap = {
+              tour_plan_type: 'Type', blood_bank_name: 'Blood Bank', sourcing_contact_person: 'Contact Person',
+              sourcing_mobile_number: 'Mobile No.', sourcing_email: 'Email', sourcing_address: 'Address',
+              sourcing_ffp_company: 'FFP Company', sourcing_plasma_price: 'Plasma Price',
+              sourcing_potential_per_month: 'Potential/Month', sourcing_payment_terms: 'Payment Terms',
+              sourcing_remarks: 'Remarks', sourcing_part_a_price: 'Part A Price', sourcing_part_b_price: 'Part B Price',
+              sourcing_part_c_price: 'Part C Price', include_gst: 'Include GST', gst_rate: 'GST Rate',
+              sourcing_total_plasma_price: 'Total Plasma Price'
+            };
+            return Object.entries(v)
+              .filter(([k]) => !skip.includes(k))
+              .map(([k,val]) => {
+                if (k === 'include_gst') val = val == 1 ? 'Yes' : 'No';
+                return `${labelMap[k] || k}: ${val == null ? '' : val}`;
+              })
+              .join('<br>');
+          }
         });
       }
 
-      // 7. Init DataTable & Excel export
-      if($.fn.DataTable.isDataTable('#userWiseDCRSummaryTable')) table.destroy();
+      // Rebuild header
+      const $tr = $('#userWiseDCRSummaryTable thead tr').empty();
+      cols.forEach(c => $tr.append(`<th>${c.title}</th>`));
+
+      // Destroy previous and init new DataTable
+      if ($.fn.DataTable.isDataTable('#userWiseDCRSummaryTable')) {
+        $('#userWiseDCRSummaryTable').DataTable().destroy();
+      }
       table = $('#userWiseDCRSummaryTable').DataTable({
-        data, columns: cols, responsive:true, paging:true,
-        buttons: [{
-          extend: 'excelHtml5',
-          title: 'User DCR Summary',
-          exportOptions: {
-            columns: ':visible',
-            format: {
-              header: function(_columnName, columnIdx) {
-                // 1) static columns (no change)
-                if (columnIdx < staticHeaders.length) {
-                  return staticHeaders[columnIdx];
-                }
-
-                // 2) transport sub-cols
-                const tStart = staticHeaders.length;
-                const tEnd   = tStart + transportTitles.length;
-                if (columnIdx >= tStart && columnIdx < tEnd) {
-                  const subIdx = columnIdx - tStart;
-                  // only the sub‐header + (TD)
-                  return `${transportTitles[subIdx]}(TD)`;
-                }
-
-                // 3) sourcing sub-cols
-                const sStart   = tEnd;
-                const localIdx = columnIdx - sStart;
-                const group    = Math.floor(localIdx / visitTitles.length) + 1;  // 1, 2, …
-                const subIdx   = localIdx % visitTitles.length;
-                // only the sub‐header + (S#)
-                return `${visitTitles[subIdx]}(S${group})`;
-              }
-            }
-          }
-        }]
-
+        data: data,
+        columns: cols,
+        responsive: true,
+        paging: true,
+        buttons: [{ extend: 'excelHtml5', title: 'User DCR Summary', exportOptions: { columns: ':visible' } }]
       });
     });
   });
 
-  // 8. Export button
+  // Export trigger
   $('#exportButton').click(() => table.button(0).trigger());
 });
 </script>

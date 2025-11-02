@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\PlasmaEntry;
 use App\Models\BagEntryDetail;
+use App\Models\BagEntryMiniPool;
+use App\Models\ElisaTestReport;
+use App\Models\NATTestReport;
+use App\Models\SubMiniPoolElisaTestReport;
 use App\Models\AuditTrail;
 
 class DashboardController extends Controller
@@ -273,7 +279,7 @@ class DashboardController extends Controller
     {
         try {
             $user = Auth::user();
-            
+
             // Only proceed if user is a factory user
             if ($user->role_id != 12) {
                 return response()->json([
@@ -284,36 +290,157 @@ class DashboardController extends Controller
 
             $filter = $request->get('filter', 'This Month');
             $dateRange = $this->getDateRangeForFactory($filter);
-            
-            // Get total plasma entries count
+
+            // Get total plasma entries quantity in liters
             $totalCollections = PlasmaEntry::when($dateRange, function($query, $dateRange) {
                 return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
-            })->count();
+            })->sum('plasma_qty') ?? 0;
 
-            // Get approved plasma count
+            // Get approved plasma quantity in liters
             $approvedCount = PlasmaEntry::when($dateRange, function($query, $dateRange) {
                 return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
-            })->whereNotNull('alloted_ar_no')->count();
+            })->whereNotNull('alloted_ar_no')->sum('plasma_qty') ?? 0;
 
-            // Get rejected plasma count
+            // Get rejected plasma quantity in liters
             $rejectedCount = PlasmaEntry::when($dateRange, function($query, $dateRange) {
                 return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
-            })->whereNotNull('destruction_no')->count();
+            })->whereNotNull('destruction_no')->sum('plasma_qty') ?? 0;
 
-             // Get tail cutting plasma count
-             $tailCuttingCount = BagEntryDetail::when($dateRange, function($query, $dateRange) {
+            // Get tail cutting plasma quantity in liters
+            // bag_volume_ml is in milliliters - convert to liters
+            $tailCuttingVolumeMl = BagEntryDetail::when($dateRange, function($query, $dateRange) {
                 return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
             })
             ->where('tail_cutting', 'Yes')
-            ->count();
+            ->sum('bag_volume_ml');
+
+            $tailCuttingCount = ($tailCuttingVolumeMl / 1000) ?? 0; // Convert ml to liters
+
+            // Get actual dispensed plasma quantity in liters
+            // issued_volume in bag_status_details is already in liters
+            $dispensedCount = DB::table('bag_status_details')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('date', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->where('status', 'despense')
+                ->where('status_type', 'final') // Only count finalized dispensing
+                ->whereNull('deleted_at')
+                ->sum('issued_volume') ?? 0;
+
+            // Get ELISA test statistics
+            $elisaReactiveCount = DB::table('sub_mini_pool_elisa_test_report')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->where('final_result', 'Reactive')
+                ->whereNull('deleted_at')
+                ->count();
+
+            $elisaNonReactiveCount = DB::table('sub_mini_pool_elisa_test_report')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->where('final_result', 'Nonreactive')
+                ->whereNull('deleted_at')
+                ->count();
+
+            // Get total ELISA test liters
+            // mini_pool_bag_volume is already stored in liters
+            $elisaTestLiters = DB::table('sub_mini_pool_elisa_test_report')
+                ->join('sub_mini_pool_entries', 'sub_mini_pool_elisa_test_report.sub_mini_pool_id', '=', 'sub_mini_pool_entries.id')
+                ->join('bag_entries_mini_pools', 'sub_mini_pool_entries.mini_pool_number', '=', 'bag_entries_mini_pools.mini_pool_number')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('sub_mini_pool_elisa_test_report.created_at', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->whereNull('sub_mini_pool_elisa_test_report.deleted_at')
+                ->whereNull('sub_mini_pool_entries.deleted_at')
+                ->sum('bag_entries_mini_pools.mini_pool_bag_volume'); // Already in liters
+
+            // Get NAT test statistics
+            $natReactiveCount = DB::table('nat_test_report')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->where(function($query) {
+                    $query->where('hiv', 'reactive')
+                          ->orWhere('hbv', 'reactive')
+                          ->orWhere('hcv', 'reactive');
+                })
+                ->whereNull('deleted_at')
+                ->count();
+
+            $natNonReactiveCount = DB::table('nat_test_report')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->where('hiv', 'nonreactive')
+                ->where('hbv', 'nonreactive')
+                ->where('hcv', 'nonreactive')
+                ->whereNull('deleted_at')
+                ->count();
+
+            // Get total NAT test liters
+            // mini_pool_bag_volume is already stored in liters
+            $natTestLiters = DB::table('nat_test_report')
+                ->join('bag_entries_mini_pools', 'nat_test_report.mini_pool_id', '=', 'bag_entries_mini_pools.mini_pool_number')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('nat_test_report.created_at', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->whereNull('nat_test_report.deleted_at')
+                ->sum('bag_entries_mini_pools.mini_pool_bag_volume'); // Already in liters
+
+            // Calculate pending actions
+            // Pending tail cutting: Plasma entries that don't have bag entries created yet
+            $pendingTailCutting = DB::table('plasma_entries')
+                ->when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->whereNotExists(function($query) {
+                    $query->select(DB::raw(1))
+                        ->from('bag_entries')
+                        ->whereColumn('bag_entries.grn_no', 'plasma_entries.grn_no')
+                        ->whereNull('bag_entries.deleted_at');
+                })
+                ->where('reciept_date', '<', now()->subHours(24)->format('Y-m-d H:i:s'))
+                ->whereNull('plasma_entries.deleted_at')
+                ->count();
+
+            // Pending release: Plasma entries that passed tests but not yet released (no AR number)
+            $pendingRelease = PlasmaEntry::when($dateRange, function($query, $dateRange) {
+                    return $query->whereBetween('reciept_date', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->whereNull('alloted_ar_no')
+                ->whereNull('destruction_no')
+                ->count();
+
+            // Pending test entry: Mini pools without test results
+            $pendingTestEntry = DB::table('bag_entries_mini_pools')
+                ->whereNotExists(function($query) {
+                    $query->select(DB::raw(1))
+                        ->from('sub_mini_pool_elisa_test_report')
+                        ->whereColumn('sub_mini_pool_elisa_test_report.mini_pool_number', 'bag_entries_mini_pools.mini_pool_number')
+                        ->whereNull('sub_mini_pool_elisa_test_report.deleted_at');
+                })
+                ->count();
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'total_collections' => $totalCollections,
-                    'tail_cutting_count' => $tailCuttingCount,
-                    'approved_count' => $approvedCount,
-                    'rejected_count' => $rejectedCount
+                    'total_collections' => round($totalCollections, 2),
+                    'tail_cutting_count' => round($tailCuttingCount, 2),
+                    'approved_count' => round($approvedCount, 2),
+                    'rejected_count' => round($rejectedCount, 2),
+                    'dispensed_count' => round($dispensedCount, 2), // Actual dispensed volume from bag_status_details
+                    'elisa_reactive_count' => $elisaReactiveCount,
+                    'elisa_non_reactive_count' => $elisaNonReactiveCount,
+                    'elisa_test_liters' => round($elisaTestLiters, 2),
+                    'nat_reactive_count' => $natReactiveCount,
+                    'nat_non_reactive_count' => $natNonReactiveCount,
+                    'nat_test_liters' => round($natTestLiters, 2),
+                    // Pending actions
+                    'pending_tail_cutting' => $pendingTailCutting,
+                    'pending_release' => $pendingRelease,
+                    'pending_test_entry' => $pendingTestEntry
                 ]
             ]);
         } catch (\Exception $e) {
@@ -335,34 +462,34 @@ class DashboardController extends Controller
     private function getDateRangeForFactory($filter)
     {
         $now = now();
-        
+
         switch($filter) {
             case 'This Month':
                 return [
-                    'start' => $now->startOfMonth()->format('Y-m-d'),
-                    'end' => $now->endOfMonth()->format('Y-m-d')
+                    'start' => $now->copy()->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->copy()->endOfMonth()->format('Y-m-d')
                 ];
             case 'Last 3 Months':
                 return [
-                    'start' => $now->subMonths(3)->startOfMonth()->format('Y-m-d'),
-                    'end' => $now->endOfMonth()->format('Y-m-d')
+                    'start' => $now->copy()->subMonths(2)->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->copy()->endOfMonth()->format('Y-m-d')
                 ];
             case 'Last 6 Months':
                 return [
-                    'start' => $now->subMonths(6)->startOfMonth()->format('Y-m-d'),
-                    'end' => $now->endOfMonth()->format('Y-m-d')
+                    'start' => $now->copy()->subMonths(5)->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->copy()->endOfMonth()->format('Y-m-d')
                 ];
             case 'Last 12 Months':
                 return [
-                    'start' => $now->subMonths(12)->startOfMonth()->format('Y-m-d'),
-                    'end' => $now->endOfMonth()->format('Y-m-d')
+                    'start' => $now->copy()->subMonths(11)->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->copy()->endOfMonth()->format('Y-m-d')
                 ];
             case 'All':
                 return null;
             default:
                 return [
-                    'start' => $now->startOfMonth()->format('Y-m-d'),
-                    'end' => $now->endOfMonth()->format('Y-m-d')
+                    'start' => $now->copy()->startOfMonth()->format('Y-m-d'),
+                    'end' => $now->copy()->endOfMonth()->format('Y-m-d')
                 ];
         }
     }

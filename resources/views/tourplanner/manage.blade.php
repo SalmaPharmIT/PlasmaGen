@@ -83,7 +83,7 @@
     </div>
 </section>
 
-<!-- resources/views/tourplanner/modals/viewTourPlviewTourPlanModalanModal.blade.php -->
+<!-- resources/views/tourplanner/modals/viewTourPlanModal.blade.php -->
 <div class="modal fade" id="viewTourPlanModal" tabindex="-1" aria-labelledby="viewTourPlanModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -1457,7 +1457,7 @@
                         tourPlanType = 'Sourcing';
                     }
                     else  if(event.extendedProps.tour_plan_type === 3) {
-                        tourPlanType = 'Assigned Colllections';
+                        tourPlanType = 'Both';
                     }
                     else {
                         tourPlanType = 'N/A'; 
@@ -1600,7 +1600,6 @@
                         .removeClass('text-success text-primary');
                 }
 
-                console.log('tourPlanType **************', tourPlanType);
 
                   // Conditionally show/hide fields based on Tour Plan Type
                 if(tourPlanType === 'Collections') {
@@ -1625,27 +1624,17 @@
                     $('#detailLongitude').text('N/A'); // Not applicable
                     $('#detailCity').text(eventCity || 'N/A');
                     $('#detailPendingDocuments').empty(); // Clear for sourcing
-                } else if(tourPlanType === 'Assigned Colllections') {
-                    // $('.collection-fields').show();
-                    // $('.sourcing-fields').show();
-
-                    // $('#detailQuantity').text(eventQuantity || 'N/A');
-                    // $('#detailAvailableQuantity').text(eventAvailableQuantity || 'N/A');
-                    // $('#detailRemainingQuantity').text(eventRemainingQuantity || 'N/A');
-                    // $('#detailLatitude').text(eventLatitude || 'N/A');
-                    // $('#detailLongitude').text(eventLongitude || 'N/A');
-                    // $('#detailPendingDocuments').html(pendingDocumentsHtml);
-                    // $('#detailCity').text(eventCity || 'N/A');
+                } else if(tourPlanType === 'Both') {
                     $('.collection-fields').show();
-                    $('.sourcing-fields').hide();
+                    $('.sourcing-fields').show();
 
                     $('#detailQuantity').text(eventQuantity || 'N/A');
                     $('#detailAvailableQuantity').text(eventAvailableQuantity || 'N/A');
                     $('#detailRemainingQuantity').text(eventRemainingQuantity || 'N/A');
                     $('#detailLatitude').text(eventLatitude || 'N/A');
                     $('#detailLongitude').text(eventLongitude || 'N/A');
-                    $('#detailCity').text('N/A'); // Not applicable
                     $('#detailPendingDocuments').html(pendingDocumentsHtml);
+                    $('#detailCity').text(eventCity || 'N/A');
                 }
                 else {
                     // If Tour Plan Type is undefined or 'N/A', hide all conditional fields

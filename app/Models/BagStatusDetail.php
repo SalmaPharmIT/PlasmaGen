@@ -19,6 +19,8 @@ class BagStatusDetail extends Model
         'date',
         'status',
         'status_type',
+        'release_status',
+        'reject_status',
         'timestamp',
         'issued_volume',
         'total_volume',
@@ -35,7 +37,9 @@ class BagStatusDetail extends Model
         'total_volume' => 'decimal:2',
         'total_issued_volume' => 'decimal:2',
         'status_type' => 'string',
-        'mini_pool_id' => 'string'
+        'mini_pool_id' => 'string',
+        'release_status' => 'string',
+        'reject_status' => 'string'
     ];
 
     public function barcodeEntry()

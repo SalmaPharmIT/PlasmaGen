@@ -674,18 +674,21 @@ class BagStatusController extends Controller
     }
 
     /**
-     * Store NAT test reactive plasma rejection
+     * Store plasma rejection records (from bag_status_details and elisa_test_report)
      */
     public function storeNatRejection(Request $request)
     {
         try {
-            \Log::info('NAT Plasma rejection request data:', $request->all());
+            \Log::info('Plasma rejection request data:', $request->all());
 
             // Validate request
             $request->validate([
                 'ar_number' => 'required',
-                'item_ids' => 'required|array',
-                'remarks' => 'required|array',
+                'items' => 'required|array',
+                'items.*.id' => 'required',
+                'items.*.remarks' => 'nullable',
+                'items.*.source_type' => 'required|in:bag_status,elisa',
+                'items.*.mini_pool_id' => 'required',
             ]);
 
             DB::beginTransaction();
@@ -701,21 +704,27 @@ class BagStatusController extends Controller
                 throw new \Exception("No plasma entry found for AR number: {$request->ar_number}");
             }
 
-            // Get the NAT test data for each item
-            foreach ($request->item_ids as $index => $itemId) {
-                $itemId = intval($itemId);
+            $savedCount = 0;
 
+            // Process each item
+            foreach ($request->items as $item) {
                 // Skip if no remark is provided for this item
-                if (empty($request->remarks[$itemId])) {
+                if (empty($item['remarks'])) {
                     continue;
                 }
 
-                // Get the NAT test data
-                $natTestData = DB::table('nat_test_report')
-                    ->where('id', $itemId)
+                // Check if already exists in plasma_entries_destruction
+                $existingRecord = DB::table('plasma_entries_destruction')
+                    ->where('ar_no', $request->ar_number)
+                    ->where('mega_pool_id', $item['mini_pool_id'])
+                    ->where('reject_reason', $item['remarks'])
                     ->first();
 
-                if (!$natTestData) {
+                if ($existingRecord) {
+                    \Log::info('Record already exists, skipping:', [
+                        'mini_pool_id' => $item['mini_pool_id'],
+                        'reject_reason' => $item['remarks']
+                    ]);
                     continue;
                 }
 
@@ -724,26 +733,34 @@ class BagStatusController extends Controller
                     'blood_bank_id' => $plasmaEntry->blood_bank_id,
                     'plasma_qty' => $plasmaEntry->plasma_qty,
                     'ar_no' => $request->ar_number,
-                    'mega_pool_id' => $natTestData->mini_pool_id,
-                    'reject_reason' => $request->remarks[$itemId],
+                    'mega_pool_id' => $item['mini_pool_id'],
+                    'reject_reason' => $item['remarks'],
                     'created_by' => auth()->id(),
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
+
+                $savedCount++;
+
+                \Log::info('Saved rejection record:', [
+                    'source_type' => $item['source_type'],
+                    'mini_pool_id' => $item['mini_pool_id'],
+                    'reject_reason' => $item['remarks']
+                ]);
             }
 
             DB::commit();
-            \Log::info('NAT rejection transaction committed successfully');
+            \Log::info('Plasma rejection transaction committed successfully', ['saved_count' => $savedCount]);
 
             // Check if request wants JSON response
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'NAT reactive plasma rejection records saved successfully'
+                    'message' => "Successfully saved {$savedCount} plasma rejection record(s)"
                 ]);
             }
 
-            return redirect()->back()->with('success', 'NAT reactive plasma rejection records saved successfully');
+            return redirect()->back()->with('success', "Successfully saved {$savedCount} plasma rejection record(s)");
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -756,18 +773,18 @@ class BagStatusController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error saving NAT reactive plasma rejection records: ' . $e->getMessage()
+                    'message' => 'Error saving plasma rejection records: ' . $e->getMessage()
                 ], 422);
             }
 
-            return redirect()->back()->with('error', 'Error saving NAT reactive plasma rejection records: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error saving plasma rejection records: ' . $e->getMessage());
         }
     }
 
     public function getArNumbers()
     {
         try {
-            $arNumbers = DB::table('nat_test_report')
+            $arNumbers = DB::table('bag_status_details')
                 ->select('ar_no')
                 ->distinct()
                 ->whereNotNull('ar_no')
@@ -811,19 +828,61 @@ class BagStatusController extends Controller
                 ], 404);
             }
 
-            // Get details from the nat_test_report table only, filter by status field
-            $plasmaDetails = DB::table('nat_test_report')
+            // Get details from bag_status_details where reject_status is approved
+            // Exclude records that are already in plasma_entries_destruction
+            $bagStatusDetails = DB::table('bag_status_details')
                 ->select(
                     'id',
                     'mini_pool_id',
                     'ar_no',
-                    'result_time as donation_date',
-                    'status'
+                    'date as donation_date',
+                    DB::raw("'rejected' as status"),
+                    'reject_status',
+                    'status_type',
+                    DB::raw("'bag_status' as source_type")
                 )
                 ->where('ar_no', $arNumber)
-                ->where('status', 'reactive')
-                ->whereNull('deleted_at')
+                ->where('status_type', 'release')
+                ->where('reject_status', 'approved')
+                ->whereNotExists(function($query) use ($arNumber) {
+                    $query->select(DB::raw(1))
+                        ->from('plasma_entries_destruction')
+                        ->whereRaw('plasma_entries_destruction.mega_pool_id = bag_status_details.mini_pool_id')
+                        ->where('plasma_entries_destruction.ar_no', $arNumber);
+                })
                 ->get();
+
+            // Get details from elisa_test_report where BOTH HIV AND HCV are reactive
+            // Join with barcode_entries using FIND_IN_SET because mini_pool_number is a comma-separated string
+            // Exclude records that are already in plasma_entries_destruction
+            $elisaDetails = DB::table('elisa_test_report')
+                ->select(
+                    'elisa_test_report.id',
+                    'elisa_test_report.mini_pool_id',
+                    'barcode_entries.ar_no',
+                    'elisa_test_report.result_time as donation_date',
+                    DB::raw("'HIV & HCV Reactive' as status"),
+                    DB::raw("NULL as reject_status"),
+                    DB::raw("'elisa' as status_type"),
+                    DB::raw("'elisa' as source_type")
+                )
+                ->join('barcode_entries', function($join) {
+                    $join->whereRaw('FIND_IN_SET(elisa_test_report.mini_pool_id, barcode_entries.mini_pool_number) > 0');
+                })
+                ->where('barcode_entries.ar_no', $arNumber)
+                ->where('elisa_test_report.hiv', 'reactive')
+                ->where('elisa_test_report.hcv', 'reactive')
+                ->whereNull('elisa_test_report.deleted_at')
+                ->whereNotExists(function($query) use ($arNumber) {
+                    $query->select(DB::raw(1))
+                        ->from('plasma_entries_destruction')
+                        ->whereRaw('plasma_entries_destruction.mega_pool_id = elisa_test_report.mini_pool_id')
+                        ->where('plasma_entries_destruction.ar_no', $arNumber);
+                })
+                ->get();
+
+            // Combine both results
+            $plasmaDetails = $bagStatusDetails->concat($elisaDetails);
 
             // Format the pickup date if it exists
             $pickupDate = null;

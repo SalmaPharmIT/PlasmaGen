@@ -1,14 +1,14 @@
 @extends('include.dashboardLayout')
 
-@section('title', 'Upload NAT Reports')
+@section('title', 'NAT Re-test Mega Pool Entry')
 
 @section('content')
 <div class="pagetitle">
-    <h1>NAT Report Upload</h1>
+    <h1>NAT Re-test Mega Pool Entry</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-            <li class="breadcrumb-item active">NAT Report Upload</li>
+            <li class="breadcrumb-item active">NAT Re-test Mega Pool Entry</li>
         </ol>
     </nav>
 </div>
@@ -16,7 +16,7 @@
 <section class="section">
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">Upload NAT Report Files</h5>
+            <h5 class="card-title">Upload NAT Re-test Files</h5>
 
             @if($errors->any())
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -29,7 +29,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('nat-report.generate') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <form action="{{ route('nat-retest-mega.generate') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                 @csrf
                 <div class="row mb-4">
                     <div class="col-md-6">
@@ -68,15 +68,6 @@
                 $donorResultsCount = 0;
                 $invalidResultsCount = 0;
             @endphp
-
-            {{-- <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="card-title mb-0">NAT Test Results Summary</h5>
-                <div class="export-buttons">
-                    <button class="btn btn-outline-primary me-2">
-                        <i class="bi bi-download me-1"></i> Export All
-                    </button>
-                </div>
-            </div> --}}
 
             <ul class="nav nav-tabs nav-tabs-bordered" id="borderedTab" role="tablist">
                 @foreach($metadataBlocks as $index => $meta)
@@ -229,7 +220,7 @@
                     <div class="card border-primary mb-4">
                         <div class="card-header text-white fw-bold d-flex justify-content-between align-items-center" style="background-color: #0c4c90;">
                             <div>
-                                <i class="bi bi-table me-1"></i> Test Metadata Summary
+                                <i class="bi bi-table me-1"></i> NAT Re-test Results Summary
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-outline-light me-2" id="saveToDatabase">
@@ -245,7 +236,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-hover table-sm" id="natTable">
+                                <table class="table table-bordered table-striped table-hover table-sm" id="natRetestTable">
                                     <thead>
                                         <tr style="background-color: #f35c24; color: white;">
                                             <th>MINI POOL ID</th>
@@ -257,7 +248,6 @@
                                             <th>Analyzer</th>
                                             <th>Operator</th>
                                             <th>Flags</th>
-                                            {{-- <th>Source</th> --}}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -280,7 +270,6 @@
                                                 <td>{{ $s['analyzer'] }}</td>
                                                 <td>{{ $s['operator'] }}</td>
                                                 <td>{{ $s['flags'] }}</td>
-                                                {{-- <td><small>{{ $s['source'] }}</small></td> --}}
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -354,20 +343,20 @@
         @endforeach
 
         // Initialize the complete results table
-        const natTable = $('#natTable').DataTable({
+        const natRetestTable = $('#natRetestTable').DataTable({
             dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center"f>>rtip',
             buttons: [
                 {
                     extend: 'csv',
                     text: '<i class="bi bi-file-earmark-excel me-1"></i> CSV',
                     className: 'btn btn-outline-primary me-2',
-                    filename: 'NAT Test Reports'
+                    filename: 'NAT Re-test Reports'
                 },
                 {
                     extend: 'pdf',
                     text: '<i class="bi bi-file-earmark-pdf me-1"></i> PDF',
                     className: 'btn btn-outline-primary me-2',
-                    filename: 'NAT Test Reports',
+                    filename: 'NAT Re-test Reports',
                     orientation: 'landscape',
                     pageSize: 'A4',
                     customize: function(doc) {
@@ -380,7 +369,7 @@
                                     alignment: 'left'
                                 },
                                 {
-                                    text: 'NAT Test Reports',
+                                    text: 'NAT Re-test Mega Pool Reports',
                                     style: 'header',
                                     alignment: 'right'
                                 }
@@ -492,11 +481,11 @@
 
         // Add click handlers for the export buttons
         $('#exportCSV').on('click', function() {
-            natTable.button('.buttons-csv').trigger();
+            natRetestTable.button('.buttons-csv').trigger();
         });
 
         $('#exportPDF').on('click', function() {
-            natTable.button('.buttons-pdf').trigger();
+            natRetestTable.button('.buttons-pdf').trigger();
         });
 
         // Add save to database functionality
@@ -505,7 +494,7 @@
             let rowCount = 0;
 
             try {
-                natTable.rows().every(function() {
+                natRetestTable.rows().every(function() {
                     const data = this.data();
                     if (data && data[0]) { // Check if row has data and mini_pool_id
                         reports.push({
@@ -560,7 +549,7 @@
                 const processChunk = async (chunk) => {
                     try {
                         const response = await $.ajax({
-                            url: '{{ route("nat-report.save") }}',
+                            url: '{{ route("nat-retest-mega.save") }}',
                             method: 'POST',
                             data: {
                                 _token: '{{ csrf_token() }}',
@@ -630,7 +619,7 @@
             const seen = {};
             const duplicates = [];
 
-            natTable.column(0, {search: 'applied'}).nodes().each(function (cell, i) {
+            natRetestTable.column(0, {search: 'applied'}).nodes().each(function (cell, i) {
                 const val = $(cell).text().trim();
                 if (seen[val]) {
                     duplicates.push(val);
@@ -639,7 +628,7 @@
                 }
             });
 
-            natTable.column(0).nodes().each(function (cell, i) {
+            natRetestTable.column(0).nodes().each(function (cell, i) {
                 const val = $(cell).text().trim();
                 if (duplicates.includes(val)) {
                     $(cell).addClass('duplicate');

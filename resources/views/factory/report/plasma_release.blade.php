@@ -249,6 +249,64 @@
         font-weight: normal;
         font-size: 0.75rem;
     }
+    /* Reactive row styling */
+    .reactive-row {
+        background-color: #fff5f5 !important;
+    }
+    .reactive-row:hover {
+        background-color: #ffe5e5 !important;
+    }
+    /* Disabled button styling */
+    .btn-success:disabled,
+    .btn-success.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+    }
+    .btn-success:disabled:hover,
+    .btn-success.disabled:hover {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+    }
+    /* Tooltip styling */
+    .btn-tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    .btn-tooltip .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -100px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.75rem;
+    }
+    .btn-tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #555 transparent transparent transparent;
+    }
+    .btn-tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
     @media print {
         .header-actions, .pagination, #paginationInfo {
             display: none !important;
@@ -334,22 +392,31 @@ $(document).ready(function() {
 
         data.forEach(function(item) {
             // Create first row with rowspan for AR number only
-                        const firstPool = item.mega_pools[0];
+            const firstPool = item.mega_pools[0];
+            const isReactive = firstPool.status === 'reactive';
+            const disabledAttr = isReactive ? 'disabled' : '';
+            const tooltipClass = isReactive ? 'btn-tooltip' : '';
+            const tooltip = isReactive ? '<span class="tooltiptext">Cannot release reactive pools</span>' : '';
+
             tbody.append(`
-                <tr>
+                <tr class="${isReactive ? 'reactive-row' : ''}">
                     <td rowspan="${item.rowspan}" class="align-middle" style="background-color: #f8f9fa;">${item.ar_no}</td>
                     <td>
                         ${firstPool.pool_no}
-                        ${firstPool.status === 'reactive' ? '<span class="badge bg-danger ms-2">(Reactive)</span>' : ''}
+                        ${isReactive ? '<span class="badge bg-danger ms-2">(Reactive)</span>' : ''}
                     </td>
                     <td class="text-center">
                         <div class="btn-group" role="group">
-                            <button class="btn btn-sm btn-success release-btn"
-                                data-ar-no="${item.ar_no}"
-                                data-mega-pool="${firstPool.pool_no}"
-                                data-status="${firstPool.status}">
-                                <i class="fas fa-check-circle me-1"></i> Release
-                            </button>
+                            <div class="${tooltipClass}">
+                                <button class="btn btn-sm btn-success release-btn"
+                                    data-ar-no="${item.ar_no}"
+                                    data-mega-pool="${firstPool.pool_no}"
+                                    data-status="${firstPool.status}"
+                                    ${disabledAttr}>
+                                    <i class="fas fa-check-circle me-1"></i> Release
+                                </button>
+                                ${tooltip}
+                            </div>
                             <button class="btn btn-sm btn-danger reject-btn"
                                 data-ar-no="${item.ar_no}"
                                 data-mega-pool="${firstPool.pool_no}"
@@ -364,20 +431,29 @@ $(document).ready(function() {
             // Create additional rows for remaining mega pools
             for (let i = 1; i < item.mega_pools.length; i++) {
                 const pool = item.mega_pools[i];
+                const isReactive = pool.status === 'reactive';
+                const disabledAttr = isReactive ? 'disabled' : '';
+                const tooltipClass = isReactive ? 'btn-tooltip' : '';
+                const tooltip = isReactive ? '<span class="tooltiptext">Cannot release reactive pools</span>' : '';
+
                 tbody.append(`
-                    <tr>
+                    <tr class="${isReactive ? 'reactive-row' : ''}">
                         <td>
                             ${pool.pool_no}
-                            ${pool.status === 'reactive' ? '<span class="badge bg-danger ms-2">(Reactive)</span>' : ''}
+                            ${isReactive ? '<span class="badge bg-danger ms-2">(Reactive)</span>' : ''}
                         </td>
                         <td class="text-center">
                             <div class="btn-group" role="group">
-                                <button class="btn btn-sm btn-success release-btn"
-                                    data-ar-no="${item.ar_no}"
-                                    data-mega-pool="${pool.pool_no}"
-                                    data-status="${pool.status}">
-                                    <i class="fas fa-check-circle me-1"></i> Release
-                                </button>
+                                <div class="${tooltipClass}">
+                                    <button class="btn btn-sm btn-success release-btn"
+                                        data-ar-no="${item.ar_no}"
+                                        data-mega-pool="${pool.pool_no}"
+                                        data-status="${pool.status}"
+                                        ${disabledAttr}>
+                                        <i class="fas fa-check-circle me-1"></i> Release
+                                    </button>
+                                    ${tooltip}
+                                </div>
                                 <button class="btn btn-sm btn-danger reject-btn"
                                     data-ar-no="${item.ar_no}"
                                     data-mega-pool="${pool.pool_no}"
@@ -513,6 +589,18 @@ $(document).ready(function() {
         const megaPool = button.data('mega-pool');
         const status = button.data('status');
 
+        // VALIDATION: Cannot release reactive mega pools
+        if (action === 'release' && status === 'reactive') {
+            Swal.fire({
+                title: 'Cannot Release Reactive Pool',
+                text: `Mega Pool ${megaPool} is reactive and cannot be released. Reactive pools can only be rejected.`,
+                icon: 'warning',
+                confirmButtonColor: '#0c4c90',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
         // Remove any existing selection for this mega pool
         selectedItems = selectedItems.filter(item => !(item.arNo === arNo && item.megaPool === megaPool));
 
@@ -550,16 +638,38 @@ $(document).ready(function() {
     // Handle submit button click
     $(document).on('click', '#submitSelectedData', function() {
         if (selectedItems.length === 0) {
-            alert('Please select items to submit');
+            Swal.fire({
+                title: 'No Items Selected',
+                text: 'Please select items to submit',
+                icon: 'warning',
+                confirmButtonColor: '#0c4c90'
+            });
+            return;
+        }
+
+        // Final validation: Check for reactive pools being released
+        const invalidItems = selectedItems.filter(item =>
+            item.action === 'release' && item.status === 'reactive'
+        );
+
+        if (invalidItems.length > 0) {
+            const invalidPools = invalidItems.map(item => item.megaPool).join(', ');
+            Swal.fire({
+                title: 'Invalid Selection',
+                text: `The following reactive mega pools cannot be released: ${invalidPools}. Please remove them or change action to reject.`,
+                icon: 'error',
+                confirmButtonColor: '#0c4c90'
+            });
             return;
         }
 
         const summary = selectedItems.map(item =>
-            `${item.action.toUpperCase()} - AR No: ${item.arNo}, Mega Pool: ${item.megaPool}`
+            `${item.action.toUpperCase()} - AR No: ${item.arNo}, Mega Pool: ${item.megaPool}${item.status === 'reactive' ? ' (Reactive)' : ''}`
         ).join('\n');
 
-                 Swal.fire({
+        Swal.fire({
              title: 'Confirm Submission',
+             html: `<p>You are about to submit the following items:</p><pre style="text-align: left; font-size: 0.85rem; max-height: 300px; overflow-y: auto;">${summary}</pre>`,
              icon: 'question',
              showCancelButton: true,
              confirmButtonColor: '#0c4c90',

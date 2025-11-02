@@ -64,18 +64,29 @@ def extract(path):
                     if len(toks) < 6:
                         continue
 
-                    # locate the two numeric fields
-                    num_idxs = [i for i,t in enumerate(toks) if re.match(r"^\d+\.\d+$", t)]
-                    if len(num_idxs) != 2:
+                    # locate numeric fields (allowing for formats like "3.50]" or "[OD>")
+                    num_idxs = []
+                    for i, t in enumerate(toks):
+                        # Match pure numeric format (e.g., "0.0060", "9.0000")
+                        if re.match(r"^\d+\.\d+$", t):
+                            num_idxs.append(i)
+                        # Match numeric with trailing bracket (e.g., "3.50]")
+                        elif re.match(r"^\d+\.\d+\]$", t):
+                            num_idxs.append(i)
+
+                    if len(num_idxs) < 2:
                         continue
-                    a,b = num_idxs  # a = ODValue index, b = Ratio index
+
+                    # Use first two numeric fields as ODValue and Ratio
+                    a, b = num_idxs[0], num_idxs[1]
 
                     pid   = toks[0]
                     num   = toks[1] if len(toks) > 1 else ""
                     well  = toks[2] if len(toks) > 2 else ""
                     flag  = " ".join(toks[3:a]) if a > 3 else ""
-                    val   = toks[a]
-                    ratio = toks[b]
+                    # Clean the value by removing any brackets
+                    val   = re.sub(r'[\[\]]', '', toks[a])
+                    ratio = re.sub(r'[\[\]]', '', toks[b])
                     res   = " ".join(toks[b+1:])
 
                     row = {

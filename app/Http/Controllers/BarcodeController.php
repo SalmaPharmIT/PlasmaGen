@@ -100,7 +100,7 @@ class BarcodeController extends Controller
                 'mega_pool_no' => $request->mega_pool,
                 'mini_pool_number' => implode(',', $request->mini_pools),
                 'timestamp' => now(),
-                'created_by' => Auth::user()->name,
+                'created_by' => Auth::user()->id,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);

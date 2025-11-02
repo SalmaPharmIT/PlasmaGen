@@ -18,12 +18,6 @@
             </nav>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <!-- Desktop Toggle Button -->
-            {{-- <div class="d-none d-md-block">
-                <button class="btn btn-outline-primary toggle-stats collapsed" data-bs-toggle="collapse" data-bs-target="#secondaryStats" aria-expanded="false">
-                    <i class="bi bi-chevron-down"></i> View Additional Statistics
-                </button>
-            </div> --}}
             <div class="filter-dropdown">
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -43,79 +37,254 @@
 
     <!-- Dashboard Content -->
     <div class="dashboard-content">
-        <!-- Primary Stats Section - Always Visible -->
-        <div class="row g-3 mb-4">
-            <!-- Plasma Collection Card -->
-            <div class="col-md-6 col-xl-3">
-                <a href="{{ route('bloodbank.index') }}" class="card-link">
-                    <div class="card stat-card" id="total-collections">
+
+        <!-- Process Flow Visualization -->
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="card process-flow-card">
                         <div class="card-body">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="stat-icon-box bg-primary-gradient">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="section-title mb-0"><i class="bi bi-diagram-3"></i> Plasma Processing Pipeline</h5>
+                            <span class="badge bg-soft-primary text-primary px-2 py-1" style="font-size: 0.688rem;">Live Status</span>
+                        </div>
+                        <div class="process-flow-container">
+                            <!-- Step 1: Collection -->
+                            <div class="process-step" id="step-collection">
+                                <div class="step-icon bg-primary-gradient">
                                     <i class="bi bi-droplet-fill"></i>
                                 </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#">View Details</a></li>
-                                        <li><a class="dropdown-item" href="#">Export Data</a></li>
-                                    </ul>
+                                <div class="step-content">
+                                    <h6 class="step-title">Plasma Received</h6>
+                                    <div class="step-count" id="flow-collection-count">0L</div>
+                                    <p class="step-label">Liters</p>
+                                </div>
+                                <div class="step-arrow">
+                                    <i class="bi bi-arrow-right"></i>
+                            </div>
+                                </div>
+
+                            <!-- Step 2: Tail Cutting -->
+                            <div class="process-step" id="step-cutting">
+                                <div class="step-icon bg-success-gradient">
+                                    <i class="bi bi-scissors"></i>
+                            </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Tail Cut & Pooled</h6>
+                                    <div class="step-count" id="flow-cutting-count">0L</div>
+                                    <p class="step-label">Liters</p>
+                                </div>
+                                <div class="step-arrow">
+                                    <i class="bi bi-arrow-right"></i>
+                    </div>
+                            </div>
+
+                            <!-- Step 3: ELISA Testing -->
+                            <div class="process-step" id="step-elisa">
+                                <div class="step-icon bg-info-gradient">
+                                    <i class="bi bi-clipboard2-pulse"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">ELISA Tested</h6>
+                                    <div class="step-count" id="flow-elisa-count">0</div>
+                                    <p class="step-label">Tests</p>
+                                </div>
+                                <div class="step-arrow">
+                                    <i class="bi bi-arrow-right"></i>
                                 </div>
                             </div>
-                            <div class="stat-content mt-4">
-                                <h3 class="stat-value mb-2">0</h3>
-                                <p class="stat-label mb-2">Total Plasma Inwards</p>
-                                <div class="stat-trend positive">
-                                    <i class="bi bi-arrow-up"></i>
-                                    {{-- <span>12.5% increase</span> --}}
+
+                            <!-- Step 4: NAT Testing -->
+                            <div class="process-step" id="step-nat">
+                                <div class="step-icon bg-cyan-gradient">
+                                    <i class="bi bi-activity"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">NAT Tested</h6>
+                                    <div class="step-count" id="flow-nat-count">0</div>
+                                    <p class="step-label">Tests</p>
+                                </div>
+                                <div class="step-arrow">
+                                    <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <!-- Step 5: Released -->
+                            <div class="process-step" id="step-released">
+                                <div class="step-icon bg-warning-gradient">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Released</h6>
+                                    <div class="step-count" id="flow-released-count">0L</div>
+                                    <p class="step-label">Liters</p>
+                                </div>
+                                <div class="step-arrow">
+                                    <i class="bi bi-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <!-- Step 6: Dispensed -->
+                            <div class="process-step" id="step-dispensed">
+                                <div class="step-icon bg-teal-gradient">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Dispensed</h6>
+                                    <div class="step-count" id="flow-dispensed-count">0L</div>
+                                    <p class="step-label">Liters</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="card quick-actions-card">
+                    <div class="card-body">
+                        <h5 class="section-title mb-2"><i class="bi bi-lightning-charge"></i> Quick Actions</h5>
+                        <div class="quick-actions-grid">
+                            <a href="{{ route('newBag.index') }}" class="action-btn action-btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>New Bag Entry</span>
+                            </a>
+                            <a href="{{ route('report.upload') }}" class="action-btn action-btn-info">
+                                <i class="bi bi-upload"></i>
+                                <span>Upload ELISA</span>
+                            </a>
+                            <a href="{{ route('nat-report.index') }}" class="action-btn action-btn-cyan">
+                                <i class="bi bi-upload"></i>
+                                <span>Upload NAT</span>
+                            </a>
+                            <a href="{{ route('factory.report.plasma_release') }}" class="action-btn action-btn-success">
+                                <i class="bi bi-check-circle"></i>
+                                <span>Plasma Release</span>
+                            </a>
+                            <a href="{{ route('factory.report.plasma_rejection') }}" class="action-btn action-btn-danger">
+                                <i class="bi bi-x-circle"></i>
+                                <span>Plasma Rejection</span>
+                            </a>
+                            <a href="{{ route('factory.generate_report.mega_pool_mini_pool') }}" class="action-btn action-btn-warning">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>Generate Reports</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             </div>
 
-            <!-- Tail Cutting Card -->
+        <!-- Pending Actions Alert Section -->
+        <div class="row g-3 action-required-section" id="pending-actions-section">
+            <div class="col-12">
+                <div class="action-required-header">
+                    <h5 class="section-title-alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Action Required
+                        <span class="pulse-dot"></span>
+                    </h5>
+                </div>
+            </div>
+
+            <!-- Pending Tail Cutting -->
             <div class="col-md-6 col-xl-3">
-                <a href="{{ route('warehouse.index') }}" class="card-link">
-                    <div class="card stat-card" id="tail-cutting">
+                <div class="card alert-action-card alert-card-warning">
                         <div class="card-body">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="stat-icon-box bg-success-gradient">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="alert-icon bg-warning-gradient">
                                     <i class="bi bi-scissors"></i>
                                 </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#">View Details</a></li>
-                                        <li><a class="dropdown-item" href="#">Export Data</a></li>
-                                    </ul>
+                            <span class="alert-badge badge-warning">Pending</span>
+                                </div>
+                        <h6 class="alert-title">Pending Tail Cutting</h6>
+                        <div class="alert-count" id="pending-cutting-count">0</div>
+                        <p class="alert-description">Bags awaiting tail cutting</p>
+                        {{-- <a href="{{ route('warehouse.index') }}" class="alert-action-link">
+                            View Details <i class="bi bi-arrow-right"></i>
+                        </a> --}}
+                            </div>
                                 </div>
                             </div>
-                            <div class="stat-content mt-4">
-                                <h3 class="stat-value mb-2">0</h3>
-                                <p class="stat-label mb-2">Total Plasma Cuttings</p>
-                                <div class="stat-trend positive">
-                                    <i class="bi bi-arrow-up"></i>
-                                    {{-- <span>8.2% increase</span> --}}
-                                </div>
-                            </div>
+
+            <!-- Reactive Mini Pools -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card alert-action-card alert-card-danger">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="alert-icon bg-danger-gradient">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
                         </div>
+                            <span class="alert-badge badge-danger">Urgent</span>
                     </div>
-                </a>
+                        <h6 class="alert-title">Reactive Mini Pools</h6>
+                        <div class="alert-count" id="reactive-pools-count">0</div>
+                        <p class="alert-description">Need sub-pool testing</p>
+                        {{-- <a href="{{ route('factory.report.sub_minipool_entry') }}" class="alert-action-link">
+                            Take Action <i class="bi bi-arrow-right"></i>
+                        </a> --}}
+                    </div>
+                </div>
             </div>
 
-            <!-- Plasma Approved Card -->
+            <!-- Pending AR Numbers -->
             <div class="col-md-6 col-xl-3">
-                <div class="card stat-card" id="plasma-approved">
+                <div class="card alert-action-card alert-card-info">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="alert-icon bg-info-gradient">
+                                <i class="bi bi-file-earmark-check"></i>
+                            </div>
+                            <span class="alert-badge badge-info">Review</span>
+                        </div>
+                        <h6 class="alert-title">Pending Release</h6>
+                        <div class="alert-count" id="pending-release-count">0</div>
+                        <p class="alert-description">AR numbers for approval</p>
+                        {{-- <a href="{{ route('factory.report.plasma_release') }}" class="alert-action-link">
+                            Review Now <i class="bi bi-arrow-right"></i>
+                        </a> --}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Results Entry -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card alert-action-card alert-card-primary">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="alert-icon bg-primary-gradient">
+                                <i class="bi bi-clipboard-data"></i>
+                            </div>
+                            <span class="alert-badge badge-primary">Data Entry</span>
+                        </div>
+                        <h6 class="alert-title">Awaiting Results</h6>
+                        <div class="alert-count" id="pending-results-count">0</div>
+                        <p class="alert-description">Test results to enter</p>
+                        {{-- <a href="{{ route('report.upload') }}" class="alert-action-link">
+                            Enter Results <i class="bi bi-arrow-right"></i>
+                        </a> --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Metrics Section -->
+        <div class="row g-3 ">
+            <div class="col-12">
+                <div class="quality-metrics-header">
+                    <h5 class="section-title"><i class="bi bi-shield-check"></i> Quality Testing Overview</h5>
+                </div>
+            </div>
+
+            <!-- ELISA Quality Card -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card stat-card" id="elisa-quality">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
-                            <div class="stat-icon-box bg-warning-gradient">
-                                <i class="bi bi-check-circle-fill"></i>
+                            <div class="stat-icon-box bg-primary-gradient">
+                                <i class="bi bi-clipboard2-pulse"></i>
                             </div>
                             <div class="dropdown">
                                 <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
@@ -128,25 +297,28 @@
                             </div>
                         </div>
                         <div class="stat-content mt-4">
-                            <h3 class="stat-value mb-2">0</h3>
-                            <p class="stat-label mb-2">Plasma Approved</p>
+                            <div class="count-display mb-2">
+                                <span class="count-value" id="elisa-non-reactive-display">0</span>
+                                <span class="count-separator">/</span>
+                                <span class="count-total" id="elisa-total-display">0</span>
+                            </div>
+                            <p class="stat-label mb-2">ELISA Test (Non-Reactive/Total)</p>
                             <div class="stat-trend positive">
-                                <i class="bi bi-arrow-up"></i>
-                                <span>15.3% increase</span>
+                                <i class="bi bi-check-circle"></i>
+                                <span id="elisa-pass-rate">0%</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Plasma Dispensed Card -->
+            <!-- NAT Quality Card -->
             <div class="col-md-6 col-xl-3">
-                <a href="{{ route('factory.generate_report.plasma_dispensing') }}" class="card-link">
-                    <div class="card stat-card" id="plasma-dispensed">
+                <div class="card stat-card" id="nat-quality">
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between">
-                                <div class="stat-icon-box bg-danger-gradient">
-                                    <i class="bi bi-box-arrow-right"></i>
+                            <div class="stat-icon-box bg-info-gradient">
+                                <i class="bi bi-activity"></i>
                                 </div>
                                 <div class="dropdown">
                                     <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
@@ -159,164 +331,218 @@
                                 </div>
                             </div>
                             <div class="stat-content mt-4">
-                                <h3 class="stat-value mb-2">0</h3>
-                                <p class="stat-label mb-2">Plasma Dispensed</p>
-                                <div class="stat-trend negative">
-                                    <i class="bi bi-arrow-down"></i>
-                                    <span>3.2% decrease</span>
+                            <div class="count-display mb-2">
+                                <span class="count-value" id="nat-non-reactive-display">0</span>
+                                <span class="count-separator">/</span>
+                                <span class="count-total" id="nat-total-display">0</span>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Additional Statistics Cards - Collapsible -->
-            <div class="collapse w-100" id="secondaryStats">
-                <div class="row g-3">
-                    <!-- Stock Received Card -->
-                    <div class="col-md-6 col-xl-3">
-                        <div class="card stat-card" id="stock-received">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="stat-icon-box bg-info-gradient">
-                                        <i class="bi bi-box-seam"></i>
-                                    </div>
-                                    <div class="stat-badge">
-                                        <span class="badge bg-soft-info text-info">Active</span>
-                                    </div>
-                                </div>
-                                <div class="stat-content mt-4">
-                                    <h3 class="stat-value mb-2">0</h3>
-                                    <p class="stat-label mb-2">Stock Received</p>
-                                    <div class="progress stat-progress">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: 65%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pending Cutting Card -->
-                    <div class="col-md-6 col-xl-3">
-                        <div class="card stat-card" id="pending-cutting">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="stat-icon-box bg-purple-gradient">
-                                        <i class="bi bi-hourglass-split"></i>
-                                    </div>
-                                    <div class="stat-badge">
-                                        <span class="badge bg-soft-purple text-purple">Pending</span>
-                                    </div>
-                                </div>
-                                <div class="stat-content mt-4">
-                                    <h3 class="stat-value mb-2">0</h3>
-                                    <p class="stat-label mb-2">Pending Cutting</p>
-                                    <div class="progress stat-progress">
-                                        <div class="progress-bar bg-purple" role="progressbar" style="width: 45%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Under Test Stock Card -->
-                    <div class="col-md-6 col-xl-3">
-                        <div class="card stat-card" id="under-test">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="stat-icon-box bg-orange-gradient">
-                                        <i class="bi bi-clipboard-data"></i>
-                                    </div>
-                                    <div class="stat-badge">
-                                        <span class="badge bg-soft-orange text-orange">Testing</span>
-                                    </div>
-                                </div>
-                                <div class="stat-content mt-4">
-                                    <h3 class="stat-value mb-2">0</h3>
-                                    <p class="stat-label mb-2">Under Test Stock</p>
-                                    <div class="progress stat-progress">
-                                        <div class="progress-bar bg-orange" role="progressbar" style="width: 75%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Resolution Test Card -->
-                    <div class="col-md-6 col-xl-3">
-                        <div class="card stat-card" id="under-resolution">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="stat-icon-box bg-teal-gradient">
-                                        <i class="bi bi-file-earmark-medical"></i>
-                                    </div>
-                                    <div class="stat-badge">
-                                        <span class="badge bg-soft-teal text-teal">In Progress</span>
-                                    </div>
-                                </div>
-                                <div class="stat-content mt-4">
-                                    <h3 class="stat-value mb-2">0</h3>
-                                    <p class="stat-label mb-2">Under Resolution Test</p>
-                                    <div class="progress stat-progress">
-                                        <div class="progress-bar bg-teal" role="progressbar" style="width: 55%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Release Qty Card -->
-                    <div class="col-md-6 col-xl-3">
-                        <div class="card stat-card" id="release-qty">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="stat-icon-box bg-indigo-gradient">
-                                        <i class="bi bi-box-arrow-up"></i>
-                                    </div>
-                                    <div class="stat-badge">
-                                        <span class="badge bg-soft-indigo text-indigo">Released</span>
-                                    </div>
-                                </div>
-                                <div class="stat-content mt-4">
-                                    <h3 class="stat-value mb-2">0</h3>
-                                    <p class="stat-label mb-2">Release Qty</p>
-                                    <div class="progress stat-progress">
-                                        <div class="progress-bar bg-indigo" role="progressbar" style="width: 85%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Total Stock Card -->
-                    <div class="col-md-6 col-xl-3">
-                        <div class="card stat-card" id="total-stock">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="stat-icon-box bg-cyan-gradient">
-                                        <i class="bi bi-boxes"></i>
-                                    </div>
-                                    <div class="stat-badge">
-                                        <span class="badge bg-soft-cyan text-cyan">Available</span>
-                                    </div>
-                                </div>
-                                <div class="stat-content mt-4">
-                                    <h3 class="stat-value mb-2">0</h3>
-                                    <p class="stat-label mb-2">Total Stock</p>
-                                    <div class="progress stat-progress">
-                                        <div class="progress-bar bg-cyan" role="progressbar" style="width: 70%"></div>
-                                    </div>
-                                </div>
+                            <p class="stat-label mb-2">NAT Test (Non-Reactive/Total)</p>
+                            <div class="stat-trend positive">
+                                <i class="bi bi-check-circle"></i>
+                                <span id="nat-pass-rate">0%</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ELISA Reactive Count -->
+                    <div class="col-md-6 col-xl-3">
+                <div class="card stat-card" id="elisa-reactive-alert">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                            <div class="stat-icon-box bg-danger-gradient">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                    </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">View Details</a></li>
+                                    <li><a class="dropdown-item" href="#">Export Data</a></li>
+                                </ul>
+                                    </div>
+                                </div>
+                                <div class="stat-content mt-4">
+                            <h3 class="stat-value mb-2" id="elisa-reactive-alert-count">0</h3>
+                            <p class="stat-label mb-2">ELISA Reactive</p>
+                            <div class="stat-trend negative">
+                                <i class="bi bi-arrow-right-circle"></i>
+                                <span>Sub-Pool Testing</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+            <!-- NAT Reactive Count -->
+                    <div class="col-md-6 col-xl-3">
+                <div class="card stat-card" id="nat-reactive-alert">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                            <div class="stat-icon-box bg-warning-gradient">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                    </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">View Details</a></li>
+                                    <li><a class="dropdown-item" href="#">Export Data</a></li>
+                                </ul>
+                                    </div>
+                                </div>
+                                <div class="stat-content mt-4">
+                            <h3 class="stat-value mb-2" id="nat-reactive-alert-count">0</h3>
+                            <p class="stat-label mb-2">NAT Reactive</p>
+                            <div class="stat-trend negative">
+                                <i class="bi bi-arrow-right-circle"></i>
+                                <span>Requires Review</span>
+                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+        <!-- Primary Stats Section - Always Visible -->
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="quality-metrics-header">
+                    <h5 class="section-title"><i class="bi bi-graph-up-arrow"></i> Plasma Collection & Processing</h5>
+                </div>
+            </div>
+            <!-- Plasma Collection Card -->
+                    <div class="col-md-6 col-xl-3">
+                <a href="{{ route('bloodbank.index') }}" class="card-link">
+                    <div class="card stat-card" id="total-collections">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                <div class="stat-icon-box bg-primary-gradient">
+                                    <i class="bi bi-droplet-fill"></i>
+                                    </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">View Details</a></li>
+                                        <li><a class="dropdown-item" href="#">Export Data</a></li>
+                                    </ul>
+                                    </div>
+                                </div>
+                            <div class="stat-content mt-4">
+                                <h3 class="stat-value mb-2">0</h3>
+                                <p class="stat-label mb-2">Total Plasma Inwards (Liters)</p>
+                                <div class="stat-trend positive">
+                                    <i class="bi bi-arrow-up"></i>
+                                    {{-- <span>12.5% increase</span> --}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </a>
+                    </div>
+
+            <!-- Tail Cutting Card -->
+                    <div class="col-md-6 col-xl-3">
+                <a href="{{ route('warehouse.index') }}" class="card-link">
+                    <div class="card stat-card" id="tail-cutting">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                <div class="stat-icon-box bg-success-gradient">
+                                    <i class="bi bi-scissors"></i>
+                                    </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">View Details</a></li>
+                                        <li><a class="dropdown-item" href="#">Export Data</a></li>
+                                    </ul>
+                                    </div>
+                                </div>
+                            <div class="stat-content mt-4">
+                                <h3 class="stat-value mb-2">0</h3>
+                                <p class="stat-label mb-2">Total Plasma Cuttings (Liters)</p>
+                                <div class="stat-trend positive">
+                                    <i class="bi bi-arrow-up"></i>
+                                    {{-- <span>8.2% increase</span> --}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </a>
+                    </div>
+
+            <!-- Plasma Approved Card -->
+                    <div class="col-md-6 col-xl-3">
+                <div class="card stat-card" id="plasma-approved">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                            <div class="stat-icon-box bg-warning-gradient">
+                                <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">View Details</a></li>
+                                    <li><a class="dropdown-item" href="#">Export Data</a></li>
+                                </ul>
+                                    </div>
+                                </div>
+                                <div class="stat-content mt-4">
+                                    <h3 class="stat-value mb-2">0</h3>
+                            <p class="stat-label mb-2">Plasma Approved</p>
+                            <div class="stat-trend positive">
+                                <i class="bi bi-arrow-up"></i>
+                                <span>15.3% increase</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+            <!-- Plasma Dispensed Card -->
+                    <div class="col-md-6 col-xl-3">
+                <a href="{{ route('factory.generate_report.plasma_dispensing') }}" class="card-link">
+                    <div class="card stat-card" id="plasma-dispensed">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                <div class="stat-icon-box bg-danger-gradient">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">View Details</a></li>
+                                        <li><a class="dropdown-item" href="#">Export Data</a></li>
+                                    </ul>
+                                    </div>
+                                </div>
+                            <div class="stat-content mt-4">
+                                <h3 class="stat-value mb-2">0</h3>
+                                <p class="stat-label mb-2">Plasma Dispensed (Liters)</p>
+                                <div class="stat-trend negative">
+                                    <i class="bi bi-arrow-down"></i>
+                                    <span>3.2% decrease</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </a>
+            </div>
         </div>
 
         <!-- Charts and Analytics -->
-        <div class="row mt-4">
+        {{-- <div class="row mt-4">
             <!-- Main Analytics -->
             <div class="col-lg-12">
                 <div class="card">
@@ -365,7 +591,7 @@
             <!-- Performance Rankings -->
 
             </div>
-        </div>
+        </div> --}}
     </div>
 </div>
 @endsection
@@ -374,7 +600,7 @@
 <style>
 /* Base Styles */
 .dashboard-container {
-    padding: 1.5rem;
+    padding: 1rem;
     background-color: #f8f9fa;
     background-image:
         radial-gradient(at 90% 10%, rgb(65, 84, 241, 0.1) 0px, transparent 50%),
@@ -382,22 +608,627 @@
     min-height: 100vh;
 }
 
+/* Section Headers */
+.quality-metrics-header {
+    margin-bottom: 0.5rem;
+}
+
+.section-title {
+    font-size: 0.938rem;
+    font-weight: 600;
+    color: #2c3345;
+    margin: 0;
+    padding: 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.section-title i {
+    font-size: 1rem;
+    color: #4154f1;
+}
+
+/* Quality Metric Cards */
+.quality-metric-card {
+    background: white;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+}
+
+.quality-metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.quality-metric-card .metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.quality-metric-card .metric-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quality-metric-card .metric-counts {
+    margin: 1.5rem 0;
+}
+
+.quality-metric-card .count-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.quality-metric-card .count-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #2eca6a;
+    line-height: 1;
+}
+
+.quality-metric-card .count-separator {
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: #6c757d;
+}
+
+.quality-metric-card .count-total {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2c3345;
+}
+
+.quality-metric-card .count-display-large {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.quality-metric-card .count-value-large {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #dc3545;
+    line-height: 1;
+}
+
+.quality-metric-card.alert-card .count-value-large {
+    color: #dc3545;
+}
+
+.quality-metric-card .count-label {
+    font-size: 0.813rem;
+    color: #6c757d;
+    text-align: center;
+    margin: 0;
+}
+
+.quality-metric-card .metric-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.quality-metric-card .pass-rate {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2eca6a;
+}
+
+.quality-metric-card .pass-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quality-metric-card .action-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Alert Card Specific Styles */
+.quality-metric-card.alert-card {
+    border-left: 4px solid #dc3545;
+}
+
+.quality-metric-card.alert-card:hover {
+    border-left-color: #bb2d3b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .quality-metric-card .count-value {
+        font-size: 1.75rem;
+    }
+
+    .quality-metric-card .count-total {
+        font-size: 1.5rem;
+    }
+
+    .quality-metric-card .count-value-large {
+        font-size: 2.5rem;
+    }
+}
+
+/* =================================================================
+   PROCESS FLOW VISUALIZATION
+   ================================================================= */
+.process-flow-card {
+    background: white;
+    border: none;
+    border-radius: 0.875rem;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.process-flow-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    overflow-x: auto;
+}
+
+.process-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    position: relative;
+    min-width: 90px;
+    flex: 1;
+}
+
+.process-step .step-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.process-step:hover .step-icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.process-step .step-content {
+    text-align: center;
+}
+
+.process-step .step-title {
+    font-size: 0.688rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin: 0 0 0.125rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.process-step .step-count {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #2c3345;
+    line-height: 1;
+    margin-bottom: 0.1rem;
+}
+
+.process-step .step-label {
+    font-size: 0.563rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.process-step .step-arrow {
+    position: absolute;
+    right: -22px;
+    top: 16px;
+    font-size: 1.125rem;
+    color: #dee2e6;
+    transition: color 0.3s ease;
+}
+
+.process-step:hover .step-arrow {
+    color: #4154f1;
+}
+
+.process-step:last-child .step-arrow {
+    display: none;
+}
+
+/* =================================================================
+   QUICK ACTIONS SECTION
+   ================================================================= */
+.quick-actions-card {
+    background: white;
+    border: none;
+    border-radius: 0.875rem;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.75rem;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 1rem 0.75rem;
+    border-radius: 0.625rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.1;
+    transition: opacity 0.3s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn i {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.action-btn:hover i {
+    transform: scale(1.1);
+}
+
+.action-btn span {
+    font-size: 0.813rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Action Button Variants */
+.action-btn-primary {
+    background: rgba(65, 84, 241, 0.1);
+    color: #4154f1;
+    border-color: rgba(65, 84, 241, 0.2);
+}
+
+.action-btn-primary:hover {
+    background: rgba(65, 84, 241, 0.15);
+    border-color: #4154f1;
+    color: #4154f1;
+}
+
+.action-btn-info {
+    background: rgba(13, 202, 240, 0.1);
+    color: #0dcaf0;
+    border-color: rgba(13, 202, 240, 0.2);
+}
+
+.action-btn-info:hover {
+    background: rgba(13, 202, 240, 0.15);
+    border-color: #0dcaf0;
+    color: #0dcaf0;
+}
+
+.action-btn-cyan {
+    background: rgba(13, 202, 240, 0.1);
+    color: #0aa2c0;
+    border-color: rgba(13, 202, 240, 0.2);
+}
+
+.action-btn-cyan:hover {
+    background: rgba(13, 202, 240, 0.15);
+    border-color: #0aa2c0;
+    color: #0aa2c0;
+}
+
+.action-btn-success {
+    background: rgba(46, 202, 106, 0.1);
+    color: #2eca6a;
+    border-color: rgba(46, 202, 106, 0.2);
+}
+
+.action-btn-success:hover {
+    background: rgba(46, 202, 106, 0.15);
+    border-color: #2eca6a;
+    color: #2eca6a;
+}
+
+.action-btn-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+}
+
+.action-btn-danger:hover {
+    background: rgba(220, 53, 69, 0.15);
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.action-btn-warning {
+    background: rgba(255, 119, 29, 0.1);
+    color: #ff771d;
+    border-color: rgba(255, 119, 29, 0.2);
+}
+
+.action-btn-warning:hover {
+    background: rgba(255, 119, 29, 0.15);
+    border-color: #ff771d;
+    color: #ff771d;
+}
+
+/* =================================================================
+   ALERT ACTION CARDS
+   ================================================================= */
+.alert-action-card {
+    background: white;
+    border: none;
+    border-radius: 0.875rem;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border-left: 3px solid transparent;
+}
+
+.alert-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.alert-action-card .alert-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.alert-action-card .alert-badge {
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.3rem 0.625rem;
+    border-radius: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.alert-action-card .alert-title {
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin: 0.75rem 0 0.375rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.alert-action-card .alert-count {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0.5rem 0;
+}
+
+.alert-action-card .alert-description {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin: 0 0 0.75rem 0;
+}
+
+.alert-action-card .alert-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.813rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.alert-action-card .alert-action-link:hover {
+    gap: 0.625rem;
+}
+
+.alert-action-card .alert-action-link i {
+    transition: transform 0.3s ease;
+}
+
+.alert-action-card .alert-action-link:hover i {
+    transform: translateX(3px);
+}
+
+/* Alert Card Variants */
+.alert-card-warning {
+    border-left-color: #ff771d;
+}
+
+.alert-card-warning .alert-count {
+    color: #ff771d;
+}
+
+.alert-card-warning .alert-action-link {
+    color: #ff771d;
+}
+
+.alert-card-warning .badge-warning {
+    background: rgba(255, 119, 29, 0.1);
+    color: #ff771d;
+}
+
+.alert-card-danger {
+    border-left-color: #dc3545;
+}
+
+.alert-card-danger .alert-count {
+    color: #dc3545;
+}
+
+.alert-card-danger .alert-action-link {
+    color: #dc3545;
+}
+
+.alert-card-danger .badge-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.alert-card-info {
+    border-left-color: #0dcaf0;
+}
+
+.alert-card-info .alert-count {
+    color: #0dcaf0;
+}
+
+.alert-card-info .alert-action-link {
+    color: #0dcaf0;
+}
+
+.alert-card-info .badge-info {
+    background: rgba(13, 202, 240, 0.1);
+    color: #0dcaf0;
+}
+
+.alert-card-primary {
+    border-left-color: #4154f1;
+}
+
+.alert-card-primary .alert-count {
+    color: #4154f1;
+}
+
+.alert-card-primary .alert-action-link {
+    color: #4154f1;
+}
+
+.alert-card-primary .badge-primary {
+    background: rgba(65, 84, 241, 0.1);
+    color: #4154f1;
+}
+
+/* =================================================================
+   RESPONSIVE DESIGN
+   ================================================================= */
+@media (max-width: 992px) {
+    .process-flow-container {
+        justify-content: flex-start;
+        padding-bottom: 1rem;
+    }
+
+    .process-step {
+        min-width: 100px;
+    }
+
+    .process-step .step-arrow {
+        right: -25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .process-flow-container {
+        gap: 0.5rem;
+    }
+
+    .process-step {
+        min-width: 80px;
+    }
+
+    .process-step .step-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    .process-step .step-count {
+        font-size: 1.5rem;
+    }
+
+    .process-step .step-arrow {
+        right: -20px;
+        font-size: 1.25rem;
+    }
+
+    .quick-actions-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .action-btn {
+        padding: 1rem 0.75rem;
+    }
+
+    .action-btn i {
+        font-size: 1.5rem;
+    }
+
+    .action-btn span {
+        font-size: 0.75rem;
+    }
+
+    .alert-action-card .alert-count {
+        font-size: 2rem;
+    }
+}
+
 /* Header Styles */
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.875rem 1rem;
     background: rgba(255, 255, 255, 0.9);
-    border-radius: 1rem;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    border-radius: 0.875rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .header-wrapper h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     color: #2c3345;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
     position: relative;
 }
 
@@ -474,8 +1305,8 @@
 .dashboard-card {
     background: white;
     border: none;
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 0.875rem;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -494,8 +1325,8 @@
 }
 
 .dashboard-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-card:hover::before {
@@ -508,7 +1339,7 @@
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: 1.125rem;
     position: relative;
     z-index: 1;
 }
@@ -918,15 +1749,15 @@
 .stat-card {
     background: white;
     border: none;
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 0.875rem;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     overflow: hidden;
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 .card-link {
@@ -1012,12 +1843,44 @@
     background-color: rgba(13, 202, 240, 0.1);
 }
 
+.bg-soft-primary {
+    background-color: rgba(65, 84, 241, 0.1);
+}
+
+.bg-soft-success {
+    background-color: rgba(46, 202, 106, 0.1);
+}
+
+.bg-soft-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.bg-soft-warning {
+    background-color: rgba(255, 119, 29, 0.1);
+}
+
 .text-indigo {
     color: #6610f2;
 }
 
 .text-cyan {
     color: #0dcaf0;
+}
+
+.text-primary {
+    color: #4154f1;
+}
+
+.text-success {
+    color: #2eca6a;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-warning {
+    color: #ff771d;
 }
 
 /* Progress Bar Colors */
@@ -1031,7 +1894,7 @@
 
 /* Stat Content */
 .stat-content {
-    margin-top: 1.5rem;
+    margin-top: 1.125rem;
 }
 
 .stat-value {
@@ -1045,6 +1908,33 @@
     font-size: 0.875rem;
     color: #6c757d;
     margin-bottom: 1rem;
+}
+
+/* Count Display for Quality Cards */
+.stat-card .count-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .count-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2eca6a;
+    line-height: 1;
+}
+
+.stat-card .count-separator {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #6c757d;
+}
+
+.stat-card .count-total {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3345;
 }
 
 /* Trend Indicators */
@@ -1780,9 +2670,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update Primary Stats
                     updatePrimaryStats(data);
 
-                    // Update Secondary Stats
-                    updateSecondaryStats(data);
-
                     // Load graph data
                     loadDashboardGraphData(filter);
 
@@ -1802,12 +2689,129 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Function to update process flow
+    function updateProcessFlow(data) {
+        console.log('Updating Process Flow with data:', data);
+
+        // Update process flow counts - showing liters with L suffix
+        const formatLiters = (value) => {
+            const num = parseFloat(value) || 0;
+            return num.toFixed(2) + 'L';
+        };
+
+        document.getElementById('flow-collection-count').textContent = formatLiters(data.total_collections);
+        document.getElementById('flow-cutting-count').textContent = formatLiters(data.tail_cutting_count);
+
+        // Calculate test counts
+        const elisaTotal = (data.elisa_non_reactive_count || 0) + (data.elisa_reactive_count || 0);
+        const natTotal = (data.nat_non_reactive_count || 0) + (data.nat_reactive_count || 0);
+
+        document.getElementById('flow-elisa-count').textContent = elisaTotal;
+        document.getElementById('flow-nat-count').textContent = natTotal;
+        document.getElementById('flow-released-count').textContent = formatLiters(data.approved_count);
+        document.getElementById('flow-dispensed-count').textContent = formatLiters(data.dispensed_count);
+    }
+
+    // Function to update pending actions
+    function updatePendingActions(data) {
+        console.log('Updating Pending Actions with data:', data);
+
+        // Update pending action counts
+        document.getElementById('pending-cutting-count').textContent = data.pending_tail_cutting || 0;
+        document.getElementById('reactive-pools-count').textContent = data.elisa_reactive_count || 0;
+        document.getElementById('pending-release-count').textContent = data.pending_release || 0;
+        document.getElementById('pending-results-count').textContent = data.pending_test_entry || 0;
+    }
+
+    // Function to update quality metrics
+    function updateQualityMetrics(data) {
+        console.log('Updating Quality Metrics with data:', data);
+
+        // ELISA Quality Metrics
+        const elisaNonReactive = data.elisa_non_reactive_count || 0;
+        const elisaReactive = data.elisa_reactive_count || 0;
+        const elisaTotal = elisaNonReactive + elisaReactive;
+        const elisaPassRate = elisaTotal > 0 ? ((elisaNonReactive / elisaTotal) * 100).toFixed(1) : 0;
+
+        document.getElementById('elisa-non-reactive-display').textContent = elisaNonReactive;
+        document.getElementById('elisa-total-display').textContent = elisaTotal;
+        document.getElementById('elisa-pass-rate').textContent = elisaPassRate + '%';
+        document.getElementById('elisa-reactive-alert-count').textContent = elisaReactive;
+
+        // NAT Quality Metrics
+        const natNonReactive = data.nat_non_reactive_count || 0;
+        const natReactive = data.nat_reactive_count || 0;
+        const natTotal = natNonReactive + natReactive;
+        const natPassRate = natTotal > 0 ? ((natNonReactive / natTotal) * 100).toFixed(1) : 0;
+
+        document.getElementById('nat-non-reactive-display').textContent = natNonReactive;
+        document.getElementById('nat-total-display').textContent = natTotal;
+        document.getElementById('nat-pass-rate').textContent = natPassRate + '%';
+        document.getElementById('nat-reactive-alert-count').textContent = natReactive;
+
+        // Update pass rate colors and trend icons based on performance
+        const elisaPassRateElement = document.getElementById('elisa-pass-rate');
+        const elisaTrendDiv = document.querySelector('#elisa-quality .stat-trend');
+        if (elisaPassRate >= 90) {
+            elisaPassRateElement.style.color = '#2eca6a'; // Green
+            if (elisaTrendDiv) {
+                elisaTrendDiv.className = 'stat-trend positive';
+                elisaTrendDiv.querySelector('i').className = 'bi bi-check-circle';
+            }
+        } else if (elisaPassRate >= 75) {
+            elisaPassRateElement.style.color = '#ff771d'; // Orange
+            if (elisaTrendDiv) {
+                elisaTrendDiv.className = 'stat-trend negative';
+                elisaTrendDiv.querySelector('i').className = 'bi bi-exclamation-triangle';
+            }
+        } else {
+            elisaPassRateElement.style.color = '#dc3545'; // Red
+            if (elisaTrendDiv) {
+                elisaTrendDiv.className = 'stat-trend negative';
+                elisaTrendDiv.querySelector('i').className = 'bi bi-x-circle';
+            }
+        }
+
+        const natPassRateElement = document.getElementById('nat-pass-rate');
+        const natTrendDiv = document.querySelector('#nat-quality .stat-trend');
+        if (natPassRate >= 90) {
+            natPassRateElement.style.color = '#2eca6a';
+            if (natTrendDiv) {
+                natTrendDiv.className = 'stat-trend positive';
+                natTrendDiv.querySelector('i').className = 'bi bi-check-circle';
+            }
+        } else if (natPassRate >= 75) {
+            natPassRateElement.style.color = '#ff771d';
+            if (natTrendDiv) {
+                natTrendDiv.className = 'stat-trend negative';
+                natTrendDiv.querySelector('i').className = 'bi bi-exclamation-triangle';
+            }
+        } else {
+            natPassRateElement.style.color = '#dc3545';
+            if (natTrendDiv) {
+                natTrendDiv.className = 'stat-trend negative';
+                natTrendDiv.querySelector('i').className = 'bi bi-x-circle';
+            }
+        }
+    }
+
     // Function to update primary statistics
     function updatePrimaryStats(data) {
         console.log('Updating Primary Stats with data:', data); // Debug log
 
+        // Update all dashboard sections
+        updateProcessFlow(data);
+        updatePendingActions(data);
+        updateQualityMetrics(data);
+
+        // Format liters helper function
+        const formatLiters = (value) => {
+            const num = parseFloat(value) || 0;
+            return num.toFixed(2);
+        };
+
         // Total Collections
-        const totalCollections = data.total_collections || 0;
+        const totalCollections = formatLiters(data.total_collections);
         const collectionsCard = document.querySelector('#total-collections .stat-value');
         if (collectionsCard) {
             collectionsCard.textContent = totalCollections;
@@ -1815,7 +2819,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Tail Cutting
-        const tailCutting = data.tail_cutting_count || 0;
+        const tailCutting = formatLiters(data.tail_cutting_count);
         const tailCuttingCard = document.querySelector('#tail-cutting .stat-value');
         if (tailCuttingCard) {
             tailCuttingCard.textContent = tailCutting;
@@ -1823,14 +2827,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Plasma Approved
-        const plasmaApproved = data.approved_count || 0;
+        const plasmaApproved = formatLiters(data.approved_count);
         const approvedCard = document.querySelector('#plasma-approved .stat-value');
         if (approvedCard) {
             approvedCard.textContent = plasmaApproved;
         }
 
         // Plasma Dispensed
-        const plasmaDispensed = data.dispensed_count || 0;
+        const plasmaDispensed = formatLiters(data.dispensed_count);
         const dispensedCard = document.querySelector('#plasma-dispensed .stat-value');
         if (dispensedCard) {
             dispensedCard.textContent = plasmaDispensed;
@@ -1859,18 +2863,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to update secondary statistics
-    function updateSecondaryStats(data) {
-        console.log('Updating Secondary Stats with data:', data); // Debug log
-
-        // Update each secondary stat card
-        updateStatCard('stock-received', data.stock_received || 0, data.stock_received_progress);
-        updateStatCard('pending-cutting', data.pending_cutting || 0, data.pending_cutting_progress);
-        updateStatCard('under-test', data.under_test || 0, data.under_test_progress);
-        updateStatCard('under-resolution', data.under_resolution || 0, data.under_resolution_progress);
-        updateStatCard('release-qty', data.release_qty || 0, data.release_qty_progress);
-        updateStatCard('total-stock', data.total_stock || 0, data.total_stock_progress);
-    }
 
     // Helper function to update individual stat cards
     function updateStatCard(cardId, value, progress) {

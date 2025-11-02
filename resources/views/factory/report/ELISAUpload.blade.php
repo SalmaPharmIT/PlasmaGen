@@ -7,7 +7,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-4">
-    <div class="card">
+            <div class="card">
                 <div class="card-body p-2">
                     <form id="hbvUploadForm" class="report-upload-form" method="POST" action="{{ route('report.store') }}" enctype="multipart/form-data">
                         @csrf

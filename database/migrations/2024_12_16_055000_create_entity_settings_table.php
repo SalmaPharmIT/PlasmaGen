@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
+            $table->integer('no_of_work_station')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
@@ -36,4 +37,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('entity_settings');
     }
-}; 
+};

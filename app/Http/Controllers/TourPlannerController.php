@@ -40,7 +40,7 @@ class TourPlannerController extends Controller
         }
 
         // Define the external API URL for fetching entities
-        $apiUrl = config('auth_api.collecting_agents_fetch_by_managerId_url');
+        $apiUrl = config('auth_api.getAllCollectingAgents_url');
 
         if (!$apiUrl) {
             Log::error('Collecting Agents fetch URL not configured.');
@@ -226,7 +226,7 @@ class TourPlannerController extends Controller
 
             // Fields required for Sourcing
             'sourcing_blood_bank_name' => 'nullable|string|max:255',
-            'sourcing_city_id' => 'nullable|required_if:tour_plan_type,sourcing|integer|exists:cities,id',
+            'sourcing_city_id' => 'nullable|required_if:tour_plan_type,sourcing|required_if:tour_plan_type,both|integer|exists:cities,id',
 
             // Common Fields
             'collecting_agent_id' => 'required|integer|exists:users,id',
@@ -305,7 +305,8 @@ class TourPlannerController extends Controller
                 $payload['pending_documents_id'] = implode(',', $validatedData['pending_documents_id']);
             }
 
-        //    $payload['sourcing_city_id'] = $validatedData['sourcing_city_id'];
+          //  $payload['sourcing_blood_bank_name'] = $validatedData['sourcing_blood_bank_name'];
+            $payload['sourcing_city_id'] = $validatedData['sourcing_city_id'];
         }
 
         // Include optional fields if provided
@@ -2535,162 +2536,6 @@ class TourPlannerController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while Update vehicle details.'
-            ], 500);
-        }
-    }
-
-
-    /**
-     * API Endpoint to Cancel a Tour Plan.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function cancelTourPlan(Request $request)
-    {
-        // 1) Validate
-        $request->validate([
-            'tour_plan_id' => 'required|integer',
-        ]);
-
-        // 2) Token & URL
-        $token  = session('api_token');
-        $apiUrl = config('auth_api.tour_plan_cancel_url');
-
-        if (!$token) {
-            return response()->json(['success' => false, 'message' => 'Authentication token missing.'], 401);
-        }
-        if (!$apiUrl) {
-            return response()->json(['success' => false, 'message' => 'Cancel URL not configured.'], 500);
-        }
-
-        try {
-            $postData = ['tour_plan_id' => $request->input('tour_plan_id')];
-            Log::info('Cancel Tour Plan request postData', ['postData' => $postData]);
-
-            // 3) Actually call the API
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$token,
-                'Accept'        => 'application/json',
-            ])->post($apiUrl, $postData);
-
-            // 4) Log the raw HTTP response
-            Log::info('External API Response for Cancel Tour Plan', [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
-
-            if ($response->successful()) {
-                $apiResult = $response->json();
-               
-                // business-rule failure: change code to 200
-                if (! Arr::get($apiResult, 'success')) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => Arr::get($apiResult, 'message', 'Unknown error from API.')
-                    ]);  // <-- NO ,400 here
-                }
-
-                // success!
-                return response()->json([
-                    'success' => true,
-                    'message' => Arr::get($apiResult, 'message', 'Cancelled successfully.')
-                ]);
-            }
-
-            // non-2xx
-            Log::error('Failed to cancel tour plan via external API.', [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
-           // non-2xx from the external API — you might still want this to be 502 or 500
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to cancel tour plan via the external API.'
-            ], 502);
-
-        } catch (\Exception $e) {
-            Log::error('Exception while cancel tour plan via external API.', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while cancelling the tour plan.'
-            ], 500);
-        }
-    }
-
-    
-    /**
-     * API Endpoint to Fetch All DCR ApprovalsCollecting Agents Users Lists.
-     *
-     * @return \Illuminate\Http\JsonResponse
-    */
-    public function getDCRApprovalsCollectingAgents()
-    {
-        // Retrieve the token from the session
-        $token = session()->get('api_token');
-
-        if (!$token) {
-            Log::warning('API token missing in session.');
-            return response()->json([
-                'success' => false,
-                'message' => 'Authentication token missing. Please log in again.'
-            ], 401);
-        }
-
-        // Define the external API URL for fetching entities
-        $apiUrl = config('auth_api.dcr_approvals_collecting_agents_fetch_by_managerId_url');
-
-        if (!$apiUrl) {
-            Log::error('Collecting Agents fetch URL not configured.');
-            return response()->json([
-                'success' => false,
-                'message' => 'Collecting Agents fetch URL is not configured.'
-            ], 500);
-        }
-
-      //  Log::info('Fetching collecting agents from external API.', ['api_url' => $apiUrl]);
-
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'Accept' => 'application/json',
-            ])->get($apiUrl);
-
-            Log::info('External API Response', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-
-            if ($response->successful()) {
-                $apiResponse = $response->json();
-
-                if (Arr::get($apiResponse, 'success')) {
-                    return response()->json([
-                        'success' => true,
-                        'data' => Arr::get($apiResponse, 'data', []),
-                    ]);
-                } else {
-                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
-                    return response()->json([
-                        'success' => false,
-                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
-                    ]);
-                }
-            } else {
-                Log::error('Failed to fetch collecting agents from external API.', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to fetch collecting agents from the external API.',
-                ], $response->status());
-            }
-        } catch (\Exception $e) {
-            Log::error('Exception while fetching collecting agents from external API.', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while fetching collecting agents.',
             ], 500);
         }
     }

@@ -78,10 +78,10 @@
             <div class="mb-3">
               <label class="form-label">Tour Plan Type <span style="color:red">*</span></label>
               <div>
-                <div class="form-check form-check-inline">
+                {{-- <div class="form-check form-check-inline">
                   <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeCollections" value="collections" checked>
                   <label class="form-check-label" for="typeCollections">Collections</label>
-                </div>
+                </div> --}}
                 <div class="form-check form-check-inline">
                   <input class="form-check-input tour-plan-type" type="radio" name="tour_plan_type" id="typeSourcing" value="sourcing" checked>
                   <label class="form-check-label" for="typeSourcing">Sourcing</label>
@@ -254,10 +254,10 @@
               <strong>Quantity:</strong>
               <p id="detailQuantity"></p>
             </div> --}}
-            <div class="col-md-6 mb-3">
+            {{-- <div class="col-md-6 mb-3">
               <strong>Status:</strong>
               <p id="detailStatus"></p>
-            </div>
+            </div> --}}
             <div class="col-md-6 mb-3">
                 <strong>Remarks:</strong>
                 <p id="detailRemarks"></p>
@@ -316,10 +316,6 @@
 
         </div>
         <div class="modal-footer">
-
-          <!-- Cancel Button -->
-          <button type="button" class="btn btn-warning" id="cancelTourPlanButton">Cancel</button>
-
           <!-- DELETE Button -->
           <button type="button" class="btn btn-danger" id="deleteTourPlanButton">Delete</button>
          
@@ -679,10 +675,10 @@
                     }
 
                      // If tp_status is accepted, show a message and return.
-                    // if (currentTPStatus === 'accepted') {
-                    //     Swal.fire('Info', "TP already accepted.", "info");
-                    //     return;
-                    // }
+                    if (currentTPStatus === 'accepted') {
+                        Swal.fire('Info', "TP already accepted.", "info");
+                        return;
+                    }
 
                     // Open the modal and set the selected date
                     $('#tourPlanDate').val(clickedDateString);
@@ -714,13 +710,7 @@
                     // Extract event details from extendedProps
                     var bloodBank = eventObj.extendedProps.blood_bank_name || 'N/A';
                     var collectingAgent = eventObj.extendedProps.collecting_agent_name || 'N/A';
-                 //   var date = eventObj.start ? eventObj.start.toISOString().split('T')[0] : 'N/A';
-                    var date = eventObj.start ? [
-                                            eventObj.start.getFullYear(),
-                                            String(eventObj.start.getMonth() + 1).padStart(2, '0'),
-                                            String(eventObj.start.getDate()).padStart(2, '0')
-                                            ].join('-')
-                                        : 'N/A';
+                    var date = eventObj.start ? eventObj.start.toISOString().split('T')[0] : 'N/A';
                     var quantity = eventObj.extendedProps.quantity || 'N/A';
                     var availableQuantity = eventObj.extendedProps.available_quantity || 'N/A';
                     var remainingQuantity = eventObj.extendedProps.remaining_quantity || 'N/A';
@@ -748,7 +738,7 @@
                     $('#detailQuantity').text(quantity);
                     // $('#detailAvailableQuantity').text(availableQuantity);
                     // $('#detailRemainingQuantity').text(remainingQuantity);
-                    $('#detailStatus').text(status.charAt(0).toUpperCase() + status.slice(1)); // Capitalize first letter
+                    // $('#detailStatus').text(status.charAt(0).toUpperCase() + status.slice(1)); // Capitalize first letter
                     $('#detailRemarks').text(remarks);
                     // $('#detailLatitude').text(latitude);
                     // $('#detailLongitude').text(longitude);
@@ -839,9 +829,7 @@
 
                                     if(event.extendedProps.tour_plan_type === 1) { // Collections
                                         eventColor = '#28a745'; // Green
-                                    } else if(event.extendedProps.tour_plan_type === 2 && (event.extendedProps.status == 'cancel_requested' || event.extendedProps.status == 'cancel_approved')) { // Sourcing
-                                        eventColor = '#FF0000'; // Blue
-                                    }  else if(event.extendedProps.tour_plan_type === 2) { // Sourcing
+                                    } else if(event.extendedProps.tour_plan_type === 2) { // Sourcing
                                         eventColor = '#007bff'; // Blue
                                     } else if(event.extendedProps.tour_plan_type === 3) { // Both
                                         eventColor = '#a569bd'; // Purple 
@@ -1142,44 +1130,14 @@
             });
 
 
-            // **Handle DELETE Tour Plan Button Click**
-            $('#deleteTourPlanButton').on('click', function() {
+             // **Handle DELETE Tour Plan Button Click**
+             $('#deleteTourPlanButton').on('click', function() {
                 var tourPlanId = $('#viewTourPlanModal').data('tourPlanId');
 
                 if (!tourPlanId) {
                     Swal.fire('Error', 'Tour Plan ID is missing.', 'error');
                     return;
                 }
-
-                 // 1. Read the date text (YYYY-MM-DD) from the modal and turn it into a Date object
-                var clickedDateString = $('#detailDate').text().trim();
-                 console.log('clickedDateString:', clickedDateString);
-                const dateStr = new Date(clickedDateString);
-                var clickedDate = dateStr;
-                var currentDate = new Date();
-                currentDate.setHours(0,0,0,0); // Set to midnight to compare dates only
-                clickedDate.setHours(0,0,0,0);
-
-                console.log('currentDate:', currentDate);
-                console.log('clickedDate:', clickedDate);
-
-                // only block if planDate is strictly BEFORE today
-                if (clickedDate < currentDate) {
-                     Swal.fire('Warning', 'You cannot delete the Tour Plan for previous dates !!!', 'warning');
-                    return;
-                }
-
-                console.log('delete currentTPStatus ************', currentTPStatus);
-                console.log('delete currentEditRequest ************', currentEditRequest);
-
-
-                //  If tp_status is accepted, show a message and return.
-                if (currentTPStatus === 'accepted') {
-                    Swal.fire('Info', "Cannot delete accepted Tour Plan.", "info");
-                    return;
-                }
-                    
-                        
 
                 // Show confirmation dialog
                 Swal.fire({
@@ -1397,37 +1355,37 @@
                                 });
 
                                  // If the tour plan has been submitted, ask if the user wants to edit.
-                                // if (status.toLowerCase() === 'submitted' || status.toLowerCase() === 'accepted') {
-                                //     Swal.fire({
-                                //         title: 'Already Submitted/Accepted',
-                                //         text: "You have already submitted this month's tour plan. Do you want to edit?",
-                                //         icon: 'info',
-                                //         showCancelButton: true,
-                                //         confirmButtonText: 'Yes, Edit',
-                                //         cancelButtonText: 'No'
-                                //     }).then((result) => {
-                                //         if(result.isConfirmed) {
-                                //             // Prompt user for the edit request reason
-                                //             Swal.fire({
-                                //                 title: 'Edit Request',
-                                //                 input: 'textarea',
-                                //                 inputPlaceholder: 'Enter edit request reason...',
-                                //                 showCancelButton: true,
-                                //                 inputValidator: (value) => {
-                                //                     if (!value) {
-                                //                         return 'Please enter a reason for editing.';
-                                //                     }
-                                //                 }
-                                //             }).then((result) => {
-                                //                 if (result.isConfirmed) {
-                                //                     var reason = result.value;
-                                //                     // Call the API function to submit the edit request
-                                //                     submitEditRequest(agentId, selectedMonth, reason);
-                                //                 }
-                                //             });
-                                //         }
-                                //     });
-                                // }
+                                if (status.toLowerCase() === 'submitted' || status.toLowerCase() === 'accepted') {
+                                    Swal.fire({
+                                        title: 'Already Submitted/Accepted',
+                                        text: "You have already submitted this month's tour plan. Do you want to edit?",
+                                        icon: 'info',
+                                        showCancelButton: true,
+                                        confirmButtonText: 'Yes, Edit',
+                                        cancelButtonText: 'No'
+                                    }).then((result) => {
+                                        if(result.isConfirmed) {
+                                            // Prompt user for the edit request reason
+                                            Swal.fire({
+                                                title: 'Edit Request',
+                                                input: 'textarea',
+                                                inputPlaceholder: 'Enter edit request reason...',
+                                                showCancelButton: true,
+                                                inputValidator: (value) => {
+                                                    if (!value) {
+                                                        return 'Please enter a reason for editing.';
+                                                    }
+                                                }
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    var reason = result.value;
+                                                    // Call the API function to submit the edit request
+                                                    submitEditRequest(agentId, selectedMonth, reason);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
                             } else {
                                // Swal.fire('Error', response.message, 'error');
                                // Update the TP Status display element
@@ -1598,73 +1556,6 @@
                     }
                 });
             });
-
-
-             // **Handle CANCEL Tour Plan Button Click**
-            $('#cancelTourPlanButton').on('click', function() {
-                var tourPlanId = $('#viewTourPlanModal').data('tourPlanId');
-
-                if (!tourPlanId) {
-                    Swal.fire('Error', 'Tour Plan ID is missing.', 'error');
-                    return;
-                }
-
-                //  If tp_status is accepted, show a message and return.
-                if (currentTPStatus === 'accepted' || currentTPStatus === 'rejected') {
-                    // Show confirmation dialog
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "Are you sure you want to cancel this Tour Plan?",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, cancel it!'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Send AJAX DELETE request
-                            $.ajax({
-                                url: "{{ route('tourplanner.cancelTourPlan') }}",
-                                type: 'DELETE',
-                                data: {
-                                    tour_plan_id: tourPlanId,
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                beforeSend: function() {
-                                    Swal.fire({
-                                        title: 'Request Cancel...',
-                                        allowOutsideClick: false,
-                                        didOpen: () => {
-                                            Swal.showLoading()
-                                        }
-                                    });
-                                },
-                                success: function(response) {
-                                    if(response.success) {
-                                        
-                                        // Close the modal
-                                        $('#viewTourPlanModal').modal('hide');
-                                        // Show success message
-                                        Swal.fire('Cancel Requested!', response.message, 'success');
-                                    } else {
-                                        Swal.fire('Error', response.message, 'error');
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error("Error cancelling the tour plan:", error);
-                                    Swal.fire('Error', 'An error occurred while cancelling the tour plan.', 'error');
-                                }
-                            });
-                        }
-                    });
-                }
-                else {
-                    Swal.fire('Info', "Cannot cancel the Pending/Submitted Tour Plan.", "info");
-                    return;
-                }
-               
-            });
-
 
         });
     </script>

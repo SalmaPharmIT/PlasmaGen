@@ -126,52 +126,15 @@
                       <input type="number" class="form-control" id="totalPrice" name="totalPrice" step="0.01" value="0" readonly>
                     </div>
 
-                    <!-- Remarks -->
-                    <div class="mb-3">
-                        <label for="remarks" class="form-label">Remarks</label>
-                        <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
-                        <div class="invalid-feedback">
-                        Please enter remarks.
-                        </div>
-                    </div>
-
-                    {{-- Bills Available toggle --}}
-                    <div class="col-md-12 mb-3">
-                    {{-- hidden fallback when unchecked --}}
-                    <input type="hidden" name="bill_available" value="0">
-                    <div class="form-check">
-                        <input 
-                        class="form-check-input" 
-                        type="checkbox" 
-                        id="billsAvailable" 
-                        name="bill_available"     {{-- ← name added! --}}
-                        value="1"                 {{-- only posts when checked --}}
-                        >
-                        <label class="form-check-label" for="billsAvailable">
-                        Bills Available?
-                        </label>
-                    </div>
-                    </div>
-
                     <!-- Attach Documents -->
-                    {{-- <div class="col-md-12">
+                    <div class="col-md-12">
                       <label for="documents" class="form-label">Attach Documents (If any)</label>
                       <input type="file" class="form-control" id="documents" name="documents[]" multiple>
                       <small class="form-text text-muted">You can upload multiple files (DOC, PDF, Images, etc.).</small>
-                    </div> --}}
-
-                    {{-- Container where per-bill‐type selectors & file inputs will go --}}
-                    <div class="row mb-3" id="billsContainer" style="display:none">
-                        <div class="col-12">
-                            <button type="button" id="addBillBtn" class="btn btn-sm btn-outline-primary mb-2">
-                            + Add Bill
-                            </button>
-                            <div id="billRows"></div>
-                        </div>
                     </div>
 
                      <!-- Existing Documents -->
-                  {{-- @if(!empty($entity['documents']) && is_array($entity['documents']))
+                  @if(!empty($entity['documents']) && is_array($entity['documents']))
                   <div class="col-md-12 mt-3">
                       <h6>Existing Documents</h6>
                       <div id="existing-document-preview" class="d-flex flex-wrap">
@@ -220,15 +183,15 @@
                           @endforeach
                       </div>
                   </div>
-                  @endif --}}
+                  @endif
 
                   <!-- Preview Section for New Documents -->
-                  {{-- <div class="col-md-12">
+                  <div class="col-md-12">
                     <h6>New Documents Preview</h6>
                     <div id="new-document-preview" class="d-flex flex-wrap">
                         <!-- Previews will be appended here -->
                     </div>
-                  </div> --}}
+                  </div>
 
                   <!-- Created By (Hidden or Pre-filled) -->
                   <input type="hidden" name="created_by" value="{{ Auth::id() }}">
@@ -237,9 +200,7 @@
                   <input type="hidden" name="modified_by" value="{{ Auth::id() }}">
 
                   <!-- Modified By (Hidden or Pre-filled) -->
-                  <input type="hidden" name="tour_plan_id" id="tour_plan_id" value="{{ request()->query('dcr_id') }}">
-
-                   <input type="hidden" name="visit_date_temp" id="visit_date_temp" value="{{ request()->query('date') }}">
+                  <input type="hidden" name="tour_plan_id" id="tour_plan_id" value="">
 
                     <div class="text-end">
                       <button type="reset" class="btn btn-secondary">Reset</button>
@@ -262,35 +223,26 @@
               <div class="col-12">
                   <h5 class="card-title">View Expenses</h5>
 
-                  <div class="table-responsive">
-                    <table id="expensesTable" class="table table-bordered table-striped">
-                        <thead>
-                        <tr>
-                            <th>SI. No.</th> <!-- New column for serial number -->
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Food</th>
-                            <th>Conveyance</th>
-                            <th>Tel/Fax</th>
-                            <th>Lodging</th>
-                            <th>Sundry</th>
-                            <th>Total Price</th>
-                            <th>Remarks</th>
-                            {{-- <th>Attachments</th> <!-- New column for attachments --> --}}
-                              {{-- New attachment columns --}}
-                            <th>Food Attachments</th>
-                            <th>Conveyance Attachments</th>
-                            <th>Tel/Fax Attachments</th>
-                            <th>Lodging Attachments</th>
-                            <th>Sundry Attachments</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody id="expensesList">
-                        <!-- Expenses will be dynamically added here -->
-                        </tbody>
-                    </table>
-                  </div>
+                  <table id="expensesTable" class="table table-bordered table-striped">
+                    <thead>
+                      <tr>
+                        <th>SI. No.</th> <!-- New column for serial number -->
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Food</th>
+                        <th>Conveyance</th>
+                        <th>Tel/Fax</th>
+                        <th>Lodging</th>
+                        <th>Sundry</th>
+                        <th>Total Price</th>
+                        <th>Attachments</th> <!-- New column for attachments -->
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="expensesList">
+                      <!-- Expenses will be dynamically added here -->
+                    </tbody>
+                  </table>
         
               </div>
             </div>
@@ -621,13 +573,11 @@
 
 <script>
     // Declare a global variable to store the selected TP ID
-    let selectedGlobalTPId = $('#tour_plan_id').val();  // This value should be assigned dynamically
+    let selectedGlobalTPId = "{{ $tpId }}";  // This value should be assigned dynamically
 
     $(document).ready(function() {
-        // const selectedDate = "{{ $visitDate }}";  // Use the correct variable passed from controller
-        const selectedTPId = $('#tour_plan_id').val();  // This can remain as is
-         const selectedDate = $('#visit_date_temp').val();
-        
+        const selectedDate = "{{ $visitDate }}";  // Use the correct variable passed from controller
+        const selectedTPId = "{{ $tpId }}";  // This can remain as is
 
         // Get the server's current date in 'YYYY-MM-DD' format
         const currentDate = "{{ \Carbon\Carbon::now()->toDateString() }}";
@@ -638,16 +588,11 @@
         console.log('selectedTPId: ', selectedTPId);
         console.log('currentDate: '+currentDate);
 
-        $('#tour_plan_id').val(selectedTPId); // Set the tour plan ID field
-        $('#visitDate').text(selectedDate);
-
          // Initialize DataTable with equal column width
           $('#expensesTable').DataTable({
-                responsive: true,
-                autoWidth: false,
-                "columnDefs": [
-                    { "width": "10%", "targets": "_all" } // Equal width for all columns
-                ]
+              "columnDefs": [
+                  { "width": "10%", "targets": "_all" } // Equal width for all columns
+              ]
           });
 
          // Construct the URL correctly for the API
@@ -655,7 +600,7 @@
         var apiUrl = "{{ route('expenses.fetchVisits', ['date' => 'PLACEHOLDER']) }}".replace('PLACEHOLDER', selectedDate);
         
         // Replace :date with selectedDate
-        const finalUrl = apiUrl + `&dcr_id=${selectedTPId}`;
+        const finalUrl = apiUrl + `&tp_id=${selectedTPId}`;
 
         console.log('finalUrl:', finalUrl);  // Log to see if the URL is correct
 
@@ -673,27 +618,26 @@
                         // Process each event (if multiple)
                         response.events.forEach(function(event) {
                             let bloodBankNames = '';
-                            var bankNameDisplay = event.visit_to ? event.visit_to : '-';
                             
                             // Check tour_plan_type
-                            // if (event.extendedProps.tour_plan_type == 2) {
-                            //     // Concatenate blood bank names from the tour_plan_visits array
-                            //     if (event.extendedProps.tour_plan_visits && event.extendedProps.tour_plan_visits.length > 0) {
-                            //         const names = event.extendedProps.tour_plan_visits.map(function(visit) {
-                            //             return visit.sourcing_blood_bank_name;
-                            //         });
-                            //         bloodBankNames = names.join(', ');
-                            //     }
-                            // } else if (event.extendedProps.tour_plan_type == 1 || event.extendedProps.tour_plan_type == 3) {
-                            //     // Use the title for tour_plan_type 1
-                            //     bloodBankNames = event.title;
-                            // }
+                            if (event.extendedProps.tour_plan_type == 2) {
+                                // Concatenate blood bank names from the tour_plan_visits array
+                                if (event.extendedProps.tour_plan_visits && event.extendedProps.tour_plan_visits.length > 0) {
+                                    const names = event.extendedProps.tour_plan_visits.map(function(visit) {
+                                        return visit.sourcing_blood_bank_name;
+                                    });
+                                    bloodBankNames = names.join(', ');
+                                }
+                            } else if (event.extendedProps.tour_plan_type == 1) {
+                                // Use the title for tour_plan_type 1
+                                bloodBankNames = event.title;
+                            }
                             
                             // Update the UI with the blood bank name and visit date
-                            $('#bloodBankName').text(bankNameDisplay);
+                            $('#bloodBankName').text(bloodBankNames);
+                            $('#visitDate').text(event.visit_date);
                             $('#date').val(event.visit_date); // Set the form date field with the visit date
                             $('#tour_plan_id').val(selectedTPId); // Set the tour plan ID field
-                            $('#visitDate').val(selectedDate);
                             
                         });
                     } else {
@@ -760,117 +704,117 @@
    let allSelectedFiles = [];  // Variable to store selected files
 
    // Handle existing document deletion
-//    if (existingDocumentPreview) {
-//        existingDocumentPreview.addEventListener('click', function(e) {
-//            if (e.target && e.target.classList.contains('delete-existing-doc')) {
-//                const docPath = e.target.getAttribute('data-doc');
-//                const hiddenInput = document.createElement('input');
-//                hiddenInput.type = 'hidden';
-//                hiddenInput.name = 'documents_to_delete[]';
-//                hiddenInput.value = docPath;
-//                documentsToDeleteContainer.appendChild(hiddenInput);
-//                e.target.parentElement.remove();
-//            }
-//        });
-//    }
+   if (existingDocumentPreview) {
+       existingDocumentPreview.addEventListener('click', function(e) {
+           if (e.target && e.target.classList.contains('delete-existing-doc')) {
+               const docPath = e.target.getAttribute('data-doc');
+               const hiddenInput = document.createElement('input');
+               hiddenInput.type = 'hidden';
+               hiddenInput.name = 'documents_to_delete[]';
+               hiddenInput.value = docPath;
+               documentsToDeleteContainer.appendChild(hiddenInput);
+               e.target.parentElement.remove();
+           }
+       });
+   }
 
         // Handle new document selection and preview
-        // documentsInput.addEventListener('change', function(e) {
-        //     const files = Array.from(e.target.files);
-        //     let filesProcessed = 0;
+        documentsInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            let filesProcessed = 0;
 
-        //     if (files.length === 0) {
-        //         return;
-        //     }
+            if (files.length === 0) {
+                return;
+            }
 
-        //     allSelectedFiles = allSelectedFiles.concat(files);
-        //     console.log('allSelectedFiles', allSelectedFiles.length);
+            allSelectedFiles = allSelectedFiles.concat(files);
+            console.log('allSelectedFiles', allSelectedFiles.length);
 
-        //     files.forEach(file => {
-        //         const fileReader = new FileReader();
+            files.forEach(file => {
+                const fileReader = new FileReader();
 
-        //         fileReader.onload = function(e) {
-        //             const fileURL = e.target.result;
-        //             let fileType = file.type;
-        //             const fileName = file.name;
-        //             const fileExtension = fileName.split('.').pop().toLowerCase();
+                fileReader.onload = function(e) {
+                    const fileURL = e.target.result;
+                    let fileType = file.type;
+                    const fileName = file.name;
+                    const fileExtension = fileName.split('.').pop().toLowerCase();
 
-        //             if (!fileType) {
-        //                 switch(fileExtension) {
-        //                     case 'pdf':
-        //                         fileType = 'application/pdf';
-        //                         break;
-        //                     case 'doc':
-        //                     case 'docx':
-        //                         fileType = 'application/msword';
-        //                         break;
-        //                     case 'xls':
-        //                     case 'xlsx':
-        //                         fileType = 'application/vnd.ms-excel';
-        //                         break;
-        //                     case 'csv':
-        //                         fileType = 'text/csv';
-        //                         break;
-        //                     case 'txt':
-        //                         fileType = 'text/plain';
-        //                         break;
-        //                     default:
-        //                         fileType = 'application/octet-stream';
-        //                 }
-        //             }
+                    if (!fileType) {
+                        switch(fileExtension) {
+                            case 'pdf':
+                                fileType = 'application/pdf';
+                                break;
+                            case 'doc':
+                            case 'docx':
+                                fileType = 'application/msword';
+                                break;
+                            case 'xls':
+                            case 'xlsx':
+                                fileType = 'application/vnd.ms-excel';
+                                break;
+                            case 'csv':
+                                fileType = 'text/csv';
+                                break;
+                            case 'txt':
+                                fileType = 'text/plain';
+                                break;
+                            default:
+                                fileType = 'application/octet-stream';
+                        }
+                    }
 
-        //             const previewItem = document.createElement('div');
-        //             previewItem.classList.add('preview-item');
+                    const previewItem = document.createElement('div');
+                    previewItem.classList.add('preview-item');
 
-        //             const deleteBtn = document.createElement('button');
-        //             deleteBtn.classList.add('delete-btn');
-        //             deleteBtn.innerHTML = '&times;';
-        //             deleteBtn.title = 'Remove this file';
-        //             deleteBtn.addEventListener('click', function() {
-        //                 newDocumentPreview.removeChild(previewItem);
-        //                 removeFileFromInput(file);
-        //             });
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.classList.add('delete-btn');
+                    deleteBtn.innerHTML = '&times;';
+                    deleteBtn.title = 'Remove this file';
+                    deleteBtn.addEventListener('click', function() {
+                        newDocumentPreview.removeChild(previewItem);
+                        removeFileFromInput(file);
+                    });
 
-        //             previewItem.appendChild(deleteBtn);
+                    previewItem.appendChild(deleteBtn);
 
-        //             if (fileType.startsWith('image/')) {
-        //                 const img = document.createElement('img');
-        //                 img.src = fileURL;
-        //                 img.alt = file.name;
-        //                 previewItem.appendChild(img);
-        //             } else {
-        //                 const icon = document.createElement('i');
-        //                 icon.classList.add('bi', ...getIconClass(fileExtension));
-        //                 icon.classList.add('file-icon');
-        //                 previewItem.appendChild(icon);
+                    if (fileType.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = fileURL;
+                        img.alt = file.name;
+                        previewItem.appendChild(img);
+                    } else {
+                        const icon = document.createElement('i');
+                        icon.classList.add('bi', ...getIconClass(fileExtension));
+                        icon.classList.add('file-icon');
+                        previewItem.appendChild(icon);
 
-        //                 const fileNameSpan = document.createElement('span');
-        //                 fileNameSpan.classList.add('file-name');
-        //                 fileNameSpan.textContent = file.name;
-        //                 previewItem.appendChild(fileNameSpan);
-        //             }
+                        const fileNameSpan = document.createElement('span');
+                        fileNameSpan.classList.add('file-name');
+                        fileNameSpan.textContent = file.name;
+                        previewItem.appendChild(fileNameSpan);
+                    }
 
-        //             newDocumentPreview.appendChild(previewItem);
+                    newDocumentPreview.appendChild(previewItem);
 
-        //             filesProcessed++;
-        //             if (filesProcessed === files.length) {
-        //                 // Optionally clear the input value if needed
-        //                 // documentsInput.value = '';
-        //             }
-        //         };
+                    filesProcessed++;
+                    if (filesProcessed === files.length) {
+                        // Optionally clear the input value if needed
+                        // documentsInput.value = '';
+                    }
+                };
 
-        //         fileReader.onerror = function() {
-        //             console.error("Error reading file: " + file.name);
-        //             filesProcessed++;
-        //             if (filesProcessed === files.length) {
-        //                 // Optionally clear the input value if needed
-        //                 // documentsInput.value = '';
-        //             }
-        //         };
+                fileReader.onerror = function() {
+                    console.error("Error reading file: " + file.name);
+                    filesProcessed++;
+                    if (filesProcessed === files.length) {
+                        // Optionally clear the input value if needed
+                        // documentsInput.value = '';
+                    }
+                };
 
-        //         fileReader.readAsDataURL(file);
-        //     });
-        // });
+                fileReader.readAsDataURL(file);
+            });
+        });
 
         // Function to get Bootstrap Icon class based on file extension
         function getIconClass(fileExtension) {
@@ -913,18 +857,6 @@
             console.log('form inside');
             form.addEventListener('submit', function(event) {
                 console.log('form submit triggered');  // This should now be logged
-
-                // if no files selected, block submit and show swal
-                if (!documentsInput.files.length) {
-                event.preventDefault();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No attachment',
-                    text: 'Please attach at least one document before submitting.'
-                });
-                return;
-                }
-
                 event.preventDefault();
 
                 // Clear the existing files in the documents input before appending new files
@@ -958,67 +890,31 @@
                           let expensesHTML = '';
                           let serialNumber = 1; // Initialize serial number
 
-                        
                           expenses.forEach(function(expense) {
-                            // 1) prepare five buckets for each attachment‐type
-                            const previews = {
-                                1: '', // Food
-                                2: '', // Conveyance
-                                3: '', // Tel/Fax
-                                4: '', // Lodging
-                                5: ''  // Sundry
-                            };
+                              // Prepare document previews
+                              let documentPreviews = '';
+                              expense.documents.forEach(function(doc) {
+                                  const docUrl = "{{ config('auth_api.base_image_url') }}" + doc.attachments;
 
-
-                            //   // Prepare document previews
-                            //   let documentPreviews = '';
-                            //   expense.documents.forEach(function(doc) {
-                            //       const docUrl = "{{ config('auth_api.base_image_url') }}" + doc.attachments;
-
-                            //       // Show preview for image files and a download link for others
-                            //       if (doc.attachments.match(/\.(jpg|jpeg|png|gif|svg)$/)) {
-                            //           documentPreviews += `
-                            //               <div class="preview-item">
-                            //                   <a href="${docUrl}" target="_blank">
-                            //                       <img src="${docUrl}" alt="Document Preview" class="img-thumbnail" style="width: 50px; height: 50px;">
-                            //                   </a>
-                            //               </div>
-                            //           `;
-                            //       } else {
-                            //           documentPreviews += `
-                            //               <div class="preview-item">
-                            //                   <a href="${docUrl}" target="_blank">
-                            //                       <i class="bi bi-file-earmark-text-fill" style="font-size: 2rem;"></i>
-                            //                   </a>
-                            //               </div>
-                            //           `;
-                            //       }
-                            //   });
-
-                            // 2) fill them
-                            expense.documents.forEach(function(doc) {
-                                const url = "{{ config('auth_api.base_image_url') }}" + doc.attachments;
-                                let html = '';
-
-                                if (/\.(jpe?g|png|gif|svg)$/i.test(doc.attachments)) {
-                                html = `
-                                    <div class="preview-item">
-                                    <a href="${url}" target="_blank">
-                                        <img src="${url}" alt="Attachment" class="img-thumbnail" style="width:50px;height:50px;">
-                                    </a>
-                                    </div>`;
-                                } else {
-                                html = `
-                                    <div class="preview-item">
-                                    <a href="${url}" target="_blank">
-                                        <i class="bi bi-file-earmark-text-fill" style="font-size:2rem;"></i>
-                                    </a>
-                                    </div>`;
-                                }
-
-                                // append into correct bucket
-                                previews[doc.type] += html;
-                            });
+                                  // Show preview for image files and a download link for others
+                                  if (doc.attachments.match(/\.(jpg|jpeg|png|gif|svg)$/)) {
+                                      documentPreviews += `
+                                          <div class="preview-item">
+                                              <a href="${docUrl}" target="_blank">
+                                                  <img src="${docUrl}" alt="Document Preview" class="img-thumbnail" style="width: 50px; height: 50px;">
+                                              </a>
+                                          </div>
+                                      `;
+                                  } else {
+                                      documentPreviews += `
+                                          <div class="preview-item">
+                                              <a href="${docUrl}" target="_blank">
+                                                  <i class="bi bi-file-earmark-text-fill" style="font-size: 2rem;"></i>
+                                              </a>
+                                          </div>
+                                      `;
+                                  }
+                              });
 
                               expensesHTML += `
                                   <tr>
@@ -1031,12 +927,9 @@
                                       <td>${expense.lodging}</td>
                                       <td>${expense.sundry}</td>
                                       <td>${expense.total_price}</td>
-                                      <td>${expense.remarks}</td>
-                                      <td>${previews[1] || '-'}</td>
-                                      <td>${previews[2] || '-'}</td>
-                                        <td>${previews[3] || '-'}</td>
-                                        <td>${previews[4] || '-'}</td>
-                                        <td>${previews[5] || '-'}</td>
+                                      <td>
+                                          ${documentPreviews || '-'}
+                                      </td>
                                        <td>
                                           <button type="button" class="btn btn-danger btn-sm delete-expense" data-expense-id="${expense.id}">
                                               <i class="bi bi-trash"></i> <!-- Trash icon for delete -->
@@ -1107,96 +1000,4 @@
         }
 </script>
 
-<script>
-$(function(){
-  const billTypes = [
-    { id:1, label:'Food',       name:'food_attach[]' },
-    { id:2, label:'Conveyance', name:'conveyance_attach[]' },
-    { id:3, label:'Tel/Fax',    name:'telfax_attach[]' },
-    { id:4, label:'Lodging',    name:'lodging_attach[]' },
-    { id:5, label:'Sundry',     name:'sundry_attach[]' },
-  ];
-
-  // Show/hide billsContainer
-  $('#billsAvailable').change(function(){
-    $('#billsContainer')[this.checked ? 'slideDown':'slideUp']();
-    if(!this.checked) $('#billRows').empty();
-  });
-
-  // Add a new bill row
-  $('#addBillBtn').click(function(){
-    const i = $('#billRows .bill-row').length;
-    const $row = $(`
-      <div class="bill-row row g-2 align-items-end mb-2">
-        <div class="col-auto">
-          <label><strong>Type</strong></label>
-          <select class="form-select bill-type">
-            <option value="">Select...</option>
-            ${billTypes.map(b=>`<option value="${b.id}" data-name="${b.name}">${b.label}</option>`).join('')}
-          </select>
-        </div>
-        <div class="col-auto file-col" style="display:none">
-          <label><strong>Attachments</strong></label>
-          <input type="file" class="form-control bill-file" multiple>
-        </div>
-        <div class="col-auto">
-          <button type="button" class="btn btn-danger remove-bill">&times;</button>
-        </div>
-        <div class="col-12 bill-preview"></div>
-      </div>
-    `);
-    $('#billRows').append($row);
-  });
-
-  // Delegate: when user picks a type, reveal file input & set its name
-  $('#billRows')
-    .on('change','.bill-type',function(){
-      const $r = $(this).closest('.bill-row');
-      const name = $('option:selected',this).data('name');
-      $r.find('.bill-file')
-        .attr('name', name)
-        .closest('.file-col').show();
-      $r.find('.bill-preview').empty();
-    })
-    // on file select: preview and label
-    .on('change', '.bill-file', function() {
-        const inputEl = this;
-        const $row = $(inputEl).closest('.bill-row');
-        const $preview = $row.find('.bill-preview');
-        // Create or reuse a DataTransfer to store ALL files for this input
-        if (!inputEl._dt) {
-            inputEl._dt = new DataTransfer();
-        }
-        // Add newly selected files into our DataTransfer
-        Array.from(inputEl.files).forEach(f => {
-            inputEl._dt.items.add(f);
-        });
-        // Update the input's files list to this cumulative list
-        inputEl.files = inputEl._dt.files;
-
-        // Rebuild the preview from the full file list
-        $preview.empty();
-        Array.from(inputEl.files).forEach(f => {
-            const reader = new FileReader();
-            reader.onload = e => {
-            const isImg = f.type.startsWith('image/');
-            const thumb = isImg
-                ? `<img src="${e.target.result}" style="height:60px;margin-right:4px">`
-                : `<i class="bi bi-file-earmark-fill" style="font-size:2rem;margin-right:4px"></i>`;
-            const label = $('option:selected', $row.find('.bill-type')).text();
-            $preview.append(`
-                <div class="d-inline-block text-center me-2">
-                ${thumb}
-                <div style="font-size:.75rem">${label}</div>
-                </div>`);
-            };
-            reader.readAsDataURL(f);
-        });
-        })
-    // remove row
-    .on('click','.remove-bill',function(){
-      $(this).closest('.bill-row').remove();
-    });
-});
-</script>
 @endpush

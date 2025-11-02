@@ -251,3 +251,38 @@ Data: {
     ]
 }
 
+2025-10-18 07:43:56
+URI: /factory/report/plasma-rejection
+Method: POST
+Data: {
+    "_token": "b1dNKh8tvmsWgNaWaQf3qpZFLKpO4oZDPZRafB2N",
+    "debug_token": "1760773394",
+    "ar_number": "AR\/RM10001\/0020\/25\/0001",
+    "quality_rejected_list": "1",
+    "donor_id": [
+        "MG2507021388",
+        "250702136001",
+        "250702136002"
+    ],
+    "donation_date": [
+        null,
+        null,
+        null
+    ],
+    "blood_group": [
+        "A+",
+        null,
+        null
+    ],
+    "bag_volume": [
+        null,
+        null,
+        null
+    ],
+    "remarks": [
+        "Quality Rejected",
+        "Quality Rejected",
+        "Quality Rejected"
+    ]
+}
+

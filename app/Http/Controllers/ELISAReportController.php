@@ -9,6 +9,17 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\ElisaTestReport;
 use Carbon\Carbon;
 
+
+/**
+ * ELISA Report Controller
+ *
+ * IMPORTANT: This controller processes ELISA test reports from PDF files.
+ * The reactive/non-reactive classification is determined by the Result column
+ * from the PDF document, NOT by calculating from OD value thresholds.
+ *
+ * The Result column from the PDF is considered the authoritative source.
+ * If the Result column is empty or unclear, the system falls back to OD value classification.
+ */
 class ELISAReportController extends Controller
 {
     public function upload()
@@ -50,6 +61,85 @@ class ELISAReportController extends Controller
         if ($value < $low) return 'nonreactive';
         if ($value < $high) return 'borderline';
         return 'reactive';
+    }
+
+    /**
+     * Map PDF Result column text to category
+     * Supports various formats: NEG, POS, Negative, Positive, Non-Reactive, Reactive, Borderline, etc.
+     * Also handles special formats like: ***** REACTIVE, [OD> 3.50] REACTIVE, etc.
+     * Falls back to OD value classification if result text is unclear
+     */
+    private function mapPdfResultToCategory($pdfResult, $testType, $odValue) {
+        // Clean up the result by removing special characters and extra spaces
+        // Remove asterisks, brackets, and other noise characters
+        $cleanResult = preg_replace('/[\*\[\]<>]/', ' ', $pdfResult);
+        $cleanResult = preg_replace('/\s+/', ' ', $cleanResult); // Collapse multiple spaces
+        $result = strtolower(trim($cleanResult));
+
+        // Check for blank/empty values
+        if (empty($result) || $result === '-' || $result === 'n/a') {
+            // Fallback to OD value classification
+            \Log::info('PDF Result is empty, using OD value classification', [
+                'test_type' => $testType,
+                'od_value' => $odValue
+            ]);
+            return $this->classifyReading($testType, $odValue);
+        }
+
+        // Map various result formats to categories
+        // Non-Reactive patterns (check first to avoid false positives)
+        // Also handles truncated formats like "NE" (from "NEG")
+        if (preg_match('/\b(neg|ne|negative|non[-\s]?reactive|nr)\b/i', $result)) {
+            \Log::debug('PDF Result mapped to nonreactive', [
+                'original_result' => $pdfResult,
+                'cleaned_result' => $result,
+                'od_value' => $odValue
+            ]);
+            return 'nonreactive';
+        }
+
+        // Reactive patterns
+        if (preg_match('/\b(pos|positive|reactive|r)\b/i', $result)) {
+            // Make sure it's not "Non-Reactive" being caught by "Reactive"
+            if (!preg_match('/\b(non[-\s]?reactive|nr)\b/i', $result)) {
+                \Log::debug('PDF Result mapped to reactive', [
+                    'original_result' => $pdfResult,
+                    'cleaned_result' => $result,
+                    'od_value' => $odValue
+                ]);
+                return 'reactive';
+            }
+        }
+
+        // Borderline patterns
+        if (preg_match('/\b(borderline|equivocal|indeterminate|bl)\b/i', $result)) {
+            \Log::debug('PDF Result mapped to borderline', [
+                'original_result' => $pdfResult,
+                'cleaned_result' => $result,
+                'od_value' => $odValue
+            ]);
+            return 'borderline';
+        }
+
+        // Invalid patterns
+        if (preg_match('/\b(invalid|error|fail)\b/i', $result)) {
+            \Log::warning('PDF Result indicates invalid test', [
+                'original_result' => $pdfResult,
+                'cleaned_result' => $result,
+                'od_value' => $odValue
+            ]);
+            return 'invalid';
+        }
+
+        // If no pattern matched, fallback to OD value classification
+        \Log::warning('PDF Result not recognized, falling back to OD classification', [
+            'original_result' => $pdfResult,
+            'cleaned_result' => $result,
+            'test_type' => $testType,
+            'od_value' => $odValue
+        ]);
+
+        return $this->classifyReading($testType, $odValue);
     }
 
     private function getCutoffs($testType) {
@@ -199,11 +289,18 @@ class ELISAReportController extends Controller
 
     /**
      * Parse PDF file using Python script
+     *
+     * NOTE: This method uses the Result column from the PDF document to determine
+     * reactive/non-reactive status, NOT the OD value thresholds.
+     * The Result column from the PDF is considered the authoritative source.
+     *
+     * If the Result column is empty or unclear, it will fallback to OD value classification.
      */
     private function parseResFileWithPython($filePath, $testType) {
         try {
             // Use Python script to parse PDF file
             $pythonExec = env('PYTHON_PATH', 'C:\\Users\\salma\\AppData\\Local\\Programs\\Python\\Python313\\python.exe');
+            // $pythonExec = env('PYTHON_PATH', 'F:\\PythonCDrive\\python.exe');
             $script = public_path('parse_res.py');
             $cmd = $this->quoteWin($pythonExec)
                    . ' ' . $this->quoteWin($script)
@@ -246,8 +343,9 @@ class ELISAReportController extends Controller
                 // Generate a sequence ID from patient ID or index
                 $seqId = !empty($patientId) ? $patientId : "MP" . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
 
-                // Classify the reading
-                $category = $this->classifyReading($testType, $odValue);
+                // Get category from PDF Result column instead of calculating from OD value
+                $pdfResult = trim($sample['Result'] ?? '');
+                $category = $this->mapPdfResultToCategory($pdfResult, $testType, $odValue);
 
                 // Update summary counts
                 if ($category !== 'blank') {
@@ -261,7 +359,7 @@ class ELISAReportController extends Controller
                     'sequence_id' => $seqId,
                     'value' => $odValue,
                     'category' => $category,
-                    'Result' => $sample['Result'] ?? ucfirst($category)
+                    'Result' => $pdfResult
                 ];
             }
 
@@ -376,9 +474,18 @@ class ELISAReportController extends Controller
                     ], 422);
                 }
 
-                // Create a unique filename for the CSV
-                $uniqueFilename = time() . '_' . uniqid() . '_imported.csv';
-                $csvPath = storage_path('app/public/reports/') . $uniqueFilename;
+                // Create a unique filename for the CSV in date-based folder
+                $dateFolder = date('Y-m-d');
+                $timestamp = date('His');
+                $csvFilename = $timestamp . '_imported.csv';
+
+                // Create directory if it doesn't exist
+                $folderPath = storage_path('app/public/elisa_reports/' . $dateFolder);
+                if (!file_exists($folderPath)) {
+                    mkdir($folderPath, 0755, true);
+                }
+
+                $csvPath = $folderPath . '/' . $csvFilename;
                 $csvFile = fopen($csvPath, 'w');
 
                 if ($csvFile === false) {
@@ -402,7 +509,7 @@ class ELISAReportController extends Controller
                 fclose($csvFile);
 
                 // Add file path to the result
-                $parsedData['file_path'] = Storage::url('reports/' . $uniqueFilename);
+                $parsedData['file_path'] = Storage::url('elisa_reports/' . $dateFolder . '/' . $csvFilename);
 
                 return response()->json([
                     'success' => true,
@@ -474,11 +581,13 @@ class ELISAReportController extends Controller
                     $originalName = $file->getClientOriginalName();
                     $extension = strtolower($file->getClientOriginalExtension());
 
-                    // Generate a unique filename
-                    $uniqueFilename = time() . '_' . uniqid() . '_' . $originalName;
+                    // Create date-based subfolder and save with original filename
+                    $dateFolder = date('Y-m-d');
+                    $timestamp = date('His'); // HourMinuteSecond for uniqueness
+                    $filename = $timestamp . '_' . $originalName;
 
-                    // Store the file
-                    $path = $file->storeAs('reports', $uniqueFilename, 'public');
+                    // Store the file in date subfolder
+                    $path = $file->storeAs('elisa_reports/' . $dateFolder, $filename, 'public');
                     $fullPath = storage_path('app/public/' . $path);
 
                     if ($extension === 'pdf') {
@@ -518,8 +627,16 @@ class ELISAReportController extends Controller
                             // Get the parsed data (the structure is different from rep.php)
                             $parsedData = $pythonResult;
 
-                            // Create CSV file for readings
-                            $csvPath = storage_path('app/public/reports/') . pathinfo($uniqueFilename, PATHINFO_FILENAME) . '.csv';
+                            // Create CSV file for readings in the same date folder
+                            $csvFilename = pathinfo($filename, PATHINFO_FILENAME) . '.csv';
+
+                            // Ensure directory exists
+                            $folderPath = storage_path('app/public/elisa_reports/' . $dateFolder);
+                            if (!file_exists($folderPath)) {
+                                mkdir($folderPath, 0755, true);
+                            }
+
+                            $csvPath = $folderPath . '/' . $csvFilename;
                             $csvFile = fopen($csvPath, 'w');
 
                             if ($csvFile === false) {
@@ -543,7 +660,7 @@ class ELISAReportController extends Controller
                             fclose($csvFile);
 
                             // Add file path to the result
-                            $parsedData['file_path'] = Storage::url('reports/' . pathinfo($uniqueFilename, PATHINFO_FILENAME) . '.csv');
+                            $parsedData['file_path'] = Storage::url('elisa_reports/' . $dateFolder . '/' . $csvFilename);
 
                             // Add test type to the result if not already present
                             if (!isset($parsedData['test_type'])) {

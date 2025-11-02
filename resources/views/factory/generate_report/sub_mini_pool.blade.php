@@ -1,115 +1,68 @@
 @extends('include.dashboardLayout')
 
 @push('styles')
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .card {
         margin: 0.5rem;
     }
     .form-control-sm, .form-select-sm {
-        height: 22px;
-        min-height: 22px;
-        padding: 0.1rem 0.2rem;
-        font-size: 0.8rem;
-        width: 100%;
+        height: 38px;
+        min-height: 38px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
     }
-    .table.excel-like {
-        margin-bottom: 0;
-        width: 100%;
+    .table-sm th,
+    .table-sm td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
     }
-    .excel-like td {
-        padding: 4px 8px;
-        vertical-align: middle;
-        position: relative;
-        font-size: 0.8rem;
+    .table thead th {
+        font-weight: 600;
+        background-color: #f8f9fa;
     }
-    .excel-like td.text-center {
-        padding: 8px;
-        line-height: 1.2;
+    .nonreactive {
+        background-color: #d4edda !important;
+        color: #155724 !important;
+        font-weight: bold;
     }
-    .table-bordered > :not(caption) > * > * {
-        border-width: 1px;
+    .borderline {
+        background-color: #fff3cd !important;
+        color: #856404 !important;
+        font-weight: bold;
     }
-    /* Group of 12 styling */
-    .excel-like tr:nth-child(12n) {
-        border-bottom: 2px solid #000;
+    .reactive {
+        background-color: #f8d7da !important;
+        color: #721c24 !important;
+        font-weight: bold;
     }
-    .excel-like tr:nth-child(12n+1) {
-        border-top: 2px solid #000;
+    .report-header {
+        background-color: #0c4c90;
+        color: white;
+        padding: 1rem;
+        border-radius: 0.25rem 0.25rem 0 0;
     }
-
-    /* Header Styles */
-    .logo-cell {
-        width: 200px;
-        padding: 8px;
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
     }
-    .logo-cell img {
-        max-width: 180px;
-        height: auto;
-    }
-    
-    /* Column Width Styles */
-    .excel-like td:nth-child(1) { width: 40px; }
-    .excel-like td:nth-child(2) { width: 40px; }
-    .excel-like td:nth-child(3) { width: 60px; }
-    .excel-like td:nth-child(4) { width: 40px; }
-    .excel-like td:nth-child(5) { width: 60px; }
-    .excel-like td:nth-child(6) { width: 60px; }
-    .excel-like td:nth-child(7) { width: 60px; }
-    .excel-like td:nth-child(8) { width: 100px; }
-    .excel-like td:nth-child(9) { width: 60px; }
-    .excel-like td:nth-child(10) { width: 100px; }
-    .excel-like td:nth-child(11) { width: 80px; }
-    .excel-like td:nth-child(12) { width: 100px; }
-    .excel-like td:nth-child(13) { width: 80px; }
-    .excel-like td:nth-child(14) { width: 120px; }
-
-    /* Select2 Custom Styles */
-    .select2-container {
-        width: 100% !important;
-    }
-    .select2-container .select2-selection--single {
-        height: 22px !important;
-        min-height: 22px !important;
-        font-size: 0.8rem !important;
-        padding: 0 !important;
-        border: 1px solid #ced4da !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 22px !important;
-        padding-left: 0.4rem !important;
-        padding-right: 1.2rem !important;
-        font-size: 0.8rem !important;
-        color: #212529 !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 20px !important;
-        width: 20px !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow b {
-        margin-left: -4px !important;
-    }
-    .select2-dropdown {
-        font-size: 0.8rem !important;
-    }
-    .select2-search--dropdown .select2-search__field {
-        padding: 2px 4px !important;
-        font-size: 0.8rem !important;
-    }
-    .select2-results__option {
-        padding: 2px 4px !important;
-        font-size: 0.8rem !important;
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
     }
 </style>
 @endpush
 
 @section('content')
+
 <div class="pagetitle">
     <h1>Sub Mini Pool Report</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item">Reports</li>
             <li class="breadcrumb-item active">Sub Mini Pool Report</li>
         </ol>
     </nav>
@@ -120,270 +73,412 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
-                    <!-- Search Form -->
-                    <div class="row g-2 mb-3">
+                    <!-- Filter Section -->
+                    <div class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="small mb-1">Blood Centre Name & City</label>
-                                <div>
-                                    <select class="form-control form-control-sm select2" name="blood_centre_id" id="blood_centre_id" required>
-                                        <option value="">Select Blood Centre</option>
-                                        @forelse($bloodCenters ?? [] as $center)
-                                            <option value="{{ $center->id }}">{{ $center->name }} - {{ $center->city }}</option>
-                                        @empty
-                                            <option value="" disabled>No blood centers available</option>
-                                        @endforelse
+                            <label for="miniPoolSelect" class="form-label">Select Mini Pool <span class="text-danger">*</span></label>
+                            <select class="form-select" id="miniPoolSelect" required>
+                                <option value="">-- Select Mini Pool --</option>
                                     </select>
-                                </div>
-                            </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="small mb-1">Pick Date</label>
-                                <input type="date" class="form-control form-control-sm" id="start_date" name="start_date">
-                            </div>
+                            <label for="subMiniPoolSelect" class="form-label">Select Sub Mini Pool (Optional)</label>
+                            <select class="form-select" id="subMiniPoolSelect" disabled>
+                                <option value="">-- All Sub Mini Pools --</option>
+                            </select>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="small mb-1">Enter Sub Mini Pool Number</label>
-                                <input type="text" class="form-control form-control-sm" id="sub_mini_pool_number" name="sub_mini_pool_number" placeholder="Enter sub mini pool number">
+                        <div class="col-md-6" style="padding-top: 30px;">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button type="button" class="btn btn-primary btn-sm" id="generateReportBtn" onclick="generateReport()">
+                                    <i class="bi bi-file-earmark-text"></i> Generate Report
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm" id="exportPdfBtn" onclick="exportToPDF()" disabled>
+                                    <i class="bi bi-file-pdf"></i> Export PDF
+                                </button>
+                                <button type="button" class="btn btn-info btn-sm"  id="exportExcelBtn" onclick="exportToExcel()" disabled>
+                                    <i class="bi bi-file-excel"></i> Export Excel
+                                </button>
                             </div>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="button" class="btn btn-primary btn-sm" id="generateReport">Generate Report</button>
                         </div>
                     </div>
 
-                    <!-- Report Results Table -->
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm border-dark excel-like">
-                            <thead>
-                                <!-- Header Information -->
-                                <tr>
-                                    <td class="logo-cell" style="width: 200px;">
-                                        <img src="{{ asset('assets/img/pgblogo.png') }}" alt="Company Logo" style="max-width: 180px; height: auto;">
-                                    </td>
-                                    <td colspan="13" class="text-center">
-                                        <h5 class="mb-0">RESAMPLING AND HANDLING OF SUB MINI POOL RECORD</h5>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="7">
-                                        <strong>Blood Centre Name & City:</strong> <span id="display_blood_centre">-</span>
-                                    </td>
-                                    <td colspan="3">
-                                        <strong>Work Station No.:</strong> 01
-                                    </td>
-                                    <td colspan="4">
-                                        <strong>Date:</strong> <span id="display_date">-</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4">
-                                        <strong>Pickup Date:</strong> <span id="display_pickup_date">-</span>
-                                    </td>
-                                    <td colspan="3">
-                                        <strong>A.R. No.:</strong> <span id="display_ar_no">-</span>
-                                    </td>
-                                    <td colspan="3">
-                                        <strong>GRN No.:</strong> <span id="display_grn_no">-</span>
-                                    </td>
-                                    <td colspan="4">
-                                        <strong>Mega Pool No.:</strong> <span id="display_mega_pool">-</span>
-                                    </td>
-                                </tr>
-                                <!-- Table Column Headers -->
-                                <tr>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        No. of<br>Bags
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        No. of Bags in<br>Sub Mini Pool
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Donor<br>ID
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Donation<br>Date
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Blood<br>Group
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Bag Volume<br>in ML
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Sub Mini Pool<br>Volume in Liter
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Sub Mini Pool<br>Number
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Tail<br>Cutting<br>Done
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Sub Mini Pool<br>Sample Prepared By<br>(Sign/Date)
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Test Results<br>Sub Mini Pool
-                                    </td>
-                                    <td class="text-center" style="background-color: transparent; font-weight: 500;">
-                                        Discarded/<br>Dispensed for<br>Batch No./<br>Remarks
-                                    </td>
-                                </tr>
-                            </thead>
-                            <tbody id="reportBody">
-                                <tr>
-                                    <td colspan="14" class="text-center py-3">
-                                        <div class="alert alert-success mb-0">No data found</div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <!-- Total Row -->
-                            <tfoot>
-                                <tr>
-                                    <td colspan="6" class="text-end pe-2">
-                                        <span class="fw-bold">Total Volume in Liters:</span>
-                                    </td>
-                                    <td class="p-0">
-                                        <input type="text" class="form-control form-control-sm border-0 px-1 text-end" id="totalVolume" readonly>
-                                    </td>
-                                    <td colspan="7"></td>
-                                </tr>
-                                <!-- NAT Results Row -->
-                                <tr>
-                                    <td colspan="4" class="align-middle">Note:Results of NAT</td>
-                                    {{-- <td colspan="3" style="background-color: #f8f9fa;">
-                                        <div class="d-flex align-items-center">
-                                            <div class="border border-dark px-4 py-1 me-2"></div> Reactive/
-                                            <div class="border border-dark px-4 py-1 mx-2"></div> Non-Reactive
+                    <!-- Loading Spinner -->
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading report data...</p>
+                    </div>
+
+                    <!-- Report Section -->
+                    <div id="reportSection" style="display: none;">
+                        <div class="card">
+                            <div class="report-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-1">Sub Mini Pool ELISA Test Report</h5>
+                                        <p class="mb-0" id="reportTitle">Mini Pool: <span id="selectedMiniPool"></span></p>
+                                    </div>
+                                    <div class="text-end">
+                                        <p class="mb-0">Generated: <span id="reportDate"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Summary Cards -->
+                                {{-- <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h3 class="mb-0" id="totalCount">0</h3>
+                                                <p class="text-muted mb-0">Total Samples</p>
+                                            </div>
                                         </div>
-                                    </td> --}}
-                                    <td colspan="9"></td>
-                                </tr>
-                                <!-- Signature Rows -->
-                                <tr>
-                                    <td colspan="4" style="background-color: #f8f9fa;">
-                                        Entered By/ Done By<br>(WH/PPT) (Sign/ Date)
-                                    </td>
-                                    <td colspan="4"></td>
-                                    <td colspan="3"></td>
-                                    <td colspan="3"></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" style="background-color: #f8f9fa;">
-                                        Reviewed By (PPT/WH)<br>(Sign/ Date)
-                                    </td>
-                                    <td colspan="4"></td>
-                                    <td colspan="3"></td>
-                                    <td colspan="3"></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" style="background-color: #f8f9fa;">
-                                        Verified By (QA)<br>(Sign/ Date)
-                                    </td>
-                                    <td colspan="4"></td>
-                                    <td colspan="3"></td>
-                                    <td colspan="3"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center bg-success text-white">
+                                            <div class="card-body">
+                                                <h3 class="mb-0" id="nonreactiveCount">0</h3>
+                                                <p class="mb-0">Nonreactive</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center bg-warning text-dark">
+                                            <div class="card-body">
+                                                <h3 class="mb-0" id="borderlineCount">0</h3>
+                                                <p class="mb-0">Borderline</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center bg-danger text-white">
+                                            <div class="card-body">
+                                                <h3 class="mb-0" id="reactiveCount">0</h3>
+                                                <p class="mb-0">Reactive</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> --}}
+
+                                <!-- Results Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-sm" id="reportTable">
+                                        <thead>
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>Sub Mini Pool ID</th>
+                                                <th>Mini Pool Number</th>
+                                                <th>Well Number</th>
+                                                <th>OD Value</th>
+                                                <th>Ratio</th>
+                                                <th>HBV</th>
+                                                <th>HCV</th>
+                                                <th>HIV</th>
+                                                <th>Final Result</th>
+                                                <th>Test Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="reportTableBody">
+                                            <!-- Data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
 @endsection
 
-@section('scripts')
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+    let reportData = [];
+
     $(document).ready(function() {
-        // Initialize Select2
-        $('.select2').select2({
-            theme: 'default',
-            placeholder: "Select Blood Centre",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 10,
-            dropdownAutoWidth: true
-        }).on('change', function() {
-            const selectedText = $(this).find('option:selected').text();
-            $('#display_blood_centre').text(selectedText || '-');
-        });
+        // Load mini pools on page load
+        loadMiniPools();
 
-        $('#generateReport').click(function() {
-            const bloodCentreId = $('#blood_centre_id').val();
-            const date = $('#start_date').val();
-            const subMiniPoolNumber = $('#sub_mini_pool_number').val();
-            
-            if (!bloodCentreId || !date || !subMiniPoolNumber) {
-                alert('Please fill in all fields');
-                return;
+        // Handle mini pool selection
+        $('#miniPoolSelect').on('change', function() {
+            const miniPoolNumber = $(this).val();
+            if (miniPoolNumber) {
+                loadSubMiniPools(miniPoolNumber);
+            } else {
+                $('#subMiniPoolSelect').prop('disabled', true).html('<option value="">-- All Sub Mini Pools --</option>');
             }
-
-            // Update header displays
-            $('#display_date').text(formatDate(date));
-            $('#display_pickup_date').text(formatDate(date));
-            $('#display_sub_mini_pool').text(subMiniPoolNumber);
-            // For demo purposes, using static values for AR and GRN
-            $('#display_ar_no').text('AR/RM10001/0317/24/0953');
-            $('#display_grn_no').text('HP0953');
-
-            // Show loading state
-            $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...');
-
-            // Here you would make an AJAX call to your backend to get the report data
-            // For now, we'll simulate an API call with setTimeout
-            setTimeout(function() {
-                // Simulate no data found scenario
-                if (subMiniPoolNumber === "TEST") {
-                    $('#reportBody').html('<tr><td colspan="14" class="text-center py-3">No data found for the selected parameters</td></tr>');
-                    $('#totalVolume').val('');
-                } else {
-                    generateDummyData();
-                }
-                
-                // Reset button state
-                $('#generateReport').prop('disabled', false).text('Generate Report');
-            }, 1000);
         });
-
-        function generateDummyData() {
-            let html = '';
-            for (let i = 1; i <= 72; i++) {
-                html += `
-                    <tr>
-                        <td class="p-0 text-center">${i}</td>
-                        <td class="p-0 text-center">${((i - 1) % 12) + 1}</td>
-                        <td class="p-0 text-center">DONOR${i}</td>
-                        <td class="p-0 text-center">2024-03-${String(i % 28 + 1).padStart(2, '0')}</td>
-                        <td class="p-0 text-center">A+</td>
-                        <td class="p-0 text-center">250</td>
-                        ${(i - 1) % 12 === 0 ? `
-                        <td class="p-0 text-center" rowspan="12">3.00</td>
-                        <td class="p-0 text-center" rowspan="12">SMP${Math.floor((i-1)/12 + 1)}</td>
-                        <td class="p-0 text-center" rowspan="12">Yes</td>
-                        <td class="p-0 text-center" rowspan="12"></td>
-                        <td class="p-0 text-center" rowspan="12"></td>
-                        <td class="p-0 text-center" rowspan="12"></td>
-                        <td class="p-0 text-center" rowspan="12"></td>
-                        <td class="p-0 text-center" rowspan="12"></td>
-                        ` : ''}
-                    </tr>
-                `;
-            }
-            
-            $('#reportBody').html(html);
-            $('#totalVolume').val('18.00'); // 6 groups * 3.00L
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-GB');
-        }
     });
+
+    // Load mini pools that have sub mini pool test results
+    function loadMiniPools() {
+        $.ajax({
+            url: '{{ route("subminipool.get-mini-pools-with-results") }}',
+            method: 'GET',
+            success: function(response) {
+                if (response.status === 'success') {
+                    const select = $('#miniPoolSelect');
+                    select.html('<option value="">-- Select Mini Pool --</option>');
+
+                    response.data.forEach(function(miniPool) {
+                        select.append(`<option value="${miniPool}">${miniPool}</option>`);
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading mini pools:', error);
+                showToast('error', 'Failed to load mini pools');
+            }
+        });
+    }
+
+    // Load sub mini pools for selected mini pool
+    function loadSubMiniPools(miniPoolNumber) {
+        $.ajax({
+            url: '{{ route("subminipool.get-sub-mini-pools-by-mini-pool") }}',
+            method: 'GET',
+            data: { mini_pool_number: miniPoolNumber },
+            success: function(response) {
+                if (response.status === 'success') {
+                    const select = $('#subMiniPoolSelect');
+                    select.html('<option value="">-- All Sub Mini Pools --</option>');
+
+                    response.data.forEach(function(subMiniPool) {
+                        select.append(`<option value="${subMiniPool.sub_mini_pool_id}">${subMiniPool.sub_mini_pool_id}</option>`);
+                    });
+
+                    select.prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading sub mini pools:', error);
+                showToast('error', 'Failed to load sub mini pools');
+            }
+        });
+    }
+
+    // Generate report
+    function generateReport() {
+        const miniPoolNumber = $('#miniPoolSelect').val();
+        const subMiniPoolId = $('#subMiniPoolSelect').val();
+
+        if (!miniPoolNumber) {
+            showToast('error', 'Please select a mini pool');
+            return;
+        }
+
+        // Show loading
+        $('#loadingSpinner').show();
+        $('#reportSection').hide();
+        $('#generateReportBtn').prop('disabled', true);
+
+        // Fetch report data
+        $.ajax({
+            url: '{{ route("subminipool.get-report-data") }}',
+            method: 'GET',
+            data: {
+                mini_pool_number: miniPoolNumber,
+                sub_mini_pool_id: subMiniPoolId
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    reportData = response.data;
+                    displayReport(reportData, miniPoolNumber, subMiniPoolId);
+                    showToast('success', 'Report generated successfully');
+                } else {
+                    showToast('error', response.message || 'Failed to generate report');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error generating report:', error);
+                showToast('error', 'Failed to generate report');
+            },
+            complete: function() {
+                $('#loadingSpinner').hide();
+                $('#generateReportBtn').prop('disabled', false);
+            }
+        });
+    }
+
+    // Display report
+    function displayReport(data, miniPoolNumber, subMiniPoolId) {
+        // Update header
+        $('#selectedMiniPool').text(miniPoolNumber);
+        $('#reportDate').text(new Date().toLocaleString());
+
+        // Calculate summary
+        let total = data.length;
+        let nonreactive = 0;
+        let borderline = 0;
+        let reactive = 0;
+
+        data.forEach(function(item) {
+            const result = (item.final_result || '').toLowerCase();
+            if (result === 'nonreactive') nonreactive++;
+            else if (result === 'borderline') borderline++;
+            else if (result === 'reactive') reactive++;
+        });
+
+        $('#totalCount').text(total);
+        $('#nonreactiveCount').text(nonreactive);
+        $('#borderlineCount').text(borderline);
+        $('#reactiveCount').text(reactive);
+
+        // Populate table
+        const tbody = $('#reportTableBody');
+        tbody.empty();
+
+        data.forEach(function(item, index) {
+            const row = $('<tr>');
+
+            // Determine result classes
+            const hbvClass = getResultClass(item.hbv);
+            const hcvClass = getResultClass(item.hcv);
+            const hivClass = getResultClass(item.hiv);
+            const finalClass = getResultClass(item.final_result);
+
+            row.append($('<td>').text(index + 1));
+            row.append($('<td>').text(item.sub_mini_pool_id || '-'));
+            row.append($('<td>').text(item.mini_pool_number || '-'));
+            row.append($('<td>').text(item.well_num || '-'));
+            row.append($('<td>').text(item.od_value || '-'));
+            row.append($('<td>').text(item.ratio || '-'));
+            row.append($('<td>').addClass(hbvClass).text(item.hbv || '-'));
+            row.append($('<td>').addClass(hcvClass).text(item.hcv || '-'));
+            row.append($('<td>').addClass(hivClass).text(item.hiv || '-'));
+            row.append($('<td>').addClass(finalClass).text(item.final_result || '-'));
+            row.append($('<td>').text(item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'));
+
+            tbody.append(row);
+        });
+
+        // Show report and enable export buttons
+        $('#reportSection').show();
+        $('#exportPdfBtn, #exportExcelBtn').prop('disabled', false);
+    }
+
+    // Get result class for styling
+    function getResultClass(result) {
+        if (!result) return '';
+        const r = result.toLowerCase();
+        if (r === 'reactive') return 'reactive';
+        if (r === 'nonreactive') return 'nonreactive';
+        if (r === 'borderline') return 'borderline';
+        return '';
+    }
+
+    // Export to PDF
+    function exportToPDF() {
+        if (reportData.length === 0) {
+            showToast('error', 'No data to export');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+
+        // Add title
+        doc.setFontSize(16);
+        doc.text('Sub Mini Pool ELISA Test Report', 14, 15);
+
+        doc.setFontSize(10);
+        doc.text(`Mini Pool: ${$('#selectedMiniPool').text()}`, 14, 22);
+        doc.text(`Generated: ${$('#reportDate').text()}`, 14, 27);
+
+        // Prepare table data
+        const tableData = reportData.map((item, index) => [
+            index + 1,
+            item.sub_mini_pool_id || '-',
+            item.mini_pool_number || '-',
+            item.well_num || '-',
+            item.od_value || '-',
+            item.ratio || '-',
+            item.hbv || '-',
+            item.hcv || '-',
+            item.hiv || '-',
+            item.final_result || '-',
+            item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'
+        ]);
+
+        // Add table
+        doc.autoTable({
+            head: [['S.No', 'Sub Mini Pool ID', 'Mini Pool', 'Well', 'OD Value', 'Ratio', 'HBV', 'HCV', 'HIV', 'Final Result', 'Date']],
+            body: tableData,
+            startY: 32,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [12, 76, 144] }
+        });
+
+        // Save PDF
+        doc.save(`sub_mini_pool_report_${new Date().getTime()}.pdf`);
+        showToast('success', 'PDF exported successfully');
+    }
+
+    // Export to Excel
+    function exportToExcel() {
+        if (reportData.length === 0) {
+            showToast('error', 'No data to export');
+            return;
+        }
+
+        // Prepare data for Excel
+        const excelData = reportData.map((item, index) => ({
+            'S.No': index + 1,
+            'Sub Mini Pool ID': item.sub_mini_pool_id || '-',
+            'Mini Pool Number': item.mini_pool_number || '-',
+            'Well Number': item.well_num || '-',
+            'OD Value': item.od_value || '-',
+            'Ratio': item.ratio || '-',
+            'HBV': item.hbv || '-',
+            'HCV': item.hcv || '-',
+            'HIV': item.hiv || '-',
+            'Final Result': item.final_result || '-',
+            'Test Date': item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'
+        }));
+
+        // Create workbook and worksheet
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelData);
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Sub Mini Pool Report');
+
+        // Save file
+        XLSX.writeFile(wb, `sub_mini_pool_report_${new Date().getTime()}.xlsx`);
+        showToast('success', 'Excel exported successfully');
+    }
+
+    // Toast notification function
+    function showToast(type, message) {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
+        toast.addEventListener('hidden.bs.toast', function() {
+            document.body.removeChild(toast);
+        });
+    }
 </script>
-@endsection 
+@endpush

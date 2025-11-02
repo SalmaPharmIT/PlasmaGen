@@ -36,23 +36,70 @@ class ReportMiniPoolMegaPoolController extends Controller
 
     public function fetchMegaPoolData(Request $request)
     {
-        Log::info('fetchMegaPoolData Data Response', []);
+        Log::info('fetchMegaPoolData Data Response', ['ar_number' => $request->ar_number]);
         try {
+            // First, get approved mega pools from bag_status_details with status_type = 'final'
+            $approvedMegaPools = DB::table('bag_status_details')
+                ->where('ar_no', $request->ar_number)
+                ->where('status_type', 'final') // Only final (dispensed) mega pools
+                ->where('release_status', 'approved')
+                ->pluck('mini_pool_id') // This is actually mega_pool_no
+                ->unique() // Remove duplicates if any
+                ->toArray();
+
+            Log::info('Approved mega pools from bag_status_details', [
+                'ar_number' => $request->ar_number,
+                'mega_pools' => $approvedMegaPools,
+                'count' => count($approvedMegaPools)
+            ]);
+
+            if (empty($approvedMegaPools)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No approved and dispensed (final) mega pools found for this AR number'
+                ]);
+            }
+
+            // Check what mega pools exist in bag_entries for this AR
+            $allBagEntries = DB::table('bag_entries')
+                ->where('ar_no', $request->ar_number)
+                ->pluck('mega_pool_no')
+                ->toArray();
+
+            Log::info('All bag entries for AR number', [
+                'ar_number' => $request->ar_number,
+                'all_mega_pools' => $allBagEntries,
+                'count' => count($allBagEntries)
+            ]);
+
+            // Now fetch bag entries only for approved mega pools
             $bagEntries = BagEntry::with([
                 'details' => function($query) {
-                    $query->where('tail_cutting', 'Yes');
+                    $query->where('tail_cutting', 'Yes')
+                          ->orderBy('id');
                 },
-                'miniPools',
+                'miniPools' => function($query) {
+                    $query->orderBy('mini_pool_number');
+                },
                 'createdBy',
                 'bloodBank'
             ])
             ->where('ar_no', $request->ar_number)
+            ->whereIn('mega_pool_no', $approvedMegaPools)
+            ->orderBy('mega_pool_no')
             ->get();
+
+            Log::info('Filtered bag entries for approved mega pools', [
+                'count' => $bagEntries->count(),
+                'mega_pools' => $bagEntries->pluck('mega_pool_no'),
+                'approved_mega_pools' => $approvedMegaPools,
+                'all_bag_entries' => $allBagEntries
+            ]);
 
             if ($bagEntries->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No data found for the selected AR number'
+                    'message' => 'No bag entry data found for approved mega pools. Approved: ' . implode(', ', $approvedMegaPools) . '. Available in bag_entries: ' . implode(', ', $allBagEntries)
                 ]);
             }
 
@@ -74,11 +121,37 @@ class ReportMiniPoolMegaPoolController extends Controller
                     'details' => []
                 ];
 
+                Log::info('Processing Bag Entry', [
+                    'bag_entry_id' => $bagEntry->id,
+                    'mega_pool_no' => $bagEntry->mega_pool_no,
+                    'mini_pools_count' => $bagEntry->miniPools->count(),
+                    'mini_pool_numbers' => $bagEntry->miniPools->pluck('mini_pool_number')->toArray()
+                ]);
+
                 // Group details by mini pool
                 $miniPoolGroups = collect($bagEntry->miniPools)->groupBy('mini_pool_number');
 
                 foreach ($miniPoolGroups as $miniPoolNumber => $miniPools) {
                     $miniPool = $miniPools->first();
+
+                    // Validate that mini pool number matches mega pool pattern
+                    // E.g., MG2507021389 should have mini pools like 250702138901, 250702138902, etc.
+                    // Extract the numeric part from mega pool (remove 'MG' prefix)
+                    $megaPoolNumeric = preg_replace('/[^0-9]/', '', $bagEntry->mega_pool_no);
+                    $miniPoolPrefix = substr($miniPoolNumber, 0, strlen($megaPoolNumeric));
+
+                    if ($miniPoolPrefix !== $megaPoolNumeric) {
+                        Log::warning('Mini pool does not match mega pool pattern', [
+                            'mega_pool_no' => $bagEntry->mega_pool_no,
+                            'mega_pool_numeric' => $megaPoolNumeric,
+                            'mini_pool_number' => $miniPoolNumber,
+                            'mini_pool_prefix' => $miniPoolPrefix,
+                            'bag_entry_id' => $bagEntry->id,
+                            'mini_pool_id' => $miniPool->id
+                        ]);
+                        continue; // Skip this mini pool as it doesn't belong to this mega pool
+                    }
+
                     $miniPoolVolume = $miniPool->mini_pool_bag_volume ?? 0;
                     $totalVolume += floatval($miniPoolVolume);
 
@@ -87,6 +160,28 @@ class ReportMiniPoolMegaPoolController extends Controller
                         : json_decode($miniPool->bag_entries_detail_ids, true);
 
                     $details = $bagEntry->details->whereIn('id', $detailIds);
+
+                    // Get ELISA test results for this mini pool
+                    $elisaResult = ElisaTestReport::where('mini_pool_id', $miniPoolNumber)
+                        ->latest()
+                        ->first();
+
+                    // Get NAT test results for this mega pool
+                    $natResult = NatTestReport::where('mini_pool_id', $bagEntry->mega_pool_no)
+                        ->latest()
+                        ->first();
+
+                    // Determine Mini Pool Test Result (from ELISA) - Show actual result or "-" if not found
+                    $miniPoolTestResult = '-';
+                    if ($elisaResult && $elisaResult->final_result) {
+                        $miniPoolTestResult = strtoupper($elisaResult->final_result);
+                    }
+
+                    // Determine Mega Pool Test Result (from NAT) - Show actual status or "-" if not found
+                    $megaPoolTestResult = '-';
+                    if ($natResult && $natResult->status) {
+                        $megaPoolTestResult = strtoupper($natResult->status);
+                    }
 
                     foreach ($details as $index => $detail) {
                         $data['details'][] = [
@@ -102,8 +197,8 @@ class ReportMiniPoolMegaPoolController extends Controller
                             'tail_cutting' => $detail->tail_cutting ?? '-',
                             'prepared_by' => $bagEntry->createdBy ?
                                 $bagEntry->createdBy->name . ' (' . date('d/m/Y', strtotime($bagEntry->created_at)) . ')' : '-',
-                            'mini_pool_test_result' => $miniPool->mini_pool_test_result ?? 'NON-REACTIVE',
-                            'mega_pool_test_result' => $miniPool->mega_pool_test_result ?? 'NON-REACTIVE'
+                            'mini_pool_test_result' => $miniPoolTestResult,
+                            'mega_pool_test_result' => $megaPoolTestResult
                         ];
                     }
                 }
@@ -488,16 +583,21 @@ class ReportMiniPoolMegaPoolController extends Controller
             $page = $request->get('page', 1);
             $perPage = 10;
 
-            $query = BagEntry::query()
+            // Only get AR numbers that have approved and released mega pools
+            $query = DB::table('bag_status_details')
                 ->whereNotNull('ar_no')
-                ->where('ar_no', '!=', '');
+                ->where('ar_no', '!=', '')
+                ->where('status_type', 'final')
+                ->where('release_status', 'approved')
+                ->distinct()
+                ->select('ar_no');
 
             if ($search) {
                 $query->where('ar_no', 'like', "%{$search}%");
             }
 
             $total = $query->count();
-            $results = $query->orderBy('ar_no')
+            $results = $query->orderBy('ar_no', 'desc')
                 ->skip(($page - 1) * $perPage)
                 ->take($perPage)
                 ->get()
@@ -507,6 +607,11 @@ class ReportMiniPoolMegaPoolController extends Controller
                         'text' => $entry->ar_no
                     ];
                 });
+
+            Log::info('Fetched AR numbers with approved mega pools', [
+                'total' => $total,
+                'count' => $results->count()
+            ]);
 
             return response()->json([
                 'items' => $results,
@@ -540,7 +645,28 @@ class ReportMiniPoolMegaPoolController extends Controller
                 ]);
             }
 
-            // Get all bag entries for the AR number
+            // First, get approved mega pools from bag_status_details with status_type = 'final'
+            $approvedMegaPools = DB::table('bag_status_details')
+                ->where('ar_no', $arNumber)
+                ->where('status_type', 'final') // Only final (dispensed) mega pools
+                ->where('release_status', 'approved')
+                ->pluck('mini_pool_id') // This is actually mega_pool_no
+                ->unique() // Remove duplicates if any
+                ->toArray();
+
+            Log::info('Print Report - Approved mega pools', [
+                'ar_number' => $arNumber,
+                'mega_pools' => $approvedMegaPools,
+                'count' => count($approvedMegaPools)
+            ]);
+
+            if (empty($approvedMegaPools)) {
+                return view('factory.generate_report.mega_pool_mini_pool_print', [
+                    'error' => 'No approved and dispensed (final) mega pools found for this AR number'
+                ]);
+            }
+
+            // Get bag entries only for approved mega pools
             $bagEntries = BagEntry::with([
                 'details' => function($query) {
                     $query->where('tail_cutting', 'Yes');
@@ -550,11 +676,12 @@ class ReportMiniPoolMegaPoolController extends Controller
                 'bloodBank'
             ])
             ->where('ar_no', $arNumber)
+            ->whereIn('mega_pool_no', $approvedMegaPools)
             ->get();
 
             if ($bagEntries->isEmpty()) {
                 return view('factory.generate_report.mega_pool_mini_pool_print', [
-                    'error' => 'No data found for the selected AR number'
+                    'error' => 'No bag entry data found for approved mega pools'
                 ]);
             }
 
@@ -590,29 +717,26 @@ class ReportMiniPoolMegaPoolController extends Controller
                     continue;
                 }
 
-                // Get ELISA test results
+                // Get ELISA test results for this mini pool
                 $elisaResult = ElisaTestReport::where('mini_pool_id', $miniPool->mini_pool_number)
                     ->latest()
                     ->first();
 
-                // Get NAT test results
-                $natResult = NatTestReport::where('mini_pool_id', $miniPool->mini_pool_number)
+                // Get NAT test results for this mega pool
+                $natResult = NatTestReport::where('mini_pool_id', $bagEntry->mega_pool_no)
                     ->latest()
                     ->first();
 
-                // Determine Mini Pool Test Result
-                $miniPoolTestResult = 'NON-REACTIVE';
-                $megaPoolTestResult = 'NON-REACTIVE';
+                // Determine Mini Pool Test Result (from ELISA) - Show actual result or "-" if not found
+                $miniPoolTestResult = '-';
+                if ($elisaResult && $elisaResult->final_result) {
+                    $miniPoolTestResult = strtoupper($elisaResult->final_result);
+                }
 
-                if ($elisaResult) {
-                    if (in_array($elisaResult->final_result, ['reactive', 'invalid', 'borderline'])) {
-                        $miniPoolTestResult = 'REACTIVE';
-                        $megaPoolTestResult = 'REACTIVE';
-                    } elseif ($elisaResult->final_result === 'nonreactive' && $natResult) {
-                        if (in_array($natResult->status, ['reactive', 'invalid', 'borderline'])) {
-                            $megaPoolTestResult = 'REACTIVE';
-                        }
-                    }
+                // Determine Mega Pool Test Result (from NAT) - Show actual status or "-" if not found
+                $megaPoolTestResult = '-';
+                if ($natResult && $natResult->status) {
+                    $megaPoolTestResult = strtoupper($natResult->status);
                 }
 
                 $miniPoolDetails = BagEntryDetail::whereIn('id', $detailIds)

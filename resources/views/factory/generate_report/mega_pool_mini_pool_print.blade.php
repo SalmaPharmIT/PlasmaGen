@@ -143,6 +143,7 @@
                 @php
                     $currentMiniPool = null;
                     $currentMegaPool = null;
+                    $megaPoolTestResultAdded = [];
                     $miniPoolCounts = [];
                     $megaPoolCounts = [];
 
@@ -179,7 +180,11 @@
                             <td rowspan="{{ $miniPoolCounts[$detail['mini_pool_number']] }}">{{ $detail['tail_cutting'] }}</td>
                             <td rowspan="{{ $miniPoolCounts[$detail['mini_pool_number']] }}">{{ $detail['prepared_by'] }}</td>
                             <td rowspan="{{ $miniPoolCounts[$detail['mini_pool_number']] }}">{{ $detail['mini_pool_test_result'] }}</td>
-                            <td rowspan="{{ $miniPoolCounts[$detail['mini_pool_number']] }}">{{ $detail['mega_pool_test_result'] }}</td>
+
+                            @if(!isset($megaPoolTestResultAdded[$detail['mega_pool_no']]))
+                                @php $megaPoolTestResultAdded[$detail['mega_pool_no']] = true; @endphp
+                                <td rowspan="{{ $megaPoolCounts[$detail['mega_pool_no']] }}">{{ $detail['mega_pool_test_result'] }}</td>
+                            @endif
                         @endif
                     </tr>
                 @empty

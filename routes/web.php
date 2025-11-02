@@ -154,7 +154,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/getCalendarEvents', [TourPlannerController::class, 'getCalendarEvents'])->name('tourplanner.getCalendarEvents');
     Route::post('/tourplanner/saveTourPlan', [TourPlannerController::class, 'saveTourPlan'])->name('tourplanner.saveTourPlan');
     Route::delete('/tourplanner/deleteTourPlan', [TourPlannerController::class, 'deleteTourPlan'])->name('tourplanner.deleteTourPlan');
-        Route::delete('/tourplanner/cancelTourPlan', [TourPlannerController::class, 'cancelTourPlan'])->name('tourplanner.cancelTourPlan');
 
     Route::get('/tourplanner/sourcingCreateTourPlan', [TourPlannerController::class, 'showSourcingCreateTourPlan'])->name('tourplanner.sourcingCreateTourPlan');
     Route::post('/tourplanner/submit_monthly_tour_plan', [TourPlannerController::class, 'submitMonthlyTourPlan'])->name('tourplanner.submitMonthlyTourPlan');
@@ -264,6 +263,11 @@ Route::group(['middleware' => ['auth']], function () {
         ->name('subminipool.get-sub-mini-pool-numbers')
         ->middleware('auth');
 
+    // Mini Pool Bag Details Route
+    Route::get('/subminipool/get-mini-pool-bag-details', [SubMiniPoolEntryController::class, 'getMiniPoolBagDetails'])
+        ->name('subminipool.get-mini-pool-bag-details')
+        ->middleware('auth');
+
     /* ********************* Expenses Starts ********************************* */
     Route::get('/expenses', [ExpensesController::class, 'index'])->name('expenses.index');
     Route::get('/expenses/getUpdatedVisits', [ExpensesController::class, 'getUpdatedVisits'])->name('expenses.getUpdatedVisits');
@@ -277,6 +281,7 @@ Route::group(['middleware' => ['auth']], function () {
     /* ********************* New Bag Entry Routes ********************************* */
     Route::get('/newBagEntry', [BagEntryController::class, 'index'])->name('newBag.index')->middleware('auth');
     Route::get('/factory/newbagentry/sub-mini-pool-bag-entry', [BagEntryController::class, 'subMiniPoolBagEntry'])->name('factory.newbagentry.sub_mini_pool_bag_entry')->middleware('auth');
+    Route::get('/factory/newbagentry/nat_re_test_mega_pool_entry', [NATReportController::class, 'retestMegaPoolIndex'])->name('factory.newbagentry.nat_re_test_mega_pool_entry')->middleware('auth');
     Route::post('/newBagEntry', [BagEntryController::class, 'store'])->name('newBag.store')->middleware('auth');
     Route::get('/check-mega-pool/{megaPoolNo}', [BagEntryController::class, 'checkMegaPool'])->name('check.mega.pool')->middleware('auth');
     Route::get('/bagEntryReject', [BagEntryController::class, 'rejectPlasmaBagEntry'])->name('rejectPlasmaBagEntry')->middleware('auth');
@@ -326,6 +331,10 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/nat-report', [NATReportController::class, 'index'])->name('nat-report.index');
         Route::post('/nat-report/generate', [NATReportController::class, 'generateReport'])->name('nat-report.generate');
         Route::post('/nat-report/save', [NATReportController::class, 'saveReports'])->name('nat-report.save');
+
+        // NAT Retest Mega Pool Routes
+        Route::post('/nat-retest-mega/generate', [NATReportController::class, 'generateRetestReport'])->name('nat-retest-mega.generate');
+        Route::post('/nat-retest-mega/save', [NATReportController::class, 'saveRetestReports'])->name('nat-retest-mega.save');
     });
     /* ********************* NAT Report Routes Ends ********************************* */
 
@@ -378,6 +387,12 @@ Route::get('/get-ar-numbers', [BagStatusController::class, 'getArNumbers'])->nam
 Route::get('/factory/report/sub-minipool-entry', [PlasmaController::class, 'subMiniPoolEntry'])->name('factory.report.sub_minipool_entry')->middleware('auth');
 Route::get('/factory/report/get-reactive-minipools', [ReportMiniPoolMegaPoolController::class, 'getReactiveMiniPools'])->name('factory.report.get-reactive-minipools')->middleware('auth');
 Route::get('/factory/report/get-minipool-data/{mini_pool_id}', [ReportMiniPoolMegaPoolController::class, 'getMiniPoolData'])->name('factory.report.get-minipool-data')->middleware('auth');
+Route::post('/factory/report/upload-subminipool-results', [SubMiniPoolEntryController::class, 'uploadResults'])->name('subminipool.upload-results')->middleware('auth');
+Route::post('/factory/report/save-subminipool-results', [SubMiniPoolEntryController::class, 'saveResults'])->name('subminipool.save-results')->middleware('auth');
+Route::get('/factory/report/get-all-subminipool-results', [SubMiniPoolEntryController::class, 'getAllResults'])->name('subminipool.get-all-results')->middleware('auth');
+Route::get('/factory/report/get-mini-pools-with-results', [SubMiniPoolEntryController::class, 'getMiniPoolsWithResults'])->name('subminipool.get-mini-pools-with-results')->middleware('auth');
+Route::get('/factory/report/get-sub-mini-pools-by-mini-pool', [SubMiniPoolEntryController::class, 'getSubMiniPoolsByMiniPool'])->name('subminipool.get-sub-mini-pools-by-mini-pool')->middleware('auth');
+Route::get('/factory/report/get-subminipool-report-data', [SubMiniPoolEntryController::class, 'getReportData'])->name('subminipool.get-report-data')->middleware('auth');
 
 Route::post('/sub-mini-pool-entries', [SubMiniPoolEntryController::class, 'store'])->name('sub-mini-pool-entries.store');
 

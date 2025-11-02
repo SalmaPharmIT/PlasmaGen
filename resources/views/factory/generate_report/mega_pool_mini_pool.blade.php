@@ -381,14 +381,12 @@
 
                         // Generate table rows
                         let html = '';
-                        let currentMiniPool = null;
                         let miniPoolRowspan = 0;
                         let details = response.data.details;
 
                         // First pass: count rows per mini pool and mega pool
                         let miniPoolCounts = {};
                         let megaPoolCounts = {};
-                        let currentMegaPool = null;
 
                         details.forEach(detail => {
                             miniPoolCounts[detail.mini_pool_number] = (miniPoolCounts[detail.mini_pool_number] || 0) + 1;
@@ -396,6 +394,7 @@
                         });
 
                         // Second pass: generate HTML
+
                         details.forEach((detail, index) => {
                             html += '<tr>';
                             html += `<td class="p-0 text-center">${detail.row_number}</td>`;
@@ -405,24 +404,34 @@
                             html += `<td class="p-0 text-center">${detail.blood_group}</td>`;
                             html += `<td class="p-0 text-center">${detail.bag_volume_ml}</td>`;
 
-                            // If this is the first row of a mini pool, add the rowspan cells
-                            if (currentMiniPool !== detail.mini_pool_number) {
-                                currentMiniPool = detail.mini_pool_number;
+                            // Check if this is the first row of a new mini pool
+                            const isNewMiniPool = (index === 0 || details[index - 1].mini_pool_number !== detail.mini_pool_number);
+
+                            // Check if this is the first row of a new mega pool
+                            const isNewMegaPool = (index === 0 || details[index - 1].mega_pool_no !== detail.mega_pool_no);
+
+                            // Add mini pool bag volume (rowspan per mini pool)
+                            if (isNewMiniPool) {
                                 miniPoolRowspan = miniPoolCounts[detail.mini_pool_number];
-
                                 html += `<td class="p-0 text-center" rowspan="${miniPoolRowspan}">${detail.mini_pool_bag_volume}</td>`;
+                            }
 
-                                // Add mega pool cell only for the first row of each mega pool
-                                if (currentMegaPool !== detail.mega_pool_no) {
-                                    currentMegaPool = detail.mega_pool_no;
-                                    html += `<td class="p-0 text-center" rowspan="${megaPoolCounts[detail.mega_pool_no]}">${detail.mega_pool_no}</td>`;
-                                }
+                            // Add mega pool number (rowspan per mega pool)
+                            if (isNewMegaPool) {
+                                html += `<td class="p-0 text-center" rowspan="${megaPoolCounts[detail.mega_pool_no]}">${detail.mega_pool_no}</td>`;
+                            }
 
+                            // Add mini pool specific cells (rowspan per mini pool)
+                            if (isNewMiniPool) {
                                 html += `<td class="p-0 text-center" rowspan="${miniPoolRowspan}">${detail.mini_pool_number}</td>`;
                                 html += `<td class="p-0 text-center" rowspan="${miniPoolRowspan}">${detail.tail_cutting}</td>`;
                                 html += `<td class="p-0 text-center" rowspan="${miniPoolRowspan}">${detail.prepared_by}</td>`;
                                 html += `<td class="p-0 text-center" rowspan="${miniPoolRowspan}">${detail.mini_pool_test_result}</td>`;
-                                html += `<td class="p-0 text-center" rowspan="${miniPoolRowspan}">${detail.mega_pool_test_result}</td>`;
+                            }
+
+                            // Add mega pool test result (rowspan per mega pool)
+                            if (isNewMegaPool) {
+                                html += `<td class="p-0 text-center" rowspan="${megaPoolCounts[detail.mega_pool_no]}">${detail.mega_pool_test_result}</td>`;
                             }
 
                             html += '</tr>';

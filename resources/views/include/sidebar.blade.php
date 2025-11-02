@@ -88,16 +88,6 @@
               </a>
             </li>
             <li>
-              <a href="{{ route('plasma.dispensing') }}">
-                <i class="bi bi-circle"></i><span>Plasma Despense Summary</span>
-              </a>
-            </li>
-            <li>
-              <a href="{{ route('plasma.rejection') }}">
-                <i class="bi bi-circle"></i><span>Plasma Rejection Summary</span>
-              </a>
-            </li>
-            <li>
               <a href="{{ route('plasma.ar-list') }}">
                 <i class="bi bi-circle"></i><span>AR.No List</span>
               </a>
@@ -114,7 +104,23 @@
               </li>
           </ul>
         </li><!-- End Plasma Management Nav -->
-
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-bs-target="#plasma-report-nav" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-file-text"></i><span>Plasma Report</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="plasma-report-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                <li>
+                    <a href="{{ route('plasma.dispensing') }}">
+                      <i class="bi bi-circle"></i><span>Plasma Despense Summary</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{{ route('plasma.rejection') }}">
+                      <i class="bi bi-circle"></i><span>Plasma Rejection Summary</span>
+                    </a>
+                  </li>
+            </ul>
+        </li>
         <li class="nav-item">
           <a class="nav-link collapsed" href="{{ route('barcode.generate') }}">
             <i class="bi bi-upc-scan"></i>
@@ -143,13 +149,8 @@
               </a>
             </li>
             <li>
-              <a href="{{ route('factory.newbagentry.sub_mini_pool_bag_entry') }}">
-                <i class="bi bi-circle"></i><span>NAT Re-test Mega Pool Entry</span>
-              </a>
-            </li>
-             <li>
               <a href="{{ route('rejectPlasmaBagEntry') }}">
-                <i class="bi bi-circle"></i><span>Generate Destruction No</span>
+                <i class="bi bi-circle"></i><span>Generate Destruction Entry</span>
               </a>
             </li>
           </ul>
@@ -176,7 +177,11 @@
                 <i class="bi bi-circle"></i><span>Sub Mini Pool Entry</span>
               </a>
             </li>
-
+            <li>
+                <a href="{{ route('factory.newbagentry.nat_re_test_mega_pool_entry') }}">
+                  <i class="bi bi-circle"></i><span>NAT Re-test Mega Pool Entry</span>
+                </a>
+              </li>
             <li>
               <a href="{{ route('factory.report.plasma_rejection') }}">
                 <i class="bi bi-circle"></i><span>Plasma Rejection</span>
@@ -206,6 +211,11 @@
               <a href="{{ route('factory.generate_report.tail_cutting') }}">
                 <i class="bi bi-circle"></i><span>Tail Cutting Report</span>
               </a>
+            </li>
+            <li>
+                <a href="{{ route('factory.generate_report.sub_mini_pool') }}">
+                  <i class="bi bi-circle"></i><span>Sub Mini Pool Report</span>
+                </a>
             </li>
             <li>
               <a href="{{ route('audit.index') }}">
@@ -353,13 +363,13 @@
                 </a>
               </li>
               <li>
-                <a href="{{ route('factory.newbagentry.sub_mini_pool_bag_entry') }}">
+                <a href="{{ route('factory.newbagentry.nat_re_test_mega_pool_entry') }}">
                   <i class="bi bi-circle"></i><span>NAT Re-test Mega Pool Entry</span>
                 </a>
               </li>
                <li>
                 <a href="{{ route('rejectPlasmaBagEntry') }}">
-                  <i class="bi bi-circle"></i><span>Generate Destruction No</span>
+                  <i class="bi bi-circle"></i><span>Generate Destruction Entry</span>
                 </a>
               </li>
             </ul>
