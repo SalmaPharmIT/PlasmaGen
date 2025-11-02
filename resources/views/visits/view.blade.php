@@ -1648,7 +1648,7 @@
 
         const selectedDate = "{{ $date }}";
         const currentDate  = "{{ \Carbon\Carbon::now()->toDateString() }}";
-        const cutoffDate   = "2025-07-01";   // ← NEW
+        const cutoffDate   = "2025-10-31";   // ← NEW
 
         let entityFeatures = {}; // To store km_bound and location_enabled
         let userLocation = null; // To store user's current location

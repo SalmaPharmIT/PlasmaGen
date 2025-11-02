@@ -366,6 +366,8 @@
 
         $(document).ready(function() {
 
+           let reportsChartInstance = null;
+
             // Initially hide the Blood Banks Map section (second row)
             $("#bloodBankMapsSection").hide();
 
@@ -458,81 +460,177 @@
 
 
              // Function to load dashboard graph data and render the Reports chart
-             function loadDashboardGraphData(filter = 'This Month') {
-                $.ajax({
-                    url: "{{ route('dashboard.getDashboardGraphData') }}",
-                    type: 'GET',
-                    data: { filter: filter },
-                    success: function(response) {
-                        if(response.success) {
-                            const data = response.data;
-                            // Reverse the array if the API returns months in descending order so that the chart displays in chronological order
-                            data.reverse();
+            //  function loadDashboardGraphData(filter = 'This Month') {
+            //     $.ajax({
+            //         url: "{{ route('dashboard.getDashboardGraphData') }}",
+            //         type: 'GET',
+            //         data: { filter: filter },
+            //         success: function(response) {
+            //             if(response.success) {
+            //                 const data = response.data;
+            //                 // Reverse the array if the API returns months in descending order so that the chart displays in chronological order
+            //                 data.reverse();
                             
-                            // Prepare arrays for the chart series and x-axis labels
-                            const months = data.map(item => item.month);
-                            const bloodBanks = data.map(item => item.blood_bank_count);
-                            const warehouses = data.map(item => item.warehouse_count);
-                            const customers = data.map(item => item.customer_count);
+            //                 // Prepare arrays for the chart series and x-axis labels
+            //                 const months = data.map(item => item.month);
+            //                 const bloodBanks = data.map(item => item.blood_bank_count);
+            //                 const warehouses = data.map(item => item.warehouse_count);
+            //                 const customers = data.map(item => item.customer_count);
 
-                            // Render the ApexCharts Reports Chart with dynamic data
-                            new ApexCharts(document.querySelector("#reportsChart"), {
-                                series: [{
-                                    name: 'Blood Banks',
-                                    data: bloodBanks,
-                                }, {
-                                    name: 'Warehouses',
-                                    data: warehouses,
-                                }, {
-                                    name: 'Customers',
-                                    data: customers,
-                                }],
-                                chart: {
-                                    height: 350,
-                                    type: 'area',
-                                    toolbar: {
-                                        show: false
-                                    },
-                                },
-                                markers: {
-                                    size: 4
-                                },
-                                colors: ['#4154f1', '#2eca6a', '#ff771d'],
-                                fill: {
-                                    type: "gradient",
-                                    gradient: {
-                                        shadeIntensity: 1,
-                                        opacityFrom: 0.3,
-                                        opacityTo: 0.4,
-                                        stops: [0, 90, 100]
-                                    }
-                                },
-                                dataLabels: {
-                                    enabled: false
-                                },
-                                stroke: {
-                                    curve: 'smooth',
-                                    width: 2
-                                },
-                                xaxis: {
-                                    type: 'category',
-                                    categories: months,
-                                },
-                                tooltip: {
-                                    x: {
-                                        format: 'yyyy-MM'
-                                    },
-                                }
-                            }).render();
-                        } else {
-                            Swal.fire('Error', response.message, 'error');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error fetching dashboard graph data:", error);
-                        Swal.fire('Error', 'An error occurred while fetching dashboard graph data.', 'error');
+            //                 // Render the ApexCharts Reports Chart with dynamic data
+            //                 new ApexCharts(document.querySelector("#reportsChart"), {
+            //                     series: [{
+            //                         name: 'Blood Banks',
+            //                         data: bloodBanks,
+            //                     }, {
+            //                         name: 'Warehouses',
+            //                         data: warehouses,
+            //                     }, {
+            //                         name: 'Customers',
+            //                         data: customers,
+            //                     }],
+            //                     chart: {
+            //                         height: 350,
+            //                         type: 'area',
+            //                         toolbar: {
+            //                             show: false
+            //                         },
+            //                     },
+            //                     markers: {
+            //                         size: 4
+            //                     },
+            //                     colors: ['#4154f1', '#2eca6a', '#ff771d'],
+            //                     fill: {
+            //                         type: "gradient",
+            //                         gradient: {
+            //                             shadeIntensity: 1,
+            //                             opacityFrom: 0.3,
+            //                             opacityTo: 0.4,
+            //                             stops: [0, 90, 100]
+            //                         }
+            //                     },
+            //                     dataLabels: {
+            //                         enabled: false
+            //                     },
+            //                     stroke: {
+            //                         curve: 'smooth',
+            //                         width: 2
+            //                     },
+            //                     xaxis: {
+            //                         type: 'category',
+            //                         categories: months,
+            //                     },
+            //                     tooltip: {
+            //                         x: {
+            //                             format: 'yyyy-MM'
+            //                         },
+            //                     }
+            //                 }).render();
+            //             } else {
+            //                 Swal.fire('Error', response.message, 'error');
+            //             }
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.error("Error fetching dashboard graph data:", error);
+            //             Swal.fire('Error', 'An error occurred while fetching dashboard graph data.', 'error');
+            //         }
+            //     });
+            // }
+
+            function loadDashboardGraphData(filter = 'This Month') {
+
+              // HARD RESET (only if you plan to recreate the chart below)
+              if (reportsChartInstance) {
+                reportsChartInstance.destroy();
+                reportsChartInstance = null;
+                $('#reportsChart').empty();
+              }
+              
+              $.ajax({
+                url: "{{ route('dashboard.getDashboardGraphData') }}",
+                type: 'GET',
+                data: { filter: filter },
+                success: function(response) {
+                  if (!response.success) {
+                    Swal.fire('Error', response.message, 'error');
+                    return;
+                  }
+
+                  const data = Array.isArray(response.data) ? [...response.data] : [];
+                  if (data.length === 0) {
+                    // If no data, either clear or show an empty chart
+                    if (reportsChartInstance) {
+                      reportsChartInstance.updateSeries([{name:'Blood Banks', data:[]},{name:'Warehouses', data:[]},{name:'Customers', data:[]}], true);
+                      reportsChartInstance.updateOptions({ xaxis: { categories: [] } }, false, true);
+                    } else {
+                      $('#reportsChart').empty().append('<div class="text-muted small">No data available for the selected range.</div>');
                     }
-                });
+                    return;
+                  }
+
+                  // If your API returns newest-first, reverse to chronological
+                  // (If API is already chronological, remove the next line)
+                  data.reverse();
+
+                  const months     = data.map(item => String(item.month ?? ''));
+                  const bloodBanks = data.map(item => Number(item.blood_bank_count ?? 0));
+                  const warehouses = data.map(item => Number(item.warehouse_count ?? 0));
+                  const customers  = data.map(item => Number(item.customer_count ?? 0));
+
+                  // First time: create chart
+                  if (!reportsChartInstance) {
+                    const options = {
+                      series: [
+                        { name: 'Blood Banks', data: bloodBanks },
+                        { name: 'Warehouses', data: warehouses },
+                        { name: 'Customers',  data: customers  }
+                      ],
+                      chart: {
+                        height: 350,
+                        type: 'area',
+                        toolbar: { show: false }
+                      },
+                      markers: { size: 4 },
+                      colors: ['#4154f1', '#2eca6a', '#ff771d'],
+                      fill: {
+                        type: "gradient",
+                        gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.4, stops: [0, 90, 100] }
+                      },
+                      dataLabels: { enabled: false },
+                      stroke: { curve: 'smooth', width: 2 },
+                      xaxis: {
+                        type: 'category',
+                        categories: months
+                      },
+                      tooltip: {
+                        // With category x-axis, don't force a datetime format
+                        x: { formatter: (val) => val }
+                      }
+                    };
+
+                    // Ensure container is clean before first render
+                    $('#reportsChart').empty();
+                    reportsChartInstance = new ApexCharts(document.querySelector("#reportsChart"), options);
+                    reportsChartInstance.render();
+                    return;
+                  }
+
+                  // Subsequent times: update existing chart (no re-render)
+                  reportsChartInstance.updateSeries([
+                    { name: 'Blood Banks', data: bloodBanks },
+                    { name: 'Warehouses', data: warehouses },
+                    { name: 'Customers',  data: customers  }
+                  ], true);
+
+                  reportsChartInstance.updateOptions({
+                    xaxis: { type: 'category', categories: months }
+                  }, false, true);
+                },
+                error: function(xhr, status, error) {
+                  console.error("Error fetching dashboard graph data:", error);
+                  Swal.fire('Error', 'An error occurred while fetching dashboard graph data.', 'error');
+                }
+              });
             }
 
 

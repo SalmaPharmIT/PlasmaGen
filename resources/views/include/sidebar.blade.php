@@ -312,6 +312,29 @@
       </li>
       <!-- End Add Expenses -->
     @endif
+
+
+     <!-- For Finance Team role id 20 -->
+     @if (Auth::check() && in_array(Auth::user()->role_id, [20]))
+     <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-journal-text"></i><span>Expenses</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="{{ route('expenses.clearance') }}">
+            <i class="bi bi-circle"></i><span>Expense Clearance</span>
+          </a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.user_expenses_summary') }}" >
+            <i class="bi bi-currency-rupee"></i>
+            <span>Uses Expenses</span>
+          </a>
+         </li>
+      </ul>
+    </li><!-- End Forms Nav -->
+    @endif
  
 
    <!-- Add more sidebar items as needed -->
