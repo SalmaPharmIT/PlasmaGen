@@ -2695,4 +2695,113 @@ class TourPlannerController extends Controller
         }
     }
 
+
+    /**
+     * Show the pending tour plan FINAL DCR Submit list page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function pendingDCRSubmit()
+    {
+        return view('tourplanner.pendingDCRSubmit');
+    }
+
+
+    
+     /**
+     * API Endpoint to Fetch Pending DCR Submits based on filters.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getPendingDCRSubmits(Request $request)
+    {
+        // Retrieve filters from the request
+        $agentId = $request->input('agent_id');
+        $month = $request->input('month'); // Expected format: YYYY-MM
+
+    
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching calendar events
+        $apiUrl = config('auth_api.final_pending_dcr_submit_fetch_all_url');
+
+        if (!$apiUrl) {
+            Log::error('Final DCR Approvals fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Final DCR Approvals fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Build query parameters
+            $queryParams = [
+                'month' => $month,
+            ];
+
+            if ($agentId) {
+                $queryParams['agent_id'] = $agentId;
+            }
+
+            // Log the data being sent
+            Log::info('Final Fetch DCR Approvals request API', [
+                'data' => $queryParams,
+            ]);
+
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            Log::info('External API Response for Final DCR Approvals', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    // Assuming the API returns events in FullCalendar-compatible format
+                    return response()->json([
+                        'success' => true,
+                        'events' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure for Final DCR Approvals.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch Final DCR Approvals from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch Final DCR Approvals from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Final DCR Approvals from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching Final DCR Approvals.',
+            ], 500);
+        }
+    }
+
 }

@@ -81,6 +81,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/register/bloodbank', [BloodBankController::class, 'register'])->name('bloodbank.register.submit');
     Route::get('/bloodbank/{id}', [BloodBankController::class, 'edit'])->name('bloodbank.edit');  // Route to display the edit form - view
     Route::put('/bloodbank/{id}', [BloodBankController::class, 'update'])->name('bloodbank.update');   // Route to handle the update request - update
+    Route::post('/bloodbank/bulk-import', [BloodBankController::class, 'bulkImport'])->name('bloodbank.bulkImport');
     /* *********************  Blood Bank Ends ********************************* */
 
     /* *********************  Warehouse Starts ********************************* */
@@ -157,6 +158,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/dcrVisit-details/{id}', [TourPlannerController::class, 'showFinalDCRVisitDetails'])->name('tourplanner.dcrVisit-details');
     Route::get('/tourplanner/dcrVisits', [TourPlannerController::class, 'dcrVisits'])->name('tourplanner.dcrVisits');
     Route::get('/tourplanner/dcrStatus', [TourPlannerController::class, 'dcrStatusFetch'])->name('tourplanner.dcrStatus');
+    Route::get('/tourplanner/pendingDCRSubmit', [TourPlannerController::class, 'pendingDCRSubmit'])->name('tourplanner.pendingDCRSubmit');
+        Route::get('/tourplanner/getPendingDCRSubmits', [TourPlannerController::class, 'getPendingDCRSubmits'])->name('tourplanner.getPendingDCRSubmits');
     /* *********************  Manage Tour Planner Ends ********************************* */
 
     /* *********************  Collections Starts ********************************* */
@@ -186,6 +189,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/visits/getSourcingGSTRates', [ReportVisitsController::class, 'getSourcingGSTRates'])->name('visits.getSourcingGSTRates');
     Route::post('/visits/collection_edit_submit', [ReportVisitsController::class, 'collectionEditSubmit'])->name('visits.collection_edit_submit');
     Route::post('/visits/sourcing_edit_submit', [ReportVisitsController::class, 'sourcingEditSubmit'])->name('visits.sourcing_edit_submit');
+    Route::post('/visits/finalPendingDCRsubmit', [ReportVisitsController::class, 'finalPendingDCRsubmit'])->name('visits.finalPendingDCRsubmit');
     /* *********************  Report Visits Ends ********************************* */
 
 

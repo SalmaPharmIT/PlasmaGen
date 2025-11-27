@@ -626,4 +626,81 @@ class BloodBankController extends Controller
         }
     }
 
+   public function bulkImport(Request $request)
+    {
+        // 1️⃣ Validate CSV file input
+        if (!$request->hasFile('importFile')) {
+            return response()->json(['success' => false, 'message' => 'No file uploaded.']);
+        }
+
+        $file = $request->file('importFile');
+
+        if ($file->getClientOriginalExtension() !== 'csv') {
+            return response()->json(['success' => false, 'message' => 'Please upload a valid CSV file.']);
+        }
+
+        // 2️⃣ Retrieve token from session
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json(['success' => false, 'message' => 'Authentication token missing. Please log in again.'], 401);
+        }
+
+        // 3️⃣ Get API endpoint from config file
+        $apiUrl = config('auth_api.blood_bank_bulk_import_url'); // Add this key to config/auth_api.php
+        if (!$apiUrl) {
+            Log::error('Blood Bank bulk import URL not configured.');
+            return response()->json(['success' => false, 'message' => 'Blood Bank bulk import URL not configured.'], 500);
+        }
+
+        try {
+            // 4️⃣ Log file upload
+            Log::info('Uploading CSV to Blood Bank Bulk Import API', [
+                'file_name' => $file->getClientOriginalName(),
+                'api_url' => $apiUrl
+            ]);
+
+            // 5️⃣ Send file as multipart/form-data
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json'
+            ])->attach(
+                'importFile', file_get_contents($file->getRealPath()), $file->getClientOriginalName()
+            )->post($apiUrl);
+
+            // 6️⃣ Log API response
+            Log::info('Blood Bank Bulk Import API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            // 7️⃣ Handle success/failure
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (!empty($apiResponse['success'])) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $apiResponse['message'] ?? 'Blood Banks imported successfully.'
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $apiResponse['message'] ?? 'Bulk import failed on API.'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to connect to the Blood Bank Bulk Import API.',
+                    'details' => $response->body()
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception during Blood Bank bulk import', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while importing the file: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

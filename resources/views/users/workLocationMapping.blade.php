@@ -127,7 +127,8 @@
               <div class="col-md-12">
                 <label for="city_id" class="form-label">City <span class="text-danger">*</span></label>
                 <select id="city_id" name="city_id[]" class="form-select select2" multiple required>
-                  <option value="">Choose City</option>
+                  {{-- <option value="">Choose City</option> --}}
+                  <option value="all" id="select_all_city">Select All</option>
                   {{-- City options loaded via AJAX --}}
                 </select>
                 <div class="invalid-feedback">
@@ -227,7 +228,8 @@
                       <div class="col-md-12">
                           <label for="edit_city" class="form-label">City <span class="text-danger">*</span></label>
                           <select id="edit_city" name="city_id[]" class="form-select select2" multiple required>
-                              <option value="">Choose City</option>
+                              {{-- <option value="">Choose City</option> --}}
+                              <option value="all" id="edit_select_all_city">Select All</option>
                               {{-- Loaded via AJAX --}}
                           </select>
                           <div class="invalid-feedback">Please select at least one city.</div>
@@ -452,7 +454,7 @@
                     url: cityUrl,
                     type: 'GET',
                     success: function(data) {
-                        cityDropdown.empty().append('<option value="">Choose City</option>');
+                      cityDropdown.empty().append('<option value="all">Select All</option>');
                         if (data.success) {
                             data.data.forEach(function(city) {
                                 cityDropdown.append(`<option value="${city.id}">${city.name}</option>`);
@@ -487,7 +489,7 @@
                     type: 'GET',
                     success: function(data) {
                         editStateDropdown.empty().append('<option value="">Choose State</option>');
-                        editCityDropdown.empty().append('<option value="">Choose City</option>');
+                       editCityDropdown.empty().append('<option value="all">Select All</option>');
                         if (data.success) {
                             data.data.forEach(function(state) {
                                 editStateDropdown.append(`<option value="${state.id}">${state.name}</option>`);
@@ -533,6 +535,33 @@
                 editCityDropdown.empty().append('<option value="">Choose City</option>');
             }
         });
+ 
+        // ------------------ SELECT ALL HANDLER ---------------------
+
+        function enableSelectAll(selectElementId) {
+            $(document).on('change', selectElementId, function () {
+                let selectedValues = $(this).val();
+
+                if (selectedValues && selectedValues.includes("all")) {
+                    // Remove "all"
+                    let allOptions = [];
+                    $(`${selectElementId} option`).each(function () {
+                        let val = $(this).val();
+                        if (val !== "all") {
+                            allOptions.push(val);
+                        }
+                    });
+
+                    // Select everything
+                    $(this).val(allOptions).trigger("change");
+                }
+            });
+        }
+
+        // Enable for both ADD & EDIT dropdowns
+        enableSelectAll('#city_id');
+        enableSelectAll('#edit_city');
+
 
         // When an Edit button is clicked, populate the edit modal with row data
         $('#mappingTable').on('click', '.editMapping', function(e) {

@@ -29,6 +29,9 @@
                 <a href="{{ route('bloodbank.register') }}" class="btn btn-primary">
                     <i class="bi bi-plus me-1"></i> Add Blood Bank
                 </a>
+                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bulkImportModal">
+                    <i class="bi bi-upload me-1"></i> Bulk Import
+                </button>
             </div>
 
 
@@ -87,6 +90,46 @@
     </div>
     
   </section>
+
+
+  <!-- Bulk Import Modal -->
+<div class="modal fade" id="bulkImportModal" tabindex="-1" aria-labelledby="bulkImportModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="bulkImportModalLabel">
+          <i class="bi bi-upload me-2 text-success"></i> Bulk Import Blood Banks
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">
+          Please download the <strong>CSV template</strong> using the button below, fill in your data, and upload it back here.
+        </p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <a href="https://plasmagen.pharmit.in/PlasmaGenAPIs/storage/bloodbank_template.csv" class="btn btn-outline-primary" download>
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Template
+          </a>
+          <small class="text-muted fst-italic">*Only CSV files are supported</small>
+        </div>
+
+        <form id="bulkImportForm" enctype="multipart/form-data">
+          @csrf
+          <div class="mb-3">
+            <label for="importFile" class="form-label">Upload CSV File</label>
+            <input class="form-control" type="file" id="importFile" name="importFile" accept=".csv" required>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-cloud-arrow-up me-1"></i> Upload & Import
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End Bulk Import Modal -->
 
 @endsection
 
@@ -295,6 +338,47 @@
             //         }
             //     });
             // });
+
+
+            // Handle CSV Bulk Import Submission
+            $('#bulkImportForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                Swal.fire({
+                    title: 'Uploading...',
+                    text: 'Please wait while your file is being processed.',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                $.ajax({
+                    url: "{{ route('bloodbank.bulkImport') }}", // Change this to your actual API endpoint
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        if (response.success) {
+                            Swal.fire('Success', response.message, 'success');
+                            $('#bulkImportModal').modal('hide');
+                            $('#entitiesTable').DataTable().ajax.reload();
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        let msg = xhr.responseJSON?.message || 'An error occurred while uploading.';
+                        Swal.fire('Error', msg, 'error');
+                    }
+                });
+            });
         });
     </script>
 @endpush

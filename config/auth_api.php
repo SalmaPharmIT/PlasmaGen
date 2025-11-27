@@ -126,4 +126,6 @@ return [
     'expense_clearance_fetch_url' =>  $base_url . 'expense_clearance_fetch.php',
     'expense_status_fetch_url' =>  $base_url . 'expense_status_fetch.php',
     'expense_status_update_url' =>  $base_url . 'expense_status_update.php',
+    'blood_bank_bulk_import_url' =>  $base_url . 'blood_bank_bulk_import.php',
+    'final_pending_dcr_submit_fetch_all_url' =>  $base_url . 'final_pending_dcr_submit_fetch_all.php',
 ];

@@ -27,10 +27,21 @@
            <!-- Header with Button -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="card-title">View Cities</h5>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCityModal">
+                {{-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCityModal">
                     <i class="bi bi-plus me-1"></i> Add City
-                </button>
+                </button> --}}
+
+                 <div class="d-flex gap-2">
+                  <button id="exportButton" class="btn btn-info">
+                      <i class="bi bi-download me-1"></i> Export
+                  </button>
+                  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCityModal">
+                      <i class="bi bi-plus me-1"></i> Add City
+                  </button>
+              </div>
             </div>
+
+        
 
                 <!-- Display Success Message -->
                 @if(session('success'))
@@ -60,6 +71,7 @@
                 <tr>
                   <th>ID</th>
                   <th>Name</th>
+                  <th>State ID</th>
                   <th>State</th>
                   <th>Pin Code</th>
                   <th>Latitude</th>
@@ -226,6 +238,16 @@
                 Please enter a valid longitude.
               </div>
             </div>
+            <!-- Location Action Buttons -->
+            <div class="col-md-12 mt-2">
+                <button type="button" id="editViewLocationBtn" class="btn btn-info me-2">
+                    <i class="bi bi-geo-alt"></i> View Location
+                </button>
+
+                <button type="button" id="editClearLocationBtn" class="btn btn-danger">
+                    <i class="bi bi-x-circle"></i> Clear Location
+                </button>
+            </div>
             <!-- Submit and Cancel Buttons -->
             <div class="col-12 text-center">
               <button type="submit" class="btn btn-primary">Update</button>
@@ -243,6 +265,21 @@
 @endsection
 
 @push('scripts')
+
+<!-- DataTables Buttons -->
+<script src="https://cdn.datatables.net/buttons/2.3.5/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.bootstrap5.min.js"></script>
+
+<!-- JSZip for Excel/CSV -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<!-- HTML5 export -->
+<script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.html5.min.js"></script>
+
+<!-- Print (optional) -->
+<script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.print.min.js"></script>
+
+
 <script>
     $(document).ready(function() {
 
@@ -274,6 +311,7 @@
             columns: [
                 { data: 'id' },
                 { data: 'name' },
+                { data: 'state_id' },
                 { 
                     data: 'state',
                     render: function(data, type, row) {
@@ -312,7 +350,17 @@
             language: {
                 emptyTable: "No cities available.",
                 // Customize language options if needed
-            }
+            },
+            //  dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    title: 'City Master',
+                    exportOptions: {
+                        columns: ':not(:last-child)' // ⬅️ Exclude the last column (Action)
+                    }
+                }
+            ]
         });
 
         // Bootstrap's custom validation
@@ -445,6 +493,64 @@
                 }
             });
         });
+
+         $('#exportButton').on('click', function() {
+            table.button(0).trigger(); // Triggers the first button (Excel export)
+        });
+
+        // ==========================
+        // VIEW LOCATION BUTTON
+        // ==========================
+        $("#editViewLocationBtn").click(function () {
+            let lat = $("#edit_latitude").val();
+            let lng = $("#edit_longitude").val();
+
+            let latNum = parseFloat(lat);
+            let lngNum = parseFloat(lng);
+
+            // Validate empty or zero values
+            if (!lat || !lng || latNum === 0 || lngNum === 0 || isNaN(latNum) || isNaN(lngNum)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Location',
+                    text: 'Latitude and Longitude must be valid and non-zero to view the location.'
+                });
+                return;
+            }
+
+            const url = `https://www.google.com/maps?q=${lat},${lng}`;
+            window.open(url, "_blank");
+        });
+
+
+        // ==========================
+        // CLEAR LOCATION BUTTON
+        // ==========================
+        $("#editClearLocationBtn").click(function () {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This will clear both latitude and longitude. Click Submit to save the changes.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, clear it"
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    $("#edit_latitude").val("");
+                    $("#edit_longitude").val("");
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Cleared",
+                        text: "Latitude and Longitude cleared. Click Submit/Update to save."
+                    });
+                }
+            });
+        });
+
+
     });
 </script>
 @endpush

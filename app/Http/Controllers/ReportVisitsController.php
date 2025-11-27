@@ -1334,4 +1334,125 @@ class ReportVisitsController extends Controller
             ], 500);
           }
       }
+
+
+      // Final DCR Submit 
+       public function finalPendingDCRsubmit(Request $request)
+       {
+    
+             // Validate the form data with appropriate rules
+            $validatedData = $request->validate([
+                'visit_date' => 'required|date',
+                'emp_id'     => 'required|integer',
+            ]);
+
+            // Fetch the visit date from the validated data and the user_id from the authenticated user.
+            $visit_date = $validatedData['visit_date'];
+            $user_id    = Auth::id();
+
+            $visit_date = $validatedData['visit_date'];
+            $emp_id     = $validatedData['emp_id'];
+            $submitted_by = Auth::id(); // Logged-in Manager/CA
+
+            Log::info('Pending DCR Submission Received', [
+                'visit_date'   => $visit_date,
+                'employee_id'  => $emp_id,
+                'submitted_by' => $submitted_by,
+            ]);
+
+
+           // Retrieve the token from the session
+           $token = session()->get('api_token');
+   
+           if (!$token) {
+               Log::warning('API token missing in session.');
+               return response()->json([
+                   'success' => false,
+                   'message' => 'Authentication token missing. Please log in again.'
+               ], 401);
+           }
+   
+             // Prepare the data to send to the external API
+             $postData = [
+                 'visit_date'            => $visit_date,
+                 'user_id'               => $emp_id,   
+                 'created_by'            => Auth::id(), // Assuming you want to capture the authenticated user
+                 'modified_by'           => Auth::id(),
+             ];
+ 
+   
+           // Define the external API URL for saving the tour plan
+           $apiUrl = config('auth_api.final_dcr_submit_url'); // Ensure this is set in your config
+   
+           if (!$apiUrl) {
+                 Log::error('Final DCR Submit URL not configured.');
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Final DCR Submit URL is not configured.'
+                 ], 500);
+           }
+   
+           try {
+               // Log the data being sent
+               Log::info('Sending data to Final DCR Submit API', [
+                     'api_url' => $apiUrl,
+                     'data'    => $postData,
+               ]);
+   
+              
+               // Make the API request with the Bearer token
+               $response = Http::withHeaders([
+                   'Authorization' => 'Bearer ' . $token,
+                   'Content-Type' => 'application/json',
+               ])->post($apiUrl, $postData);
+   
+                 // Log the API response
+                 Log::info('Final DCR Submit API Response', [
+                     'status' => $response->status(),
+                     'body'   => $response->body(),
+                 ]);
+   
+   
+               if ($response->successful()) {
+                   $apiResponse = $response->json();
+   
+                   if ($apiResponse['success']) {
+                       return response()->json([
+                           'success' => true,
+                           'message' => $apiResponse['message'],
+                           'data'    => $apiResponse['data'] ?? null, // Optional: include data if needed
+                       ]);
+                   } else {
+                        if ($apiResponse['message'] === "DCR already submitted.") {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "DCR already submitted."
+                            ], 200);
+                        }
+                        return response()->json([
+                            'success' => false,
+                            'message' => $apiResponse['message'] ?? 'Unknown error from API.'
+                        ], 200); // You can change this status if needed.
+                   }
+               } else {
+                   // Log the HTTP status code and response body
+                   Log::error('Final DCR Submit API failed', [
+                       'status' => $response->status(),
+                       'body'   => $response->body(),
+                   ]);
+       
+                   return response()->json([
+                     'success' => false,
+                     'message' => 'Failed to connect to the Final DCR Submit server.'
+                 ], $response->status());
+               }
+           } catch (\Exception $e) {
+               // Log the exception message
+               Log::error('Final DCRSubmit exception', ['error' => $e->getMessage()]);
+               return response()->json([
+                 'success' => false,
+                 'message' => 'An error occurred while submitting the Final DCR: ' . $e->getMessage()
+             ], 500);
+           }
+       }
 }

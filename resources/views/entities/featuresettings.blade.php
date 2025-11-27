@@ -60,7 +60,7 @@
                 <!-- Kms Bound Limit -->
                 <div class="col-md-6">
                     <label for="km_bound" class="form-label">Kms Bound Limit</label>
-                    <input type="number" class="form-control @error('km_bound') is-invalid @enderror" id="km_bound" name="km_bound" value="{{ old('km_bound', $entity->km_bound ?? '') }}" required>
+                    <input type="number" class="form-control @error('km_bound') is-invalid @enderror" id="km_bound" name="km_bound"   step="any" value="{{ old('km_bound', $entity->km_bound ?? '') }}" required>
                     @error('km_bound')
                         <div class="invalid-feedback">
                             {{ $message }}

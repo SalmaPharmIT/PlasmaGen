@@ -263,6 +263,17 @@
                     <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
                 </div> --}}
 
+                <!-- Location Action Buttons -->
+                <div class="col-md-12 mt-2">
+                    <button type="button" id="viewLocationBtn" class="btn btn-info me-2">
+                        <i class="bi bi-geo-alt"></i> View Location
+                    </button>
+
+                    <button type="button" id="clearLocationBtn" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Clear Location
+                    </button>
+                </div>
+
                   <!-- Account Status -->
                   <div class="col-md-6">
                     <label for="account_status" class="form-label">Account Status <span style="color:red">*</span></label>
@@ -710,6 +721,56 @@
                     cityDropdown.empty().append('<option value="">Choose City</option>');
                 }
             });
+
+
+
+            // VIEW LOCATION BUTTON
+            $("#viewLocationBtn").click(function () {
+                let lat = $("#latitude").val();
+                let lng = $("#longitude").val();
+
+                // Convert to number safely
+                let latNum = parseFloat(lat);
+                let lngNum = parseFloat(lng);
+
+                if (!lat || !lng || latNum === 0 || lngNum === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Location Missing',
+                        text: 'Please enter both latitude and longitude to view the location.'
+                    });
+                    return;
+                }
+
+                const url = `https://www.google.com/maps?q=${lat},${lng}`;
+                window.open(url, '_blank');
+            });
+
+
+            // CLEAR LOCATION BUTTON
+            $("#clearLocationBtn").click(function () {
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This will clear both latitude and longitude. Click Submit after clearing to save the changes.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, clear it"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $("#latitude").val("");
+                        $("#longitude").val("");
+
+                        Swal.fire({
+                            icon: "success",
+                            title: "Cleared",
+                            text: "Latitude and Longitude have been cleared. Click Submit/Update to save."
+                        });
+                    }
+                });
+            });
+
     });
 </script>
 @endpush
