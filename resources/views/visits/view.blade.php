@@ -1212,7 +1212,53 @@
     </div>
 </div>
   
-  
+<!-- Travel Information Modal -->
+<div class="modal fade" id="travelInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+
+        <form id="travelInfoForm">
+            @csrf
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Travel Information</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Travel Mode</label>
+                        <select class="form-control" id="travel_mode" name="travel_mode">
+                            <option value="">-- Select Mode --</option>
+                            <option value="own">Own Transport</option>
+                            <option value="public">Public Transport</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kilometer Travelled</label>
+                        <input type="number" class="form-control" id="km_travelled" name="km_travelled" placeholder="Enter KM">
+                        <small class="text-muted">Required only for Own Transport</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Remarks</label>
+                        <textarea class="form-control" id="travel_remarks" name="travel_remarks" rows="3" placeholder="Enter remarks"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="submitTravelInfo">Submit</button>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</div> 
 
 
 @endsection
@@ -2407,40 +2453,9 @@
                     }
                 });
 
-            //    // Check if location is enabled
-            //    if(entityFeatures.location_enabled.toLowerCase() === 'yes') {
-            //     if(!userLocation) {
-            //         Swal.fire('Location Required', 'Please allow location access to proceed.', 'warning');
-            //         return;
-            //     }
-
-            //     const bloodBankLat = $('#blood_bank_latitude').val();
-            //     const bloodBankLon = $('#blood_bank_longitude').val();
-
-            //     console.log('Blood Bank Latitude:', bloodBankLat);
-            //     console.log('Blood Bank Longitude:', bloodBankLon);
-
-            //     console.log('User Latitude:', userLocation.latitude);
-            //     console.log('User Longitude:',  userLocation.longitude);
-
-            //     if(isNaN(bloodBankLat) || isNaN(bloodBankLon)) {
-            //         Swal.fire('Error', 'Blood Bank location data is missing.', 'error');
-            //         return;
-            //     }
-
-            //     // Calculate distance
-            //     const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bloodBankLat, bloodBankLon);
-            //     console.log('Distance to Blood Bank:', distance, 'km');
-
-            //     const kmBound = parseFloat(entityFeatures.km_bound);
-
-            //     if(distance > kmBound) {
-            //         Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the Blood Bank.`, 'error');
-            //         return;
-            //     }
-            // }
-
-             // If location is enabled, show a loading modal while fetching/calculating location data
+        
+            //Temporary Location Mandatory hidden in web app - 27/11/2025  - Start
+            /* // If location is enabled, show a loading modal while fetching/calculating location data
             if (entityFeatures.location_enabled.toLowerCase() === 'yes' && visitTPType != 3) {
                 console.log('Location check  required.');
                 // Check if user's location is available
@@ -2468,20 +2483,34 @@
                 // Calculate distance using your calculateDistance() helper function
                 const distance = calculateDistance(userLocation.latitude, userLocation.longitude, bloodBankLat, bloodBankLon);
                 console.log('Distance to Blood Bank:', distance, 'km');
+                 console.log('KM Range:', entityFeatures.km_bound, 'km');
 
-                const kmBound = parseFloat(entityFeatures.km_bound);
-                if (distance > kmBound) {
-                    Swal.close(); // Close loading alert
-                    Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the Blood Bank.`, 'error');
-                    return;
-                }
-
+                 if(visitTPType == 1) {
+                    console.log('visitTPType collection:', visitTPType);
+                    const kmBound = parseFloat(entityFeatures.km_bound);
+                    if (distance > kmBound) {
+                        Swal.close(); // Close loading alert
+                        Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the Blood Bank.`, 'error');
+                        return;
+                    }
+                 }
+                 else if(visitTPType == 2) {
+                    console.log('visitTPType sourcing:', visitTPType);
+                    const kmBound = parseFloat(entityFeatures.km_bound_sourcing);
+                    if (distance > kmBound) {
+                        Swal.close(); // Close loading alert
+                        Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the Blood Bank.`, 'error');
+                        return;
+                    }
+                 }
                 // Close the loading modal once location data has been processed
                // Swal.close();
             }
             else {
                 console.log('Location check not required. Skipping.');
             }
+            */
+            //Temporary Location Mandatory hidden in web app - 27/11/2025  - End
 
 
             const formData = new FormData(this);
@@ -2891,7 +2920,8 @@
                     }
                 });
 
-             // If location is enabled, show a loading modal while fetching/calculating location data
+            //Temporary Location Mandatory hidden in web app - 27/11/2025  - Start
+            /*   // If location is enabled, show a loading modal while fetching/calculating location data
              if (entityFeatures.location_enabled.toLowerCase() === 'yes') {
              
                 // Check if user's location is available
@@ -2924,7 +2954,7 @@
                 const distance = calculateDistance(userLocation.latitude, userLocation.longitude, cityLat, cityLon);
                 console.log('Distance to City:', distance, 'km');
 
-                const kmBound = parseFloat(entityFeatures.km_bound);
+                const kmBound = parseFloat(entityFeatures.km_bound_sourcing);
                 if (distance > kmBound) {
                     Swal.close(); // Close loading alert
                     Swal.fire('Distance Restriction', `You are not within ${kmBound} km of the City.`, 'error');
@@ -2937,6 +2967,8 @@
             else {
                 console.log('Location check not required. Skipping.');
             }
+            */
+            //Temporary Location Mandatory hidden in web app - 27/11/2025  - End
 
             const formData = new FormData(this);
             const visitId = $('#sourcingVisitId').val();
@@ -2979,46 +3011,123 @@
                 return `${time[0]}:${time[1]}`;
             }
 
+            //Fibal DCR Submit change 04/12/2025
+            // $('#finalDcrSubmitForm').on('submit', function(e) {
+            //     e.preventDefault();
+            //     Swal.fire({
+            //         title: 'Are you sure?',
+            //         text: 'Are you sure want to send DCR submission for today?',
+            //         icon: 'question',
+            //         showCancelButton: true,
+            //         confirmButtonText: 'Yes Proceed',
+            //         cancelButtonText: 'Cancel'
+            //     }).then((result) => {
+            //         if (result.isConfirmed) {
+            //             // Proceed with form submission via AJAX or regular submission.
+            //             // For AJAX, you could do:
+            //             const form = $(this);
+            //             $.ajax({
+            //                 url: form.attr('action'),
+            //                 type: 'POST',
+            //                 data: form.serialize(), // Since the data is simple, serialize works.
+            //                 success: function(response) {
+            //                     if(response.success) {
+            //                         Swal.fire('Success', response.message, 'success');
+            //                         // Optionally, refresh visits or perform other actions.
+            //                     } else {
+            //                         // This will now trigger for "DCR already submitted." and other API errors returned with HTTP 200.
+            //                         if(response.message === "DCR already submitted.") {
+            //                             Swal.fire('Warning', response.message, 'warning');
+            //                         } else {
+            //                             Swal.fire('Error', response.message, 'error');
+            //                         }
+            //                     }
+            //                 },
+            //                 error: function(xhr, status, error) {
+            //                     console.error("Error in Final DCR Submission:", error);
+            //                     Swal.fire('Error', 'An error occurred while sending final DCR submission.', 'error');
+            //                 }
+            //             });
+            //         }
+            //     });
+            // });
 
             $('#finalDcrSubmitForm').on('submit', function(e) {
                 e.preventDefault();
+                $('#travelInfoModal').modal('show');
+            });
+
+           $('#submitTravelInfo').on('click', function(e) {
+                e.preventDefault();
+
+                let mode = $('#travel_mode').val();
+                let km = $('#km_travelled').val();
+                let remarks = $('#travel_remarks').val();
+
+                if (!mode) {
+                    Swal.fire('Required', 'Please select travel mode.', 'warning');
+                    return;
+                }
+                if (mode === 'own' && (!km || km <= 0)) {
+                    Swal.fire('Required', 'Kilometer travelled is mandatory for Own Transport.', 'warning');
+                    return;
+                }
+
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: 'Are you sure want to send DCR submission for today?',
+                    title: 'Submit DCR?',
+                    text: 'Do you want to submit today’s DCR?',
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: 'Yes Proceed',
-                    cancelButtonText: 'Cancel'
+                    confirmButtonText: 'Yes, Submit'
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Proceed with form submission via AJAX or regular submission.
-                        // For AJAX, you could do:
-                        const form = $(this);
-                        $.ajax({
-                            url: form.attr('action'),
-                            type: 'POST',
-                            data: form.serialize(), // Since the data is simple, serialize works.
-                            success: function(response) {
-                                if(response.success) {
-                                    Swal.fire('Success', response.message, 'success');
-                                    // Optionally, refresh visits or perform other actions.
-                                } else {
-                                    // This will now trigger for "DCR already submitted." and other API errors returned with HTTP 200.
-                                    if(response.message === "DCR already submitted.") {
-                                        Swal.fire('Warning', response.message, 'warning');
-                                    } else {
-                                        Swal.fire('Error', response.message, 'error');
-                                    }
-                                }
-                            },
-                            error: function(xhr, status, error) {
-                                console.error("Error in Final DCR Submission:", error);
-                                Swal.fire('Error', 'An error occurred while sending final DCR submission.', 'error');
+
+                    if (!result.isConfirmed) return;
+
+                    Swal.fire({
+                        title: 'Submitting...',
+                        text: 'Please wait...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    let formData = new FormData();
+                    formData.append('visit_date', "{{ $date }}");
+                    formData.append('travel_mode', mode);
+                    formData.append('km_travelled', km);
+                    formData.append('travel_remarks', remarks);
+
+                    // THE FIX
+                    formData.append('_token', "{{ csrf_token() }}");
+
+                    $.ajax({
+                        url: "{{ route('visits.finalDCRsubmit') }}",
+                        type: "POST",
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+
+                        success: function(response) {
+                            Swal.close();
+                            if (response.success) {
+                                Swal.fire('Success', response.message, 'success');
+                                $('#travelInfoModal').modal('hide');
+                            } else {
+                                Swal.fire('Error', response.message, 'error');
                             }
-                        });
-                    }
+                        },
+                        error: function(xhr) {
+                            Swal.close();
+                            Swal.fire('Error', 'Something went wrong.', 'error');
+                            console.log(xhr.responseText);
+                        }
+                    });
+
                 });
             });
+
 
 
          // Function to fetch Core Blood Bank Lits when modal opens

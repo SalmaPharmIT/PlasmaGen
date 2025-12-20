@@ -689,4 +689,194 @@ class ReportsMasterController extends Controller
         }
     }
 
+    /**
+     * Show the User Live Location page.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function userLiveLocationIndex()
+    {
+
+        return view('reports.user_live_location');
+    }
+
+    /**
+     * Fetch User Live Location Data
+     */
+    public function getUserLiveLocation(Request $request)
+    {
+        // Retrieve token
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // External API URL
+        $apiUrl = config('auth_api.reports_user_live_location_url');
+
+        if (!$apiUrl) {
+            Log::error('Live Location URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Live Location API URL is not configured.'
+            ], 500);
+        }
+
+        // Inputs from frontend
+        $empId = $request->input('empId');
+        $date  = $request->input('date');
+
+        $payload = [
+            'emp_id' => $empId,
+            'date'   => $date,
+        ];
+
+        Log::info('User Live Location Request Sent', ['payload' => $payload]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json'
+            ])->post($apiUrl, $payload);
+
+            Log::info('User Live Location API Response', [
+                'status' => $response->status(),
+                'body'   => $response->body()
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data'    => Arr::get($apiResponse, 'data', [])
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'message' => Arr::get($apiResponse, 'message', 'Unknown error')
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'External API error occurred.'
+            ], $response->status());
+
+        } catch (\Exception $e) {
+            Log::error('Exception in User Live Location', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Unexpected error occurred while fetching location.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Show the DCR Summary with Expenses page.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function dcrSummaryExpensesIndex()
+    {
+
+        return view('reports.dcr_summary_expenses');
+    }
+
+    /**
+     * Show the DCR Summary with Expenses Deata page.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function getUserDCRWithExpensesSummaryData(Request $request)
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching User wise DCR
+        $apiUrl = config('auth_api.reports_dcr_details_expenses_url');
+
+        if (!$apiUrl) {
+            Log::error('User wise DCR with Expenses Summary fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'User wise DCR with Expenses Summary fetch URL is not configured.'
+            ], 500);
+        }
+
+        // FIX HERE
+        $agent_id = $request->input('agent_id'); 
+        $dateRange = $request->input('dateRange'); 
+
+        // Prepare the payload to submit to the external API
+        $payload = [
+            'agent_id'   => $agent_id,
+            'dateRange' => $dateRange,
+        ];
+
+         // Log the data being sent
+         Log::info('getUserDCRWithExpensesSummaryData request API', [
+            'data' => $payload,
+        ]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->post($apiUrl, $payload);
+
+            Log::info('External API Response getUserDCRWithExpensesSummaryData', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch User DCR with Expenses Summary from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch User DCR with Expenses Summary from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching User DCR with Expenses Summary from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching User DCR with Expenses Summary.',
+            ], 500);
+        }
+    }
+
 }

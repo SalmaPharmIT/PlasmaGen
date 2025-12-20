@@ -691,6 +691,10 @@ class ExpensesController extends Controller
         $validatedData = $request->validate([
             'status' => 'required|in:cleared,rejected',
             'remarks' => 'nullable|string', // Validate the remarks
+            // NEW FIELDS
+            'approved_km_travel'   => 'nullable|numeric',
+            'approved_travel_cost' => 'nullable|numeric',
+            'approved_travel_remarks' => 'nullable|string',
         ]);
 
          // 2. Retrieve the token from the session
@@ -721,6 +725,10 @@ class ExpensesController extends Controller
             'status' => $validatedData['status'],
             'remarks' => $validatedData['remarks'],  // Add remarks to the payload
             'updated_by' => Auth::id(), // Assuming the authenticated user is performing the update
+             // NEW APPROVAL FIELDS
+            'approved_km_travel'   => $validatedData['approved_km_travel'] ?? null,
+            'approved_travel_cost' => $validatedData['approved_travel_cost'] ?? null,
+            'approved_travel_remarks' => $validatedData['approved_travel_remarks'] ?? null,
         ];
 
         // Log the payload being sent

@@ -604,18 +604,39 @@ class ReportVisitsController extends Controller
     
              // Validate the form data with appropriate rules
              $validatedData = $request->validate([
-                 'visit_date'              => 'required|date',
+                 'visit_date'       => 'required|date',
+                 'travel_mode'      => 'required|in:own,public',
+                 'km_travelled'     => 'nullable|numeric',
+                 'travel_remarks'   => 'nullable|string|max:500',
              ]);
 
             // Fetch the visit date from the validated data and the user_id from the authenticated user.
             $visit_date = $validatedData['visit_date'];
             $user_id    = Auth::id();
+            $travel_mode    = $validatedData['travel_mode'];
+            $km_travelled   = $validatedData['km_travelled'] ?? 0;
+            $travel_remarks = $validatedData['travel_remarks'] ?? '';
+
+            // Convert frontend value to DB/API value
+            // own → private , public → public
+            $apiTravelMode = ($travel_mode === 'own') ? 'private' : 'public';
+
+            // If user selects Own transport → KM mandatory
+            if ($travel_mode === 'own' && empty($km_travelled)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kilometer travelled is required for Own Transport.'
+                ]);
+            }
    
    
             // Log the validated data for debugging.
             Log::info('Final DCR submission validatedData', [
                 'visit_date' => $visit_date,
                 'user_id' => $user_id,
+                'mode_sent_to_api' => $apiTravelMode,
+                'km_travelled'      => $km_travelled,
+                'travel_remarks'    => $travel_remarks,
             ]);
 
            // Retrieve the token from the session
@@ -635,6 +656,10 @@ class ReportVisitsController extends Controller
                  'user_id'               => $user_id,
                  'created_by'            => Auth::id(), // Assuming you want to capture the authenticated user
                  'modified_by'           => Auth::id(),
+                 // Newly added Travel info
+                 'travel_mode'     => $apiTravelMode,   // private / public
+                 'km_travelled'    => $km_travelled,
+                 'travel_remarks'  => $travel_remarks,
              ];
  
    

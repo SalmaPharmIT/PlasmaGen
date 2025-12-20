@@ -2804,4 +2804,186 @@ class TourPlannerController extends Controller
         }
     }
 
+
+    /**
+     * Show the nonFieldWork list page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function nonFieldWork()
+    {
+        return view('tourplanner.nonFieldWork');
+    }
+
+    /**
+     * API Endpoint to Fetch Non Field Work based on filters.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNonFieldWork(Request $request)
+    {
+        // Retrieve filters from the request
+        $agentId = $request->input('agent_id');
+        $month = $request->input('month'); // Expected format: YYYY-MM
+
+    
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching calendar events
+        $apiUrl = config('auth_api.non_field_work_fetch_all_url');
+
+        if (!$apiUrl) {
+            Log::error('Non Field Work fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Non Field Work fetch URL is not configured.'
+            ], 500);
+        }
+
+        try {
+            // Build query parameters
+            $queryParams = [
+                'month' => $month,
+            ];
+
+            if ($agentId) {
+                $queryParams['agent_id'] = $agentId;
+            }
+
+            // Log the data being sent
+            Log::info('Non Field Work request API', [
+                'data' => $queryParams,
+            ]);
+
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl, $queryParams);
+
+            Log::info('External API Response forNon Field Work', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    // Assuming the API returns events in FullCalendar-compatible format
+                    return response()->json([
+                        'success' => true,
+                        'events' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure for Non Field Work.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch Non Field Work from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch Non Field Work from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching Non Field Work from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching Non Field Work.',
+            ], 500);
+        }
+    }
+
+    /**
+     * API Endpoint to delete non-Field Work.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteNonFieldWork(Request $request)
+    {
+        $id = $request->input('id');  // record id to delete
+
+        if (!$id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record ID is required.'
+            ], 400);
+        }
+
+        // Retrieve API token
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing.'
+            ], 401);
+        }
+
+        // PHP API URL
+        $apiUrl = config('auth_api.non_field_work_delete_url');
+
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Delete API URL is not configured.'
+            ], 500);
+        }
+
+        try {
+
+            Log::info('Deleting Non Field Work record ID: ' . $id);
+
+            // Call external PHP API
+           $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json'
+            ])
+            ->post($apiUrl, [
+                'id' => $id
+            ]);
+
+            Log::info('Delete API response:', [
+                'body' => $response->body()
+            ]);
+
+            $apiResponse = $response->json();
+
+            return response()->json([
+                'success' => $apiResponse['success'] ?? false,
+                'message' => $apiResponse['message'] ?? 'Unknown response'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Delete Non Field Work Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error occurred.'
+            ], 500);
+        }
+    }
+
+
+
+
 }

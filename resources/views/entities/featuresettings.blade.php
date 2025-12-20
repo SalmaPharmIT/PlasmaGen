@@ -59,9 +59,25 @@
 
                 <!-- Kms Bound Limit -->
                 <div class="col-md-6">
-                    <label for="km_bound" class="form-label">Kms Bound Limit</label>
+                    <label for="km_bound" class="form-label">Kms Bound Limit (Collection)</label>
                     <input type="number" class="form-control @error('km_bound') is-invalid @enderror" id="km_bound" name="km_bound"   step="any" value="{{ old('km_bound', $entity->km_bound ?? '') }}" required>
                     @error('km_bound')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
+
+                <!-- Kms Bound Limit for Sourcing -->
+                <div class="col-md-6">
+                    <label for="km_bound_sourcing" class="form-label">Kms Bound Limit (Sourcing)</label>
+                    <input type="number"
+                          class="form-control @error('km_bound_sourcing') is-invalid @enderror"
+                          id="km_bound_sourcing"
+                          name="km_bound_sourcing"
+                          step="any"
+                          value="{{ old('km_bound_sourcing', $entity->km_bound_sourcing ?? '') }}">
+                    @error('km_bound_sourcing')
                         <div class="invalid-feedback">
                             {{ $message }}
                         </div>

@@ -19,6 +19,7 @@ return [
     */
 
     'base_image_url' => $base_image_url,
+    'google_maps_api_key' => $google_maps_api_key,
 
     'login_url' =>  $base_url . 'login.php',
     'entity_register_url' =>  $base_url . 'entity_register.php',
@@ -128,4 +129,12 @@ return [
     'expense_status_update_url' =>  $base_url . 'expense_status_update.php',
     'blood_bank_bulk_import_url' =>  $base_url . 'blood_bank_bulk_import.php',
     'final_pending_dcr_submit_fetch_all_url' =>  $base_url . 'final_pending_dcr_submit_fetch_all.php',
+    'user_kilometer_mapping_create_url' =>  $base_url . 'user_kilometer_mapping_create.php',
+    'user_kilometer_mapping_fetch_url' =>  $base_url . 'user_kilometer_mapping_fetch.php',
+    'user_kilometer_mapping_edit_url' =>  $base_url . 'user_kilometer_mapping_edit.php',
+    'user_kilometer_mapping_delete_url' =>  $base_url . 'user_kilometer_mapping_delete.php',
+    'reports_user_live_location_url' =>  $base_url . 'reports_user_live_location.php',
+    'non_field_work_fetch_all_url' =>  $base_url . 'non_field_work_fetch_all.php',
+    'non_field_work_delete_url' =>  $base_url . 'non_field_work_delete.php',
+    'reports_dcr_details_expenses_url' =>  $base_url . 'reports_dcr_details_expenses.php',
 ];

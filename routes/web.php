@@ -118,6 +118,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/users/workLocationMapping/editSubmit', [UserController::class, 'submitWorkLocationMappingEdit'])->name('users.workLocationMapping.editSubmit');
     Route::post('/users/workLocationMapping/delete', [UserController::class, 'deleteWorkLocationMapping'])->name('users.workLocationMapping.delete');
     Route::get('/users/workLocationMapping/bloodbanks/{cityIds}', [UserController::class, 'getBloodbanksByCity'])->name('users.workLocationMapping.bloodbanks');
+
+    Route::get('/users/kmMapping', [UserController::class, 'showKMMapping'])->name('users.kmMapping');
+    Route::post('/users/kmMapping/submit', [UserController::class, 'submitKMMapping'])->name('users.kmMapping.submit');
+    Route::get('/get-user-km-mapping', [UserController::class, 'getUserKMMapping'])->name('getUseKMMapping');
+    Route::post('/users/kmMapping/editSubmit', [UserController::class, 'submitKMMappingEdit'])->name('users.kmMapping.editSubmit');
+    Route::post('/users/kmMapping/delete', [UserController::class, 'deleteKMMapping'])->name('users.kmMapping.delete');
     /* *********************   Masters for Admin Ends ********************************* */
 
 
@@ -132,7 +138,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/getCalendarEvents', [TourPlannerController::class, 'getCalendarEvents'])->name('tourplanner.getCalendarEvents');
     Route::post('/tourplanner/saveTourPlan', [TourPlannerController::class, 'saveTourPlan'])->name('tourplanner.saveTourPlan');
     Route::delete('/tourplanner/deleteTourPlan', [TourPlannerController::class, 'deleteTourPlan'])->name('tourplanner.deleteTourPlan');
-        Route::delete('/tourplanner/cancelTourPlan', [TourPlannerController::class, 'cancelTourPlan'])->name('tourplanner.cancelTourPlan');
+    Route::delete('/tourplanner/cancelTourPlan', [TourPlannerController::class, 'cancelTourPlan'])->name('tourplanner.cancelTourPlan');
 
     Route::get('/tourplanner/sourcingCreateTourPlan', [TourPlannerController::class, 'showSourcingCreateTourPlan'])->name('tourplanner.sourcingCreateTourPlan');
     Route::post('/tourplanner/submit_monthly_tour_plan', [TourPlannerController::class, 'submitMonthlyTourPlan'])->name('tourplanner.submitMonthlyTourPlan');
@@ -159,7 +165,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tourplanner/dcrVisits', [TourPlannerController::class, 'dcrVisits'])->name('tourplanner.dcrVisits');
     Route::get('/tourplanner/dcrStatus', [TourPlannerController::class, 'dcrStatusFetch'])->name('tourplanner.dcrStatus');
     Route::get('/tourplanner/pendingDCRSubmit', [TourPlannerController::class, 'pendingDCRSubmit'])->name('tourplanner.pendingDCRSubmit');
-        Route::get('/tourplanner/getPendingDCRSubmits', [TourPlannerController::class, 'getPendingDCRSubmits'])->name('tourplanner.getPendingDCRSubmits');
+    Route::get('/tourplanner/getPendingDCRSubmits', [TourPlannerController::class, 'getPendingDCRSubmits'])->name('tourplanner.getPendingDCRSubmits');
+    Route::get('/tourplanner/nonFieldWork', [TourPlannerController::class, 'nonFieldWork'])->name('tourplanner.nonFieldWork');
+    Route::get('/tourplanner/getNonFieldWork', [TourPlannerController::class, 'getNonFieldWork'])->name('tourplanner.getNonFieldWork');
+    Route::post('/tourplanner/deleteNonFieldWork', [TourPlannerController::class, 'deleteNonFieldWork'])->name('tourplanner.deleteNonFieldWork');
     /* *********************  Manage Tour Planner Ends ********************************* */
 
     /* *********************  Collections Starts ********************************* */
@@ -208,6 +217,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/reports/getUserExpensesSummary', [ReportsMasterController::class, 'getUserExpensesSummaryData'])->name('reports.getUserExpensesSummary');
     Route::get('/reports/dcrSummary', [ReportsMasterController::class, 'dcrSummaryIndex'])->name('reports.dcr_summary');
     Route::post('/reports/getUserDCRSummary', [ReportsMasterController::class, 'getUserDCRSummaryData'])->name('reports.getUserDCRSummary');
+    Route::get('/reports/userLiveLocation', [ReportsMasterController::class, 'userLiveLocationIndex'])->name('reports.user_live_location');
+    Route::post('/reports/getUserLiveLocation', [ReportsMasterController::class, 'getUserLiveLocation'])->name('reports.getUserLiveLocation');
+    Route::get('/reports/dcrSummaryExpenses', [ReportsMasterController::class, 'dcrSummaryExpensesIndex'])->name('reports.dcr_summary_expenses');
+    Route::post('/reports/getUserDCRWithExpensesSummary', [ReportsMasterController::class, 'getUserDCRWithExpensesSummaryData'])->name('reports.getUserDCRWithExpensesSummary');
     /* *********************  Report Visits Ends ********************************* */
 
 

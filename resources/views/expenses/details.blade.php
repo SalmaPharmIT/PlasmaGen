@@ -92,6 +92,102 @@
                     </div>
                 </div> --}}
 
+                <div class="col-md-12 mt-3">
+                    <div class="card border shadow-sm">
+                        <div class="card-body py-3">
+
+                            <h4 class="mb-3"><strong>Travel Information</strong></h4>
+
+                            {{-- Display-only row --}}
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <strong>Travel Mode:</strong>
+                                    <span id="travelModeDisplay">N/A</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>KM Travelled:</strong>
+                                    <span id="kmTravelledDisplay">N/A</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Remarks:</strong>
+                                    <span id="travelRemarksDisplay">N/A</span>
+                                </div>
+                            </div>
+
+                            {{-- KM limit & price --}}
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <strong>KM Assigned:</strong>
+                                    <span id="kmAssignedDisplay">N/A</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Price Per Kilometer:</strong>
+                                    <span id="pricePerKmDisplay">N/A</span>
+                                </div>
+                            </div>
+
+                            {{-- Approved values --}}
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <strong>Approved KM:</strong>
+                                    <span id="approvedKmDisplay">N/A</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Approved Price:</strong>
+                                    <span id="approvedPriceDisplay">N/A</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Approved Remarks:</strong>
+                                    <span id="approvedRemarksDisplay">N/A</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mt-3">
+                    <div class="card border shadow-sm">
+                        <div class="card-body py-3">
+
+                            <h4 class="mb-3"><strong>Update Travel Details</strong></h4>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-4">
+                                    <label class="form-label mb-1"><strong>Approved KM Travelled</strong></label>
+                                    <input type="number"
+                                        step="0.01"
+                                        class="form-control"
+                                        id="approvedKmTravelled"
+                                        name="approved_km_travel">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label mb-1"><strong>Approved Total Price</strong></label>
+                                    <input type="number"
+                                        step="0.01"
+                                        class="form-control"
+                                        id="approvedTravelCost"
+                                        name="approved_travel_cost">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label mb-1"><strong>Approved Travel Remarks</strong></label>
+                                    <input type="text"
+                                        class="form-control"
+                                        id="approvedTravelRemarks"
+                                        name="approved_travel_remarks">
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+
                 <div class="col-md-12">
                     <div class="d-flex justify-content-between align-items-start mt-3">
 
@@ -584,8 +680,9 @@
                     success: function(response) {
                         console.log("dcr status result", response);
                         if (response.success) {
-                            if (response.data.length > 0) {
-                                var dcr = response.data[0];
+                            if (response.data) {
+                              // var dcr = response.data[0];
+                               var dcr = response.data; // API now returns a single object
                                 $('#expenseMGRStatusDisplay').text("Manager Status: " + capitalizeFirstLetter(dcr.expense_mgr_status));
                                 $('#expenseCAStatusDisplay').text("CA Status: " + capitalizeFirstLetter(dcr.expense_ca_status));
                                 $('#remarksDisplay').text(function() {
@@ -609,6 +706,98 @@
                                     // Display the final remarks text (if any)
                                     return remarksText || ""; // Default message if no remarks
                                 });
+
+                                // --------------------------------
+                                // TRAVEL DISPLAY FIELDS (read-only)
+                                // --------------------------------
+                                $('#travelModeDisplay').text(
+                                    dcr.travel_mode ? capitalizeFirstLetter(dcr.travel_mode) : 'N/A'
+                                );
+
+                                $('#kmTravelledDisplay').text(
+                                    dcr.km_travelled ? dcr.km_travelled : 'N/A'
+                                );
+
+                                $('#travelRemarksDisplay').text(
+                                    dcr.travel_remarks ? dcr.travel_remarks : 'N/A'
+                                );
+
+                                $('#kmAssignedDisplay').text(
+                                    dcr.travel_kms_limit ? dcr.travel_kms_limit : 'N/A'
+                                );
+
+                                $('#pricePerKmDisplay').text(
+                                    dcr.price_per_km ? dcr.price_per_km : 'N/A'
+                                );
+
+                                // Approved values display
+                                $('#approvedKmDisplay').text(
+                                    dcr.approved_km_travel ? dcr.approved_km_travel : 'N/A'
+                                );
+
+                                $('#approvedPriceDisplay').text(
+                                    dcr.approved_travel_cost ? dcr.approved_travel_cost : 'N/A'
+                                );
+
+                                $('#approvedRemarksDisplay').text(
+                                    dcr.approved_travel_remarks ? dcr.approved_travel_remarks : 'N/A'
+                                );
+
+
+                                // --------------------------------
+                                // DEFAULT VALUES FOR APPROVAL FIELDS
+                                // --------------------------------
+                                const kmTravelled = dcr.km_travelled ? parseFloat(dcr.km_travelled) : 0;
+                                const travelKmsLimit = dcr.travel_kms_limit ? parseFloat(dcr.travel_kms_limit) : null;
+                                const pricePerKm = dcr.price_per_km ? parseFloat(dcr.price_per_km) : null;
+
+                                let defaultApprovedKm = null;
+                                let defaultApprovedCost = null;
+
+                                // If already approved earlier, show those values
+                                if (dcr.approved_km_travel !== null && dcr.approved_km_travel !== undefined) {
+                                    defaultApprovedKm = parseFloat(dcr.approved_km_travel);
+                                } else {
+                                    // Rule:
+                                    // If km_travelled <= travel_kms_limit => use km_travelled
+                                    // Else => use travel_kms_limit
+                                    if (travelKmsLimit !== null && !isNaN(kmTravelled)) {
+                                        defaultApprovedKm = (kmTravelled <= travelKmsLimit)
+                                            ? kmTravelled
+                                            : travelKmsLimit;
+                                    } else {
+                                        // if no limit configured, just use travelled kms
+                                        defaultApprovedKm = kmTravelled;
+                                    }
+                                }
+
+                                if (dcr.approved_travel_cost !== null && dcr.approved_travel_cost !== undefined) {
+                                    defaultApprovedCost = parseFloat(dcr.approved_travel_cost);
+                                } else if (
+                                    defaultApprovedKm !== null &&
+                                    !isNaN(defaultApprovedKm) &&
+                                    pricePerKm !== null &&
+                                    !isNaN(pricePerKm)
+                                ) {
+                                    // Approved Total Price = Approved KM * Price Per KM
+                                    defaultApprovedCost = defaultApprovedKm * pricePerKm;
+                                }
+
+                                // Set defaults in inputs (user can override)
+                                $('#approvedKmTravelled').val(
+                                    defaultApprovedKm !== null && !isNaN(defaultApprovedKm)
+                                        ? defaultApprovedKm.toFixed(2)
+                                        : ''
+                                );
+
+                                $('#approvedTravelCost').val(
+                                    defaultApprovedCost !== null && !isNaN(defaultApprovedCost)
+                                        ? defaultApprovedCost.toFixed(2)
+                                        : ''
+                                );
+
+                                $('#approvedTravelRemarks').val(dcr.approved_travel_remarks || '');
+
                             } else {
                                 $('#expenseMGRStatusDisplay').text("Manager Status: N/A");
                                 $('#expenseCAStatusDisplay').text("CA Status: N/A");
@@ -618,6 +807,11 @@
                             $('#expenseMGRStatusDisplay').text("Manager Status: N/A");
                             $('#expenseCAStatusDisplay').text("CA Status: N/A");
                             $('#remarksDisplay').text("");
+                            $('#travelModeDisplay').text('N/A');
+                            $('#kmTravelledDisplay').text('N/A');
+                            $('#travelRemarksDisplay').text('N/A');
+                            $('#kmAssignedDisplay').text('N/A');
+                            $('#pricePerKmDisplay').text('N/A');
                         }
                     },
                     error: function(xhr, status, error) {
@@ -638,57 +832,165 @@
             const rejectBtn = $('#rejectBtn');
             const statusForm = $('#statusForm');
 
+            // clearBtn.on('click', function (e) {
+            //     e.preventDefault(); // Prevent the default form submission
+
+            //     Swal.fire({
+            //         title: 'Are you sure?',
+            //         //text: "Do you really want to approve this DCR?",
+            //         html: `<p>Do you really want to clear this expense?</p><textarea class="form-control" id="remarks" class="swal2-input" placeholder="Enter your remarks here..." rows="3"></textarea>`,     
+            //         icon: 'warning',
+            //         showCancelButton: true,
+            //         confirmButtonColor: '#28a745', // Green color for approve
+            //         cancelButtonColor: '#6c757d', // Gray color for cancel
+            //         confirmButtonText: 'Yes, clear it!',
+            //         preConfirm: () => {
+            //             const remarks = document.getElementById('remarks').value;
+            //             // if (!remarks) {
+            //             //     Swal.showValidationMessage('Remarks cannot be empty');
+            //             //     return false;
+            //             // }
+            //             return remarks; // Return remarks to be included in the form submission
+            //         }
+            //     }).then((result) => {
+            //         if (result.isConfirmed) {
+            //              // Add remarks to the form and submit
+            //             $('<input>').attr({
+            //                 type: 'hidden',
+            //                 name: 'remarks',
+            //                 value: result.value
+            //             }).appendTo(statusForm);
+
+            //             // Set the status value and submit the form
+            //             $('<input>').attr({
+            //                 type: 'hidden',
+            //                 name: 'status',
+            //                 value: 'cleared'
+            //             }).appendTo(statusForm);
+            //             statusForm.submit();
+            //         }
+            //     });
+            // });
+
+            // rejectBtn.on('click', function (e) {
+            //     e.preventDefault(); // Prevent the default form submission
+
+            //     Swal.fire({
+            //         title: 'Are you sure?',
+            //        // text: "Do you really want to reject this DCR?",
+            //         html: `<p>Do you really want to reject this Expense?</p><textarea class="form-control"  id="remarks" class="swal2-input" placeholder="Enter your remarks here..." rows="3"></textarea>`,
+            //         icon: 'warning',
+            //         showCancelButton: true,
+            //         confirmButtonColor: '#dc3545', // Red color for reject
+            //         cancelButtonColor: '#6c757d', // Gray color for cancel
+            //         confirmButtonText: 'Yes, reject it!',
+            //         preConfirm: () => {
+            //             const remarks = document.getElementById('remarks').value;
+            //             if (!remarks) {
+            //                 Swal.showValidationMessage('Remarks cannot be empty');
+            //                 return false;
+            //             }
+            //             return remarks; // Return remarks to be included in the form submission
+            //         }
+            //     }).then((result) => {
+            //         if (result.isConfirmed) {
+            //             // Add remarks to the form and submit
+            //             $('<input>').attr({
+            //                 type: 'hidden',
+            //                 name: 'remarks',
+            //                 value: result.value
+            //             }).appendTo(statusForm);
+
+            //             // Set the status value and submit the form
+            //             $('<input>').attr({
+            //                 type: 'hidden',
+            //                 name: 'status',
+            //                 value: 'rejected'
+            //             }).appendTo(statusForm);
+            //             statusForm.submit();
+            //         }
+            //     });
+            // });
+
             clearBtn.on('click', function (e) {
                 e.preventDefault(); // Prevent the default form submission
 
                 Swal.fire({
                     title: 'Are you sure?',
-                    //text: "Do you really want to approve this DCR?",
-                    html: `<p>Do you really want to clear this expense?</p><textarea class="form-control" id="remarks" class="swal2-input" placeholder="Enter your remarks here..." rows="3"></textarea>`,     
+                    html: `<p>Do you really want to clear this expense?</p>
+                        <textarea class="form-control" id="remarks" class="swal2-input"
+                                    placeholder="Enter your remarks here..." rows="3"></textarea>`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#28a745', // Green color for approve
-                    cancelButtonColor: '#6c757d', // Gray color for cancel
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Yes, clear it!',
                     preConfirm: () => {
                         const remarks = document.getElementById('remarks').value;
-                        // if (!remarks) {
-                        //     Swal.showValidationMessage('Remarks cannot be empty');
-                        //     return false;
-                        // }
-                        return remarks; // Return remarks to be included in the form submission
+                        return remarks; // remarks can be optional here
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                         // Add remarks to the form and submit
+
+                        // Remove any existing hidden fields so we don't duplicate
+                        statusForm.find('input[name="remarks"], input[name="status"], input[name="approved_km_travel"], input[name="approved_travel_cost"], input[name="approved_travel_remarks"]').remove();
+
+                        // Pull values from the inputs
+                        const approvedKm = $('#approvedKmTravelled').val();
+                        const approvedCost = $('#approvedTravelCost').val();
+                        const approvedRemarks = $('#approvedTravelRemarks').val();
+
+                        // Add remarks to the form
                         $('<input>').attr({
                             type: 'hidden',
                             name: 'remarks',
-                            value: result.value
+                            value: result.value || ''
                         }).appendTo(statusForm);
 
-                        // Set the status value and submit the form
+                        // Add status
                         $('<input>').attr({
                             type: 'hidden',
                             name: 'status',
                             value: 'cleared'
                         }).appendTo(statusForm);
+
+                        // Add approved travel fields
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'approved_km_travel',
+                            value: approvedKm
+                        }).appendTo(statusForm);
+
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'approved_travel_cost',
+                            value: approvedCost
+                        }).appendTo(statusForm);
+
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'approved_travel_remarks',
+                            value: approvedRemarks
+                        }).appendTo(statusForm);
+
                         statusForm.submit();
                     }
                 });
             });
+
 
             rejectBtn.on('click', function (e) {
                 e.preventDefault(); // Prevent the default form submission
 
                 Swal.fire({
                     title: 'Are you sure?',
-                   // text: "Do you really want to reject this DCR?",
-                    html: `<p>Do you really want to reject this Expense?</p><textarea class="form-control"  id="remarks" class="swal2-input" placeholder="Enter your remarks here..." rows="3"></textarea>`,
+                    html: `<p>Do you really want to reject this Expense?</p>
+                        <textarea class="form-control" id="remarks" class="swal2-input"
+                                    placeholder="Enter your remarks here..." rows="3"></textarea>`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#dc3545', // Red color for reject
-                    cancelButtonColor: '#6c757d', // Gray color for cancel
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Yes, reject it!',
                     preConfirm: () => {
                         const remarks = document.getElementById('remarks').value;
@@ -696,27 +998,56 @@
                             Swal.showValidationMessage('Remarks cannot be empty');
                             return false;
                         }
-                        return remarks; // Return remarks to be included in the form submission
+                        return remarks;
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Add remarks to the form and submit
+
+                        // Remove existing hidden fields
+                        statusForm.find('input[name="remarks"], input[name="status"], input[name="approved_km_travel"], input[name="approved_travel_cost"], input[name="approved_travel_remarks"]').remove();
+
+                        const approvedKm = $('#approvedKmTravelled').val();
+                        const approvedCost = $('#approvedTravelCost').val();
+                        const approvedRemarks = $('#approvedTravelRemarks').val();
+
+                        // Add remarks
                         $('<input>').attr({
                             type: 'hidden',
                             name: 'remarks',
                             value: result.value
                         }).appendTo(statusForm);
 
-                        // Set the status value and submit the form
+                        // Add status
                         $('<input>').attr({
                             type: 'hidden',
                             name: 'status',
                             value: 'rejected'
                         }).appendTo(statusForm);
+
+                        // Even for rejection you might want to keep what they had keyed in
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'approved_km_travel',
+                            value: approvedKm
+                        }).appendTo(statusForm);
+
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'approved_travel_cost',
+                            value: approvedCost
+                        }).appendTo(statusForm);
+
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'approved_travel_remarks',
+                            value: approvedRemarks
+                        }).appendTo(statusForm);
+
                         statusForm.submit();
                     }
                 });
             });
+
 
     });
 

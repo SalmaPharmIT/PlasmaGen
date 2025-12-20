@@ -134,6 +134,15 @@
         </li>
         @endif
 
+        <!-- Non-Field Work - Visible to Role ID 1 and 2 -->
+         @if (in_array(Auth::user()->role_id, [1, 2, 6, 19]))
+         <li>
+          <a href="{{ route('tourplanner.nonFieldWork') }}">
+            <i class="bi bi-circle"></i><span>Non-Field Work</span>
+          </a>
+        </li>
+        @endif
+
       </ul>
     </li><!-- End Forms Nav -->
     @endif
@@ -232,11 +241,32 @@
         @if (in_array(Auth::user()->role_id, [1, 2, 18]))
         <li class="nav-item">
           <a class="nav-link collapsed" href="{{ route('reports.dcr_summary') }}" >
-            <i class="bi bi-currency-rupee"></i>
+            <i class="bi bi-file-earmark-person"></i>
             <span>DCR Summary</span>
           </a>
          </li>
        @endif
+
+      <!-- DCR  and Expenses Reports - Visible to Role ID 1 and 2 -->
+      @if (in_array(Auth::user()->role_id, [1, 2, 18]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.dcr_summary_expenses') }}" >
+            <i class="bi bi-passport"></i>
+            <span>DCR with Expenses</span>
+          </a>
+         </li>
+      @endif
+
+
+      <!-- User Live Locations Reports - Visible to Role ID 1 and 2 -->
+      @if (in_array(Auth::user()->role_id, [1, 2, 18]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.user_live_location') }}" >
+            <i class="bi bi-geo-alt-fill"></i>
+            <span>User Live Locations</span>
+          </a>
+         </li>
+      @endif
 
       @endif
     @endif
@@ -276,6 +306,12 @@
             <a class="nav-link collapsed" href="{{ route('users.workLocationMapping') }}" >
               <i class="bi bi-geo"></i>
               <span>Assign User Work Location</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link collapsed" href="{{ route('users.kmMapping') }}" >
+              <i class="bi bi-speedometer"></i>
+              <span>Assign User KM Mapping</span>
             </a>
           </li>
         @endif

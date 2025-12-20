@@ -1493,4 +1493,225 @@ class UserController extends Controller
         }
     }
 
+
+    /**
+     * Show the kmMapping form.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function showKMMapping()
+    { 
+
+         // Fetch roles via API
+         $rolesResponse = $this->getRoles();
+
+         // Handle API response
+         if (is_array($rolesResponse) && isset($rolesResponse[0]->id)) { // Note the change to ->id
+             // Successfully retrieved roles
+             $roles = $rolesResponse;
+         } elseif ($rolesResponse instanceof \Illuminate\Http\JsonResponse) {
+             // An error occurred while fetching roles
+             // You can choose to handle the error as needed
+             // For example, redirect back with an error message
+             return back()->withErrors(['roles_error' => 'Unable to fetch roles at this time. Please try again later.']);
+         } else {
+             // Unexpected response structure
+             return back()->withErrors(['roles_error' => 'Unexpected error while fetching roles.']);
+         }
+ 
+
+        $countries = \App\Models\Country::all();
+        return view('users.kmMapping', compact('countries', 'roles'));
+        
+    }
+
+
+    public function submitKMMapping(Request $request)
+    {
+        // -----------------------------
+        // 1. Validate Input
+        // -----------------------------
+        $validated = $request->validate([
+            'role'          => 'required|exists:roles,id',
+            'manager'       => 'required|array',
+            'manager.*'     => 'exists:users,id',
+            'max_km'        => 'required|numeric|min:1',
+            'price_per_km'  => 'required|numeric|min:0',
+        ]);
+
+        // -----------------------------
+        // 2. Prepare Payload
+        // -----------------------------
+        $postData = [
+            'entity_id'     => Auth::user()->entity_id,
+            'role_id'       => $validated['role'],
+            'user_ids'      => $validated['manager'], // Multiple employees
+            'max_km'        => $validated['max_km'],
+            'price_per_km'  => $validated['price_per_km'],
+            'created_by'    => Auth::id(),
+            'modified_by'   => Auth::id(),
+        ];
+
+        Log::info('submitKMMapping payload sent to API', ['payload' => $postData]);
+
+        $token = session()->get('api_token');
+        $apiUrl = config('auth_api.user_kilometer_mapping_create_url');
+    
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            if ($response->successful()) {
+
+                $apiResponse = $response->json();
+
+                if (!empty($apiResponse['success'])) {
+                    return redirect()
+                        ->back()
+                        ->with('success', 'Kilo-Meter Mapping created successfully.');
+                }
+
+                // ⭐ Critical fix — return actual API error
+                $errorMessage = $apiResponse['message'] ?? 'Unknown error from KM Mapping API.';
+
+                return redirect()
+                    ->back()
+                    ->withErrors(['submit_error' => $errorMessage])
+                    ->withInput();
+            }
+
+            return redirect()
+                ->back()
+                ->withErrors(['submit_error' => 'Failed to connect to KM Mapping API.'])
+                ->withInput();
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withErrors(['submit_error' => 'Error: ' . $e->getMessage()])
+                ->withInput();
+        }
+
+    }
+
+    
+   public function getUserKMMapping()
+    {
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Missing API token. Login again.'
+            ], 401);
+        }
+
+        $apiUrl = config('auth_api.user_kilometer_mapping_fetch_url');
+
+        if (!$apiUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'KM fetch API URL missing in config.'
+            ]);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$token,
+                'Accept' => 'application/json',
+            ])->get($apiUrl);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return response()->json([
+                    'success' => true,
+                    'data'    => $data['data'] ?? []
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch KM mapping data.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching KM mapping: '.$e->getMessage()
+            ]);
+        }
+    }
+
+    public function submitKMMappingEdit(Request $request)
+    {
+        $validated = $request->validate([
+            'id'          => 'required|integer',
+            'entity_id'   => 'required|integer',
+            'max_km'      => 'required|numeric|min:1',
+            'price_per_km'=> 'required|numeric|min:0',
+        ]);
+
+        $token = session()->get('api_token');
+        $apiUrl = config('auth_api.user_kilometer_mapping_edit_url');
+
+        $postData = [
+            'id'            => $validated['id'],
+            'entity_id'     => $validated['entity_id'],
+            'max_km'        => $validated['max_km'],
+            'price_per_km'  => $validated['price_per_km'],
+            'modified_by'   => Auth::id(),
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$token,
+                'Accept'        => 'application/json',
+            ])->post($apiUrl, $postData);
+
+            $apiResponse = $response->json();
+
+            if ($response->successful() && !empty($apiResponse['success'])) {
+                return back()->with('success', 'KM mapping updated successfully.');
+            }
+
+            return back()->withErrors(['edit_error' => $apiResponse['message'] ?? 'Update failed.']);
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['edit_error' => $e->getMessage()]);
+        }
+    }
+
+
+    public function deleteKMMapping(Request $request)
+    {
+        $request->validate([
+            'id'        => 'required|integer',
+            'entity_id' => 'required|integer',
+        ]);
+
+        $token = session()->get('api_token');
+        $apiUrl = config('auth_api.user_kilometer_mapping_delete_url');
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$token,
+                'Accept'        => 'application/json',
+            ])->post($apiUrl, [
+                'id'        => $request->id,
+                'entity_id' => $request->entity_id
+            ]);
+
+            return response()->json($response->json());
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    
 }

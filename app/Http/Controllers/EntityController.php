@@ -632,6 +632,7 @@ class EntityController extends Controller
         $validatedData = $request->validate([
             'km_bound' => 'required|numeric|min:0',
             'location_enabled' => 'required|in:yes,no',
+            'km_bound_sourcing'   => 'nullable|numeric|min:0',
             // Add other validation rules as necessary
         ]);
 
@@ -653,6 +654,7 @@ class EntityController extends Controller
         // Prepare the data to send to the external API
         $postData = [
             'km_bound'          => $validatedData['km_bound'],
+            'km_bound_sourcing'  => $validatedData['km_bound_sourcing'] ?? null,
             'location_enabled'  => $validatedData['location_enabled'],
             'modified_by'       => Auth::id(),
         ];
