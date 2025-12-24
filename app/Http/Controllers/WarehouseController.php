@@ -159,6 +159,7 @@ class WarehouseController extends Controller
             // New validation rules for documents
             'documents' => 'nullable|array',
             'documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx|max:2048',
+            'is_plant_warehouse' => 'nullable',
         ]);
 
          // Retrieve the token from the session
@@ -172,6 +173,7 @@ class WarehouseController extends Controller
              return Redirect::route('login')->withErrors(['token_error' => 'Authentication token not found. Please log in again.']);
          }
  
+         $isPlantWarehouse = $request->has('is_plant_warehouse') ? 1 : 0;
 
           // Prepare the data to send to the external API
           $postData = [
@@ -201,6 +203,7 @@ class WarehouseController extends Controller
             'FFP_procurement_company'=> $request->input('FFP_procurement_company'),
             'final_accepted_offer'   => $request->input('final_accepted_offer'),
             'payment_terms'          => $request->input('payment_terms'),
+            'is_plant_warehouse'     => $isPlantWarehouse,
             // 'logo' will be handled separately
         ];
 
@@ -419,6 +422,7 @@ class WarehouseController extends Controller
             'documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
             'documents_to_delete' => 'nullable|array',
             'documents_to_delete.*' => 'string',
+            'is_plant_warehouse' => 'nullable',
         ]);
 
         // Retrieve the token from the session
@@ -431,6 +435,8 @@ class WarehouseController extends Controller
         // Define the external API URL
         $apiUrl = config('auth_api.warehouse_update_url');
 
+        $isPlantWarehouse = (int) $request->input('is_plant_warehouse', 0);
+        
         // Prepare the data to send
         $postData = [
             'id'                    => $id,
@@ -462,6 +468,7 @@ class WarehouseController extends Controller
             'FFP_procurement_company'=> $request->input('FFP_procurement_company'),
             'final_accepted_offer'   => $request->input('final_accepted_offer'),
             'payment_terms'          => $request->input('payment_terms'),
+            'is_plant_warehouse'    => $isPlantWarehouse,
         ];
 
         // Send the request using Laravel's HTTP client

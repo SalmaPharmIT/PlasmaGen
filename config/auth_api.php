@@ -137,4 +137,11 @@ return [
     'non_field_work_fetch_all_url' =>  $base_url . 'non_field_work_fetch_all.php',
     'non_field_work_delete_url' =>  $base_url . 'non_field_work_delete.php',
     'reports_dcr_details_expenses_url' =>  $base_url . 'reports_dcr_details_expenses.php',
+    'collection_warehouse_fetch_all_url' =>  $base_url . 'collection_warehouse_fetch_all.php',
+    'reports_collection_warehouses_url' =>  $base_url . 'reports_collection_warehouses.php',
+    'plant_warehouses_fetch_all_url' =>  $base_url . 'plant_warehouses_fetch_all.php',
+    'plant_warehouse_transfer_submit_url' =>  $base_url . 'plant_warehouse_transfer_submit.php',
+    'transfered_plant_warehouses_fetch_all_url' =>  $base_url . 'transfered_plant_warehouses_fetch_all.php',
+    'plant_warehouse_transaction_delete_url' =>  $base_url . 'plant_warehouse_transaction_delete.php',
+    'reports_user_live_check_in_out_url' =>  $base_url . 'reports_user_live_check_in_out.php',
 ];

@@ -147,8 +147,8 @@
     </li><!-- End Forms Nav -->
     @endif
 
-       <!-- Tour Planner - Visible to Logistics Admin (role_id == 7) and Role ID 6 -->
-       @if (Auth::check() && in_array(Auth::user()->role_id, [7]))
+      <!-- Tour Planner - Visible to Logistics Admin (role_id == 7) and Role ID 6 -->
+      @if (Auth::check() && in_array(Auth::user()->role_id, [7]))
        <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-journal-text"></i><span>TP Collections</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -168,12 +168,10 @@
         </ul>
       </li><!-- End Forms Nav -->
       @endif
-
-
     
       <!-- Reports - Visible to Admin & Manager Roles -->
       @if (Auth::check())
-      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role_id == 18)
+      @if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role_id == 18 || Auth::user()->role_id == 7)
         <li class="nav-heading">Reports</li>
 
         <!-- Reports - Visible to Role ID 1 and 2 -->
@@ -267,6 +265,37 @@
           </a>
          </li>
       @endif
+
+       <!-- DCR  and Expenses Reports - Visible to Role ID 1 and 2 -->
+      @if (in_array(Auth::user()->role_id, [1, 2, 18]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.check_in_out_summary') }}" >
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>Check In-Check Out</span>
+          </a>
+         </li>
+      @endif
+
+      <!-- Collection Warehouses - Visible to Logistics Admin (role_id == 7) and Role ID 6 -->
+      @if (Auth::check() && in_array(Auth::user()->role_id, [7]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.collection_warehouses') }}" >
+            <i class="bi bi-building"></i>
+            <span>Collection Warehouses</span>
+          </a>
+        </li>
+      @endif
+
+      <!-- Plant Warehouses - Visible to Logistics Admin (role_id == 7) and Role ID 6 -->
+      @if (Auth::check() && in_array(Auth::user()->role_id, [7]))
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.plant_warehouses') }}" >
+            <i class="bi bi-buildings"></i>
+            <span>Plant Warehouses</span>
+          </a>
+        </li>
+      @endif
+
 
       @endif
     @endif

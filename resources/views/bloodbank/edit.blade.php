@@ -96,6 +96,15 @@
                     </select>
                 </div>  --}}
 
+                <!-- Blood Bank Code -->
+                <div class="col-md-6">
+                    <label for="blood_bank_code" class="form-label">
+                        Blood Bank Code</span>
+                    </label>
+                    <input
+                        type="text" class="form-control" id="blood_bank_code" name="blood_bank_code" value="{{ old('blood_bank_code', $entity['blood_bank_code']) }}">
+                </div>
+
                  <!-- Email -->
                  <div class="col-md-6">
                     <label for="email" class="form-label">Email </label>

@@ -76,6 +76,15 @@
                     <input type="text" class="form-control" id="entity_contact_person" name="entity_contact_person" value="{{ old('entity_contact_person', $dcrDetails['sourcing_contact_person'] ?? '') }}" required>
                 </div>
 
+                <!-- Blood Bank Code -->
+                <div class="col-md-6">
+                    <label for="blood_bank_code" class="form-label">
+                        Blood Bank Code</span>
+                    </label>
+                    <input
+                        type="text" class="form-control" id="blood_bank_code" name="blood_bank_code" value="{{ old('blood_bank_code') }}">
+                </div>
+
                   <!-- Email -->
                   <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
@@ -236,7 +245,7 @@
                 </div> --}}
 
                   <!-- Attach Documents -->
-                  <div class="col-md-6">
+                  <div class="col-md-12">
                     <label for="documents" class="form-label">Attach Documents</label>
                     <input type="file" class="form-control" id="documents" name="documents[]" multiple>
                     <small class="form-text text-muted">You can upload multiple files (DOC, PDF, Images, etc.).</small>

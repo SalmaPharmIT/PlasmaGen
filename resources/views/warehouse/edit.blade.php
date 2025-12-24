@@ -276,6 +276,29 @@
                     </select>
                 </div>
 
+                <!-- Is Plant Warehouse -->
+                <div class="col-md-6">
+                    <div class="form-check mt-4">
+
+                        <!-- IMPORTANT -->
+                        <input type="hidden" name="is_plant_warehouse" value="0">
+
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="is_plant_warehouse"
+                            name="is_plant_warehouse"
+                            value="1"
+                            {{ (int) old('is_plant_warehouse', $entity['is_plant_warehouse'] ?? 0) === 1 ? 'checked' : '' }}
+                        >
+
+                        <label class="form-check-label" for="is_plant_warehouse">
+                            Is Plant Warehouse?
+                        </label>
+                    </div>
+                </div>
+
+
 
                   <!-- Attach Documents -->
                   <div class="col-md-12">

@@ -879,4 +879,503 @@ class ReportsMasterController extends Controller
         }
     }
 
+    
+    /**
+     * Show the BCollection Warehouse lists page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function collectionWarehouseIndex()
+    {
+
+        return view('reports.collection_warehouses');
+    }
+
+     /**
+     * Fetch CollectionW Warehouses data for a specific date via API.
+     *
+     * @param  string  $date
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+     public function geCollectionWarehousesData()
+     {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+ 
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+         }
+ 
+         // Define the external API URL for fetching GST Rates
+         $apiUrl = config('auth_api.reports_collection_warehouses_url');
+ 
+         if (!$apiUrl) {
+             Log::error('Collection Warehouses Fetch URL not configured.');
+             return back()->withErrors(['api_error' => 'Collection Warehouses Fetch URL is not configured.']);
+         }
+ 
+         try {
+             // Make the API request to fetch Collection Warehouses
+             $response = Http::withHeaders([
+                 'Authorization' => 'Bearer ' . $token,
+                 'Accept'        => 'application/json',
+             ])->get($apiUrl);
+ 
+             Log::info('Collection Warehouses Fetch API Response', [
+                 'status' => $response->status(),
+                 'body'   => $response->body(),
+             ]);
+ 
+             if ($response->successful()) {
+                 $apiResponse = $response->json();
+ 
+                 if ($apiResponse['success']) {
+                    return response()->json([
+                         'success' => true,
+                         'data' => Arr::get($apiResponse, 'data', []),
+                     ]);
+                 } else {
+                     Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                     return response()->json([
+                         'success' => false,
+                         'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                     ]);
+                 }
+             } else {
+                 Log::error('Failed to fetch Collection Warehouses from external API.', [
+                     'status' => $response->status(),
+                     'body' => $response->body(),
+                 ]);
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Failed to fetch Collection Warehouses from the external API.',
+                 ], $response->status());
+             }
+         } catch (\Exception $e) {
+             Log::error('Exception while fetching Collection Warehouses from external API.', ['error' => $e->getMessage()]);
+             return response()->json([
+                 'success' => false,
+                 'message' => 'An error occurred while fetching Collection Warehouses.',
+             ], 500);
+         }
+     }
+
+     /**
+     * Fetch Plant Warehouses data for a specific date via API.
+     *
+     * @param  string  $date
+     * @return \Illuminate\Http\JsonResponse
+     */
+     public function getPlantWarehousesData()
+     {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+ 
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+         }
+ 
+         // Define the external API URL for fetching Plant Warehouses
+         $apiUrl = config('auth_api.plant_warehouses_fetch_all_url');
+ 
+         if (!$apiUrl) {
+             Log::error('Plant Warehouses Fetch URL not configured.');
+             return back()->withErrors(['api_error' => 'Plant Warehouses Fetch URL is not configured.']);
+         }
+ 
+         try {
+             // Make the API request to fetch Plant Warehouses
+             $response = Http::withHeaders([
+                 'Authorization' => 'Bearer ' . $token,
+                 'Accept'        => 'application/json',
+             ])->get($apiUrl);
+ 
+             Log::info('Plant Warehouses Fetch API Response', [
+                 'status' => $response->status(),
+                 'body'   => $response->body(),
+             ]);
+ 
+             if ($response->successful()) {
+                 $apiResponse = $response->json();
+ 
+                 if ($apiResponse['success']) {
+                    return response()->json([
+                         'success' => true,
+                         'data' => Arr::get($apiResponse, 'data', []),
+                     ]);
+                 } else {
+                     Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                     return response()->json([
+                         'success' => false,
+                         'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                     ]);
+                 }
+             } else {
+                 Log::error('Failed to fetch Plant Warehouses from external API.', [
+                     'status' => $response->status(),
+                     'body' => $response->body(),
+                 ]);
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Failed to fetch Plant Warehouses from the external API.',
+                 ], $response->status());
+             }
+         } catch (\Exception $e) {
+             Log::error('Exception while fetching Plant Warehouses from external API.', ['error' => $e->getMessage()]);
+             return response()->json([
+                 'success' => false,
+                 'message' => 'An error occurred while fetching Plant Warehouses.',
+             ], 500);
+         }
+     }
+
+
+    /**
+     * Transfer To Plant Warehouse  via API.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function transferToPlantWarehouseSubmit(Request $request)
+    {
+        $request->validate([
+            'plant_warehouse_id' => 'required|integer',
+            'tour_plan_ids' => 'required|array',
+            'num_boxes'  => 'nullable|integer|min:0',
+            'num_units'  => 'nullable|integer|min:0',
+            'num_litres' => 'nullable|integer|min:0',
+        ]);
+
+         // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching User wise DCR
+        $apiUrl = config('auth_api.plant_warehouse_transfer_submit_url');
+
+        if (!$apiUrl) {
+            Log::error('Plant warehouse transfer submit URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Plant warehouse transfer submit URL is not configured.'
+            ], 500);
+        }
+
+
+        // Prepare the payload to submit to the external API
+        $payload = [
+            'warehouse_id' => $request->warehouse_id,
+            'plant_warehouse_id' => $request->plant_warehouse_id,
+            'tour_plan_ids' => $request->tour_plan_ids,
+            'num_boxes'  => (int) $request->num_boxes,
+            'num_units'  => (int) $request->num_units,
+            'num_litres' => (int) $request->num_litres,
+        ];
+
+         // Log the data being sent
+         Log::info('Plant warehouse transfer submit request API', [
+            'data' => $payload,
+        ]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->post($apiUrl, $payload);
+
+            Log::info('External API Response Plant warehouse transfer submit', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+  
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to  Plant warehouse transfer submit from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to  Plant warehouse transfer submit the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while  Plant warehouse transfer submit external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while Plant warehouse transfer submit.',
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Show the Plant Warehouses lists page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function plantWarehouseIndex()
+    {
+
+        return view('reports.plant_warehouses');
+    }
+
+
+    /**
+     * Fetch Transfered Plant Warehouses data for a specific date via API.
+     *
+     * @param  string  $date
+     * @return \Illuminate\Http\JsonResponse
+     */
+     public function getTransferedPlantWarehousesData()
+     {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+ 
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+         }
+ 
+         // Define the external API URL for fetching Plant Warehouses
+         $apiUrl = config('auth_api.transfered_plant_warehouses_fetch_all_url');
+ 
+         if (!$apiUrl) {
+             Log::error('Transfered Plant Warehouses Fetch URL not configured.');
+             return back()->withErrors(['api_error' => 'Transfered Plant Warehouses Fetch URL is not configured.']);
+         }
+ 
+         try {
+             // Make the API request to fetch Transfered Plant Warehouses
+             $response = Http::withHeaders([
+                 'Authorization' => 'Bearer ' . $token,
+                 'Accept'        => 'application/json',
+             ])->get($apiUrl);
+ 
+             Log::info('Transfered Plant Warehouses Fetch API Response', [
+                 'status' => $response->status(),
+                 'body'   => $response->body(),
+             ]);
+ 
+             if ($response->successful()) {
+                 $apiResponse = $response->json();
+ 
+                 if ($apiResponse['success']) {
+                    return response()->json([
+                         'success' => true,
+                         'data' => Arr::get($apiResponse, 'data', []),
+                     ]);
+                 } else {
+                     Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                     return response()->json([
+                         'success' => false,
+                         'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                     ]);
+                 }
+             } else {
+                 Log::error('Failed to fetch Transfered Plant Warehouses from external API.', [
+                     'status' => $response->status(),
+                     'body' => $response->body(),
+                 ]);
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Failed to fetch Transfered Plant Warehouses from the external API.',
+                 ], $response->status());
+             }
+         } catch (\Exception $e) {
+             Log::error('Exception while fetching Transfered Plant Warehouses from external API.', ['error' => $e->getMessage()]);
+             return response()->json([
+                 'success' => false,
+                 'message' => 'An error occurred while fetching Transfered Plant Warehouses.',
+             ], 500);
+         }
+     }
+
+     /**
+     * Delete Plant Warehouse Transaction
+     */
+    public function deletePlantWarehouseTransaction(Request $request)
+    {
+        $request->validate([
+            'transaction_id' => 'required|numeric'
+        ]);
+
+        $transactionId = (int) $request->transaction_id;
+
+        $token = session()->get('api_token');
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing.'
+            ], 401);
+        }
+
+        $apiUrl = config('auth_api.plant_warehouse_transaction_delete_url');
+
+        $payload = [
+            'transaction_id' => $transactionId
+        ];
+
+        Log::info('Delete Plant Warehouse Transaction', $payload);
+
+        try {
+            /** 🔥 IMPORTANT FIX HERE 🔥 */
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ])->withBody(
+                json_encode($payload),
+                'application/json'
+            )->post($apiUrl);
+
+            $apiResponse = $response->json();
+
+            if ($response->successful() && ($apiResponse['success'] ?? false)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Plant Warehouse Trasaction deleted successfully.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $apiResponse['message'] ?? 'Delete failed.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Delete Transfer Error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error while deleting transfer.'
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Show the Check In-Out Summary page.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function checkInOutSummaryIndex()
+    {
+
+        return view('reports.check_in_out_summary');
+    }
+
+    /**
+     * Show the User Check In - Out Deata page.
+     *
+     * @return \Illuminate\View\View
+    */
+    public function getUserCheckInOutSummaryData(Request $request)
+    {
+        // Retrieve the token from the session
+        $token = session()->get('api_token');
+
+        if (!$token) {
+            Log::warning('API token missing in session.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication token missing. Please log in again.'
+            ], 401);
+        }
+
+        // Define the external API URL for fetching User wise DCR
+        $apiUrl = config('auth_api.reports_user_live_check_in_out_url');
+
+        if (!$apiUrl) {
+            Log::error('User Check In Out Summary fetch URL not configured.');
+            return response()->json([
+                'success' => false,
+                'message' => 'User Check In Out Summary fetch URL is not configured.'
+            ], 500);
+        }
+
+        // FIX HERE
+        $agent_id = $request->input('agent_id'); 
+        $dateRange = $request->input('dateRange'); 
+
+        // Prepare the payload to submit to the external API
+        $payload = [
+            'agent_id'   => $agent_id,
+            'dateRange' => $dateRange,
+        ];
+
+         // Log the data being sent
+         Log::info('getUserCheckInOutSummaryData request API', [
+            'data' => $payload,
+        ]);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+            ])->post($apiUrl, $payload);
+
+            Log::info('External API Response User Check In Out', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                $apiResponse = $response->json();
+
+                if (Arr::get($apiResponse, 'success')) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => Arr::get($apiResponse, 'data', []),
+                    ]);
+                } else {
+                    Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                    ]);
+                }
+            } else {
+                Log::error('Failed to fetch User Check In Out Summary from external API.', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch User Check In Out Summary from the external API.',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching User Check In Out Summary from external API.', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching User Check In Out Summary.',
+            ], 500);
+        }
+    }
+
+
 }

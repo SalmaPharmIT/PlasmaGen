@@ -211,6 +211,24 @@
                     <input type="number" step="0.000001" class="form-control" id="longitude" name="longitude" value="{{ old('longitude') }}">
                 </div>
 
+                <!-- Is Plant Warehouse -->
+                <div class="col-md-12">
+                    <div class="form-check mt-4">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="is_plant_warehouse"
+                            name="is_plant_warehouse"
+                            value="1"
+                            {{ old('is_plant_warehouse') ? 'checked' : '' }}
+                        >
+                        <label class="form-check-label" for="is_plant_warehouse">
+                            Is Plant Warehouse?
+                        </label>
+                    </div>
+                </div>
+
+
                 <!-- Username -->
                 {{-- <div class="col-md-6">
                     <label for="username" class="form-label">Username</label>

@@ -170,6 +170,7 @@ class BloodBankController extends Controller
             'FFP_procurement_company' => 'nullable|string|max:255',
             'final_accepted_offer' => 'nullable|string|max:255',
             'payment_terms' => 'nullable|string|max:255',
+            'blood_bank_code' => 'nullable|string|max:255',
             // New validation rules for documents
             'documents' => 'nullable|array',
             'documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx|max:2048',
@@ -215,6 +216,7 @@ class BloodBankController extends Controller
             'FFP_procurement_company'=> $request->input('FFP_procurement_company'),
             'final_accepted_offer'   => $request->input('final_accepted_offer'),
             'payment_terms'          => $request->input('payment_terms'),
+            'blood_bank_code'        => $request->input('blood_bank_code'),
             // 'logo' will be handled separately
         ];
 
@@ -421,6 +423,7 @@ class BloodBankController extends Controller
             'FFP_procurement_company' => 'nullable|string|max:255',
             'final_accepted_offer' => 'nullable|string|max:255',
             'payment_terms' => 'nullable|string|max:255',
+            'blood_bank_code' => 'nullable|string|max:255',
             // New validation rules for documents
             'documents' => 'nullable|array',
             'documents.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,doc,docx,xls,xlsx,csv,txt|max:2048',
@@ -469,6 +472,7 @@ class BloodBankController extends Controller
             'FFP_procurement_company'=> $request->input('FFP_procurement_company'),
             'final_accepted_offer'   => $request->input('final_accepted_offer'),
             'payment_terms'          => $request->input('payment_terms'),
+            'blood_bank_code'        => $request->input('blood_bank_code'),
         ];
 
         // Send the request using Laravel's HTTP client

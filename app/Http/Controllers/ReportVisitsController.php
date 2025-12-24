@@ -237,6 +237,7 @@ class ReportVisitsController extends Controller
             'transportation_name' => 'nullable|string',
             'transportation_contact_person' => 'nullable|string',
             'transportation_contact_number' => 'nullable|string',
+            'collection_warehouse_id' => 'nullable',
         ]);
 
 
@@ -280,6 +281,7 @@ class ReportVisitsController extends Controller
             'transportation_name'         => $request->input('transportation_name'),
             'transportation_contact_person' => $request->input('transportation_contact_person'),
             'transportation_contact_number' => $request->input('transportation_contact_number'),
+            'collection_warehouse_id' => $request->input('collection_warehouse_id'),
         ];
         
         // Handle multiple documents certificate_of_quality
@@ -1003,6 +1005,7 @@ class ReportVisitsController extends Controller
             'edit_boxes_collected' => 'required|integer|min:0',
             'edit_units_collected' => 'required|integer|min:0',
             'edit_litres_collected' => 'required|integer|min:0',
+            'edit_collection_warehouse_id' => 'nullable|integer',
         ]);
 
 
@@ -1044,6 +1047,7 @@ class ReportVisitsController extends Controller
             'transportation_name' => $request->input('edit_transport_name'),
             'transportation_contact_person' => $request->input('edit_transport_contact_person'),
             'transportation_contact_number' => $request->input('edit_transport_contact_number'),
+            'collection_warehouse_id' => $request->input('edit_collection_warehouse_id'),
         ];
         
           // Retrieve existing attachments (if any)
@@ -1480,4 +1484,77 @@ class ReportVisitsController extends Controller
              ], 500);
            }
        }
+
+       
+    /**
+     * Fetch CollectionW Warehouses data for a specific date via API.
+     *
+     * @param  string  $date
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+     public function getCollectionWarehouses()
+     {
+         // Retrieve the token from the session
+         $token = session()->get('api_token');
+ 
+         if (!$token) {
+             Log::warning('API token missing in session.');
+             return redirect()->route('login')->withErrors(['token_error' => 'Authentication token missing. Please log in again.']);
+         }
+ 
+         // Define the external API URL for fetching GST Rates
+         $apiUrl = config('auth_api.collection_warehouse_fetch_all_url');
+ 
+         if (!$apiUrl) {
+             Log::error('Collection Warehouses Fetch URL not configured.');
+             return back()->withErrors(['api_error' => 'Collection Warehouses Fetch URL is not configured.']);
+         }
+ 
+         try {
+             // Make the API request to fetch Collection Warehouses
+             $response = Http::withHeaders([
+                 'Authorization' => 'Bearer ' . $token,
+                 'Accept'        => 'application/json',
+             ])->get($apiUrl);
+ 
+             Log::info('Collection Warehouses Fetch API Response', [
+                 'status' => $response->status(),
+                 'body'   => $response->body(),
+             ]);
+ 
+             if ($response->successful()) {
+                 $apiResponse = $response->json();
+ 
+                 if ($apiResponse['success']) {
+                    return response()->json([
+                         'success' => true,
+                         'data' => Arr::get($apiResponse, 'data', []),
+                     ]);
+                 } else {
+                     Log::warning('External API returned failure.', ['message' => Arr::get($apiResponse, 'message')]);
+                     return response()->json([
+                         'success' => false,
+                         'message' => Arr::get($apiResponse, 'message', 'Unknown error from API.'),
+                     ]);
+                 }
+             } else {
+                 Log::error('Failed to fetch Collection Warehouses from external API.', [
+                     'status' => $response->status(),
+                     'body' => $response->body(),
+                 ]);
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'Failed to fetch Collection Warehouses from the external API.',
+                 ], $response->status());
+             }
+         } catch (\Exception $e) {
+             Log::error('Exception while fetching Collection Warehouses from external API.', ['error' => $e->getMessage()]);
+             return response()->json([
+                 'success' => false,
+                 'message' => 'An error occurred while fetching Collection Warehouses.',
+             ], 500);
+         }
+     }
+
 }

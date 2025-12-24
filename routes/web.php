@@ -199,6 +199,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/visits/collection_edit_submit', [ReportVisitsController::class, 'collectionEditSubmit'])->name('visits.collection_edit_submit');
     Route::post('/visits/sourcing_edit_submit', [ReportVisitsController::class, 'sourcingEditSubmit'])->name('visits.sourcing_edit_submit');
     Route::post('/visits/finalPendingDCRsubmit', [ReportVisitsController::class, 'finalPendingDCRsubmit'])->name('visits.finalPendingDCRsubmit');
+    Route::get('/visits/getCollectionWarehouses', [ReportVisitsController::class, 'getCollectionWarehouses'])->name('visits.getCollectionWarehouses');
     /* *********************  Report Visits Ends ********************************* */
 
 
@@ -221,9 +222,16 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/reports/getUserLiveLocation', [ReportsMasterController::class, 'getUserLiveLocation'])->name('reports.getUserLiveLocation');
     Route::get('/reports/dcrSummaryExpenses', [ReportsMasterController::class, 'dcrSummaryExpensesIndex'])->name('reports.dcr_summary_expenses');
     Route::post('/reports/getUserDCRWithExpensesSummary', [ReportsMasterController::class, 'getUserDCRWithExpensesSummaryData'])->name('reports.getUserDCRWithExpensesSummary');
-    /* *********************  Report Visits Ends ********************************* */
-
-
+    Route::get('/reports/collection_warehouses', [ReportsMasterController::class, 'collectionWarehouseIndex'])->name('reports.collection_warehouses');
+    Route::get('/reports/geCollectionWarehousesLists', [ReportsMasterController::class, 'geCollectionWarehousesData'])->name('reports.geCollectionWarehousesList');
+    Route::get('/reports/getPlantWarehouses', [ReportsMasterController::class, 'getPlantWarehousesData'])->name('reports.getPlantWarehouses');
+    Route::post('/reports/transferToPlantWarehouseSubmit', [ReportsMasterController::class, 'transferToPlantWarehouseSubmit'])->name('reports.transferToPlantWarehouseSubmit');
+    Route::get('/reports/plant_warehouses', [ReportsMasterController::class, 'plantWarehouseIndex'])->name('reports.plant_warehouses');
+    Route::get('/reports/getTransferedPlantWarehouses', [ReportsMasterController::class, 'getTransferedPlantWarehousesData'])->name('reports.getTransferedPlantWarehouses');
+    Route::post('/reports/deletePlantWarehouseTransaction', [ReportsMasterController::class, 'deletePlantWarehouseTransaction'])->name('reports.deletePlantWarehouseTransaction');
+    Route::get('/reports/checkInOutSummary', [ReportsMasterController::class, 'checkInOutSummaryIndex'])->name('reports.check_in_out_summary');
+    Route::post('/reports/getUserCheckInOutSummary', [ReportsMasterController::class, 'getUserCheckInOutSummaryData'])->name('reports.getUserCheckInOutSummary');
+   
     /* ********************* Expenses Starts ********************************* */
     Route::get('/expenses', [ExpensesController::class, 'index'])->name('expenses.index');
     Route::get('/expenses/getUpdatedVisits', [ExpensesController::class, 'getUpdatedVisits'])->name('expenses.getUpdatedVisits');

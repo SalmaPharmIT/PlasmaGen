@@ -334,7 +334,14 @@
                     <input type="text" class="form-control" id="transportationContactNumber" name="transportation_contact_number">
                 </div>
             </div>
-        
+
+            <div class="mb-3">
+                <label for="collectionWarehouseSelect" class="form-label">Collection Warehouse</label>
+                <select class="form-select select2" id="collectionWarehouseSelect" name="collection_warehouse_id">
+                    <option value="">-- Select Warehouse --</option>
+                </select>
+            </div>
+                    
             </div>
             <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -607,6 +614,11 @@
                             </div>
                         </div>
                         <div class="row mb-3">
+                            <!-- Collection Warehouse -->
+                            <div class="col-md-4">
+                                <strong>Collection Warehouse:</strong>
+                                <p id="view_collectionWarehouseDisplay">None</p>
+                            </div>
                             <!-- Added By -->
                             <div class="col-md-4">
                                 <strong>Added By:</strong>
@@ -1038,6 +1050,14 @@
                     <input type="text" class="form-control" id="editTransportContactNumber" name="edit_transport_contact_number" >
                 </div>
             </div>
+
+            <div class="mb-3">
+                <label for="editCollectionWarehouseSelect"  class="form-label">Collection Warehouse</label>
+                <select class="form-select select2" id="editCollectionWarehouseSelect" name="edit_collection_warehouse_id">
+                    <option value="">-- Select Warehouse --</option>
+                </select>
+            </div>
+
   
             <!-- Attachments Section -->
             <h5 class="mb-3">Attachments</h5>
@@ -2215,6 +2235,17 @@
             });
         }
 
+        // Initialize Select2 for the collection warehouses select element
+        // $('#collectionWarehouseSelect').select2({
+        //     theme: 'bootstrap-5',
+        //     width: '100%',
+        //     placeholder: 'Choose Collection  Warehouses',
+        //     allowClear: true,
+        //     closeOnSelect: true,
+        //     dropdownParent: $('#updateVisitModal')
+        // });
+
+
 
          // Event listener for Update Visit Modal to populate data
          $('#updateVisitModal').on('show.bs.modal', function (event) {
@@ -2344,6 +2375,14 @@
             // Fetch Entity Features and handle location
           //  fetchEntityFeatures(modal);
             fetchEntityFeatures(modal, 'user_latitude', 'user_longitude');
+            // Fetching collection warehouses list
+            fetchCollectionWarehouses(modal);
+        });
+
+        $('#editCollectionVisitModal').on('show.bs.modal', function () {
+            const modal = $(this);
+
+            fetchCollectionWarehouses(modal);
         });
 
 
@@ -2357,6 +2396,7 @@
             dropdownParent: $('#updateSourcingVisitModal')
         });
 
+      
          // Event listener for Update Sourcing Visit Modal to populate data
          $('#updateSourcingVisitModal').on('show.bs.modal', function (event) {
             const modal = $(this);
@@ -2659,6 +2699,7 @@
             $('#view_transportNameDisplay').text(escapeHtml(extendedProps.transportation_name) || 'N/A');
             $('#view_transportContactPersonDisplay').text(escapeHtml(extendedProps.transportation_contact_person) || 'N/A');
             $('#view_transportContactNumberDisplay').text(escapeHtml(extendedProps.transportation_contact_number) || 'N/A');
+            $('#view_collectionWarehouseDisplay').text(escapeHtml(extendedProps.collection_warehouse) || 'N/A');
 
             // Populate Transport Information
             if(extendedProps.transport_details) {
@@ -3200,6 +3241,49 @@
         }
 
 
+        // Function to fetch Collection Warehouses when modal opens
+        function fetchCollectionWarehouses(modal) {
+            return $.ajax({
+                url: "{{ route('visits.getCollectionWarehouses') }}",
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        const warehouses = response.data;
+                        const select = modal.find('#collectionWarehouseSelect');
+
+                        // Clear existing options
+                        select.empty();
+                        select.append('<option value="">-- Select Warehouse --</option>');
+
+                        // Populate dropdown with enriched label
+                        warehouses.forEach(function(w) {
+                            const city    = w.city?.name   || '';
+                            const state   = w.state?.name  || '';
+                            const pincode = w.pincode      || '';
+
+                            const displayText = `${w.name} (${city}, ${state} - ${pincode})`;
+
+                            select.append(
+                                $('<option>', {
+                                    value: w.id,
+                                    text: displayText
+                                })
+                            );
+                        });
+                        console.log('Collection Warehouses loaded:', warehouses);
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching Collection Warehouses:", error);
+                    Swal.fire('Error', 'Unable to fetch collection warehouses.', 'error');
+                }
+            });
+        }
+
+
 
         // Toggle between manual input and master dropdown when checkbox changes.
         $('#importFromMaster').change(function(){
@@ -3579,10 +3663,51 @@
             // Update the hidden field with the initial list of attachments
             updateRemainingAttachmentsField();
 
+            fetchCollectionWarehousesForEdit(
+                $('#editCollectionVisitModal'),
+                extended.collection_warehouse_id // 👈 THIS IS KEY
+            );
+
             // Finally, show the edit modal.
             $('#editCollectionVisitModal').modal('show');
 
         });
+
+        function fetchCollectionWarehousesForEdit(modal, selectedWarehouseId = null) {
+            $.ajax({
+                url: "{{ route('visits.getCollectionWarehouses') }}",
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (!response.success) return;
+
+                    const select = modal.find('#editCollectionWarehouseSelect');
+                    select.empty().append('<option value=""></option>');
+
+                    response.data.forEach(w => {
+                        const text = `${w.name} (${w.city?.name || ''}, ${w.state?.name || ''} - ${w.pincode || ''})`;
+                        select.append(new Option(text, w.id, false, false));
+                    });
+
+                    // Init or re-init Select2
+                    if (select.hasClass("select2-hidden-accessible")) {
+                        select.select2('destroy');
+                    }
+
+                    select.select2({
+                        theme: 'bootstrap-5',
+                        width: '100%',
+                        placeholder: 'Select Warehouse',
+                        dropdownParent: modal
+                    });
+
+                    // ✅ NOW set selected value
+                    if (selectedWarehouseId) {
+                        select.val(selectedWarehouseId).trigger('change');
+                    }
+                }
+            });
+        }
 
         // Helper function to format time (if needed).
         function formatTime(timeStr) {
@@ -3627,32 +3752,32 @@
             // (Optional) You can log the hidden field value:
             console.log('Existing attachments:', $('#editRemainingAttachments').val());
 
-            // Continue with your AJAX submission...
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    Swal.close();   // Close loading alert
-                    if(response.success) {
-                        Swal.fire('Success', response.message, 'success');
-                        $('#editCollectionVisitModal').modal('hide');
-                        fetchVisits(); // Refresh the visits list
-                    } else {
-                        Swal.fire('Error', response.message, 'error');
+                // Continue with your AJAX submission...
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.close();   // Close loading alert
+                        if(response.success) {
+                            Swal.fire('Success', response.message, 'success');
+                            $('#editCollectionVisitModal').modal('hide');
+                            fetchVisits(); // Refresh the visits list
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.close();   // Close loading alert
+                        console.error("Error updating visit:", error);
+                        Swal.fire('Error', 'An error occurred while updating the visit.', 'error');
                     }
-                },
-                error: function(xhr, status, error) {
-                    Swal.close();   // Close loading alert
-                    console.error("Error updating visit:", error);
-                    Swal.fire('Error', 'An error occurred while updating the visit.', 'error');
-                }
-            });
+                });
             });
 
             function calculateEditTotalPrice() {

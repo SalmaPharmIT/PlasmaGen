@@ -57,26 +57,29 @@
 
             
             <!-- Entities DataTable -->
-            <table id="entitiesTable" class="table table-striped table-bordered col-lg-12">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Entity Type</th>
-                  <th>Mobile No</th>
-                  <th>Email</th>
-                  <th>Country</th>
-                  <th>State</th>
-                  <th>City</th>
-                  {{-- <th>Logo</th> --}}
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{-- Data will be populated by DataTables via AJAX --}}
-              </tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="entitiesTable" class="table table-striped table-bordered col-lg-12">
+                <thead>
+                    <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Entity Type</th>
+                    <th>Mobile No</th>
+                    <th>Email</th>
+                    <th>Country</th>
+                    <th>State</th>
+                    <th>City</th>
+                    {{-- <th>Logo</th> --}}
+                    <th>Plant WH</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Data will be populated by DataTables via AJAX --}}
+                </tbody>
+                </table>
+            </div>
             <!-- End Entities DataTable -->
 
           </div>
@@ -96,6 +99,8 @@
             var table = $('#entitiesTable').DataTable({
                 // DataTables options
                 responsive: true,
+                scrollX: true,       // ✅ KEY FIX
+                autoWidth: false,    // Prevent overflow issues
                 processing: true,
                 serverSide: false, // Set to true if implementing server-side processing
                 ajax: {
@@ -155,6 +160,13 @@
                     //     orderable: false,
                     //     searchable: false
                     // },
+                    // ✅ NEW COLUMN
+                    {
+                        data: 'is_plant_warehouse',
+                        render: function (data) {
+                            return data == 1 ? 'Yes' : 'No';
+                        }
+                    },
                     { data: 'account_status', defaultContent: 'N/A' },
                     { 
                         data: null,

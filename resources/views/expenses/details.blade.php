@@ -96,7 +96,13 @@
                     <div class="card border shadow-sm">
                         <div class="card-body py-3">
 
-                            <h4 class="mb-3"><strong>Travel Information</strong></h4>
+                            <h4 class="mb-3 d-flex align-items-center">
+                                <strong class="me-2">Travel Information</strong>
+                                <i class="bi bi-info-circle-fill text-primary"
+                                id="travelInfoIcon"
+                                style="cursor:pointer;font-size:18px;"
+                                title="View Check-in / Location Info"></i>
+                            </h4>
 
                             {{-- Display-only row --}}
                             <div class="row mb-2">
@@ -683,6 +689,7 @@
                             if (response.data) {
                               // var dcr = response.data[0];
                                var dcr = response.data; // API now returns a single object
+                               window.currentExpenseStatus = dcr; // store globally for info popup
                                 $('#expenseMGRStatusDisplay').text("Manager Status: " + capitalizeFirstLetter(dcr.expense_mgr_status));
                                 $('#expenseCAStatusDisplay').text("CA Status: " + capitalizeFirstLetter(dcr.expense_ca_status));
                                 $('#remarksDisplay').text(function() {
@@ -1045,6 +1052,59 @@
 
                         statusForm.submit();
                     }
+                });
+            });
+
+
+            // ---------------------------------------------
+            // INFO ICON → SHOW LIVE CHECK-IN DETAILS
+            // ---------------------------------------------
+            $('#travelInfoIcon').on('click', function () {
+
+                const dcr = window.currentExpenseStatus;
+
+                if (!dcr) {
+                    return Swal.fire("Info", "Live location data not available.", "info");
+                }
+
+                const empName = $('#bloodBankName').text() || 'N/A'; // or from another source
+                const visitDate = dcr.visit_date || 'N/A';
+
+                const formatVal = (v) => (v !== null && v !== undefined && v !== '' ? v : 'N/A');
+
+                const html = `
+                    <div style="text-align:left">
+            
+                        <span><strong>Visit Date:</strong> ${formatVal(visitDate)}</span>
+                        <hr>
+                        <p><strong>Check In Time:</strong> ${formatVal(dcr.check_in_time)}</p>
+                        <p><strong>Check Out Time:</strong> ${formatVal(dcr.check_out_time)}</p>
+
+                        <p><strong>Working Duration:</strong> ${formatVal(dcr.working_duration)}</p>
+
+                        <p><strong>Total Location Pings:</strong> ${formatVal(dcr.total_pings)}</p>
+                        <p><strong>Reporting Pings:</strong> ${formatVal(dcr.reporting_points)}</p>
+                        <p><strong>Non-Reporting Pings:</strong> ${formatVal(dcr.non_reporting_points)}</p>
+
+                        <p><strong>Check-In Missing:</strong>
+                            ${dcr.check_in_missing == 1
+                                ? '<span class="text-danger fw-bold">Yes</span>'
+                                : '<span class="text-success fw-bold">No</span>'}
+                        </p>
+
+                        <p><strong>Check-Out Missing:</strong>
+                            ${dcr.check_out_missing == 1
+                                ? '<span class="text-danger fw-bold">Yes</span>'
+                                : '<span class="text-success fw-bold">No</span>'}
+                        </p>
+                    </div>
+                `;
+
+                Swal.fire({
+                    title: 'Check-In / Location Summary',
+                    html: html,
+                    width: 500,
+                    confirmButtonText: 'Close'
                 });
             });
 
