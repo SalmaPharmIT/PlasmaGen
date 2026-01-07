@@ -126,7 +126,7 @@
         </li>
 
          <!-- Blood Bank Reports - Visible to Role ID 1 and 2 -->
-         @if (in_array(Auth::user()->role_id, [1, 2, 6, 19]))
+         @if (in_array(Auth::user()->role_id, [1, 2]))
          <li>
           <a href="{{ route('tourplanner.pendingDCRSubmit') }}">
             <i class="bi bi-circle"></i><span>Pending DCR Submit</span>
@@ -135,7 +135,7 @@
         @endif
 
         <!-- Non-Field Work - Visible to Role ID 1 and 2 -->
-         @if (in_array(Auth::user()->role_id, [1, 2, 6, 19]))
+         @if (in_array(Auth::user()->role_id, [1, 2]))
          <li>
           <a href="{{ route('tourplanner.nonFieldWork') }}">
             <i class="bi bi-circle"></i><span>Non-Field Work</span>
@@ -405,6 +405,18 @@
           <a class="nav-link collapsed" href="{{ route('reports.user_expenses_summary') }}" >
             <i class="bi bi-currency-rupee"></i>
             <span>Uses Expenses</span>
+          </a>
+         </li>
+         <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.dcr_summary_expenses') }}" >
+            <i class="bi bi-passport"></i>
+            <span>DCR with Expenses</span>
+          </a>
+         </li>
+          <li class="nav-item">
+          <a class="nav-link collapsed" href="{{ route('reports.check_in_out_summary') }}" >
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>Check In-Check Out</span>
           </a>
          </li>
       </ul>
