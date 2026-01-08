@@ -183,6 +183,7 @@ $(document).ready(function () {
                 <th>Check In</th>
                 <th>Check Out</th>
                 <th>Working Duration</th>
+                <th>Total KM Travelled</th>
                 <th>Total Pings</th>
                 <th>Reporting Pings</th>
                 <th>Non-Reporting Pings</th>
@@ -203,6 +204,7 @@ $(document).ready(function () {
                 check_in: r.check_in_time ?? '-',
                 check_out: r.check_out_time ?? '-',
                 duration: r.working_duration ?? '-',
+                km: r.total_km_travelled !== null ? `${parseFloat(r.total_km_travelled).toFixed(2)} km` : '-',
                 pings: r.total_pings,
                 reporting: r.reporting_points,
                 non_reporting: r.non_reporting_points,
@@ -219,6 +221,7 @@ $(document).ready(function () {
                 { data: 'check_in' },
                 { data: 'check_out' },
                 { data: 'duration' },
+                { data: 'km' },   
                 { data: 'pings' },
                 { data: 'reporting' },
                 { data: 'non_reporting' },
